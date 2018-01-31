@@ -1,0 +1,24 @@
+Package: celaref
+Title: Single-cell RNAseq cell cluster labelling by reference
+Version: 0.0.0.9000
+Authors@R: person("Sarah", "Williams", email = "sarah.williams1@monash.edu", role = c("aut", "cre"))
+Description: After the clustering step of a single-cell RNAseq experiment, this
+  package aims to suggest labels/cell types for the clusters, on the basis of 
+  similarity to a reference dataset. It requires a table of read counts per 
+  cell per gene, and a list of the cells belonging to each of the clusters, 
+  (for both test and reference data). 
+Depends: R (>= 3.3.3)
+Imports: 
+  MAST,
+  SummarizedExperiment,
+  ggplot2,
+  reshape2,
+  Matrix,
+  tidyverse
+Suggests: 
+  limma,
+  parallel
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1.9000
