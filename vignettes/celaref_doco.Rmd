@@ -1,0 +1,129 @@
+---
+title: "Doco"
+author: "Sarah Williams"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+     theme: flatly
+     toc: true
+     toc_depth: 5
+     fig_caption: yes
+vignette: >
+  %\VignetteIndexEntry{Doco}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+After the clustering step of a single-cell RNAseq experiment, this
+package aims to suggest labels/cell types for the clusters, on the basis of 
+similarity to a reference dataset. It requires a table of read counts per 
+cell per gene, and a list of the cells belonging to each of the clusters, 
+(for both test and reference data). 
+
+# Background
+ 
+why this is.
+
+# Workflow / Method
+
+wot it does.
+
+draw it.
+
+# Using the package
+
+## Quickstart
+
+### Example: Simulated data, 100 genes
+
+Suppose there's a new single-cell RNAseq dataset (query), and the cells have 
+been clustered into 4 groups : Groups 1-4. But we don't know what they are.
+
+Luckily, there's an older dataset (ref) of the same tissue type in which 
+someone has already determined the cell types. 
+
+Use the reference dataset to figure out what type of cells are in each cluster 
+of the new experiment
+
+```{r toy_example, message=FALSE}
+
+library(celaref)
+
+# Paths to data files.
+counts_filepath.query    <- system.file("extdata", "sim_query_counts.tab",    package = "celaref")
+cell_info_filepath.query <- system.file("extdata", "sim_query_cell_info.tab", package = "celaref")
+counts_filepath.ref      <- system.file("extdata", "sim_ref_counts.tab",      package = "celaref")
+cell_info_filepath.ref   <- system.file("extdata", "sim_ref_cell_info.tab",   package = "celaref")
+
+# Load data
+toy_ref_se   <- load_se_from_files(counts_file=counts_filepath.ref, cell_info_file=cell_info_filepath.ref)
+toy_query_se <- load_se_from_files(counts_file=counts_filepath.query, cell_info_file=cell_info_filepath.query)
+
+# Filter data
+toy_ref_se     <- trim_small_groups_and_low_expression_genes(toy_ref_se)
+toy_query_se   <- trim_small_groups_and_low_expression_genes(toy_query_se)
+
+# Setup within-experiment differential expression
+de_table.toy_ref   <- contrast_each_group_to_the_rest(toy_ref_se,    dataset_name="ref")
+de_table.toy_query <- contrast_each_group_to_the_rest(toy_query_se,  dataset_name="query")
+
+# Cross-experimet comparison
+de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
+   de_table.test=de_table.toy_query ,
+   de_table.ref=de_table.toy_ref ,
+   test_dataset_name='toy_query')
+
+# Plot
+make_ranking_violin_plot(de_table.marked.query_vs_ref)
+
+```
+
+
+From this plot it looks like:
+
+ * Group1 : The group was too small to test (it had 3 cells) and was removed
+ * Group2 : Might be 'Exciting' cell type, or 'dunno'. However there are not enough 'top genes' (only 3) to be confident.
+ * Group3 : Corresponds to 'dunno' cell type.
+ * Group4 : Corresponds to 'Weird subtype' cell type.
+
+
+The above commands use a toy dataset within the package, and can be copy-pasted 
+and run. It is a tiny simulated dataset that will complete very quickly.
+
+
+## Loading data
+
+Describe input
+
+by file or by se or by 10X util func.
+
+## Prepare data with within-experiment differential expression
+
+
+
+## Making comparisons to reference data
+
+
+
+# Example Analyses
+
+Explain some real size examples.
+
+
+
+
+
+
+
+
+
+
+
+

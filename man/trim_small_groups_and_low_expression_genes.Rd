@@ -49,7 +49,7 @@ Of course 'reasonable' thresholds for filtering cells/genes are subjective.
 Defaults are moderately sensible starting points.
 }
 \examples{
-demo_query_se.filtered <- trim_small_groups_and_low_expression_genes(demo_query_se)
-
+demo_query_se.trimmed  <- trim_small_groups_and_low_expression_genes(demo_query_se)
+demo_query_se.trimmed2 <- trim_small_groups_and_low_expression_genes(demo_ref_se, min_group_membership = 10)
 
 }

@@ -180,8 +180,8 @@ load_se_from_files <- function(counts_file, cell_info_file, gene_info_file = NA,
 #' @return A filtered dataset_se, ready for use.
 #'
 #' @examples
-#' demo_query_se.filtered <- trim_small_groups_and_low_expression_genes(demo_query_se)
-#'
+#' demo_query_se.trimmed  <- trim_small_groups_and_low_expression_genes(demo_query_se)
+#' demo_query_se.trimmed2 <- trim_small_groups_and_low_expression_genes(demo_ref_se, min_group_membership = 10)
 #'
 #'@export
 trim_small_groups_and_low_expression_genes <- function(dataset_se,
