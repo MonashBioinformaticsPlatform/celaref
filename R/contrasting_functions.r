@@ -118,11 +118,9 @@ contrast_each_group_to_the_rest <- function(dataset_se, dataset_name, groups2tes
 #' with default fdr/BH method.
 #'
 #'
-#' @param dataset_se Summarised experiment object containing count data. Also
-#' requires 'ID' and 'group' to be set within the cell information
-#' (see \code{colData()})
-#' @param the_group The group (as character) to contrast to rest.
-#' @param pvalue_threshold Information only, not used for calcs. Default 0.01.
+#' @param dataset_se Datast summarisedExperiment object.
+#' @param the_group group to test
+#' @param pvalue_threshold Default = 0.01
 #'
 #' @return A tibble, the within-experiment de_table (differential expression
 #' table), for the group specified.

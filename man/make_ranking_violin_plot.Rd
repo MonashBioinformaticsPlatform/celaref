@@ -4,11 +4,11 @@
 \alias{make_ranking_violin_plot}
 \title{make_ranking_violin_plot}
 \usage{
-make_ranking_violin_plot(de_table.marked, threshold_marker = 0.25,
+make_ranking_violin_plot(de_table.marked, median_rank_threshold = 0.25,
   log10trans = FALSE)
 }
 \arguments{
-\item{threshold_marker}{Where to draw horizontal threshold line as a rough indicator of similarity. Number betweeen 0 (top-rank) and 1. Default 0.25.}
+\item{median_rank_threshold}{Where to draw horizontal threshold line as a rough indicator of similarity. Number betweeen 0 (top-rank) and 1. Default 0.25.}
 
 \item{log10trans}{Plot on a log scale? Useful for distinishing multiple similar, yet distinct cell type that bunch at top of plot. Default=FALSE.}
 
@@ -33,11 +33,12 @@ top genes, and so their uncertanty can be seen on this plot.
 
 The thick black lines reprenset the median gene rescaled ranking for each 
 query group / reference group combination. Having this fall above the dotted 
-threshold marker is a quick indication of potential similarity. 
+median threshold marker is a quick indication of potential similarity. 
 A complete lack of similarity would have a median rank around 0.5. Median rankings 
 much less than 0.5 are common though (an 'anti-cell-groupA' signature), 
 because genes overrepresented in one group in an experiment, are likely to 
-be relatively 'underrepresented' in the other groups.
+be relatively 'underrepresented' in the other groups. Taken to an extreme, 
+if there are only two reference groups, they'll be complete opposites.
 }
 \examples{
 

@@ -15,15 +15,16 @@
 #' 
 #' The thick black lines reprenset the median gene rescaled ranking for each 
 #' query group / reference group combination. Having this fall above the dotted 
-#' threshold marker is a quick indication of potential similarity. 
+#' median threshold marker is a quick indication of potential similarity. 
 #' A complete lack of similarity would have a median rank around 0.5. Median rankings 
 #' much less than 0.5 are common though (an 'anti-cell-groupA' signature), 
 #' because genes overrepresented in one group in an experiment, are likely to 
-#' be relatively 'underrepresented' in the other groups.
+#' be relatively 'underrepresented' in the other groups. Taken to an extreme, 
+#' if there are only two reference groups, they'll be complete opposites.
 #' 
 #'
 #' @param de_tabled.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
-#' @param threshold_marker Where to draw horizontal threshold line as a rough indicator of similarity. Number betweeen 0 (top-rank) and 1. Default 0.25.
+#' @param median_rank_threshold Where to draw horizontal threshold line as a rough indicator of similarity. Number betweeen 0 (top-rank) and 1. Default 0.25.
 #' @param log10trans  Plot on a log scale? Useful for distinishing multiple similar, yet distinct cell type that bunch at top of plot. Default=FALSE.
 #' 
 #' @return  A ggplot object.
@@ -38,17 +39,17 @@
 #' @seealso  \code{\link{get_the_up_genes_for_all_possible_groups}} To make the input data.
 #'
 #'@export
-make_ranking_violin_plot <- function(de_table.marked, threshold_marker=0.25, log10trans=FALSE) {
+make_ranking_violin_plot <- function(de_table.marked, median_rank_threshold=0.25, log10trans=FALSE) {
    
    if (log10trans) { 
       de_table.marked$rescaled_rank <- log10(de_table.marked$rescaled_rank) #happily, it'll never be 0
-      threshold_marker <- log10(threshold_marker)
+      median_rank_threshold <- log10(median_rank_threshold)
    }
    
    p <- ggplot2::ggplot(de_table.marked, ggplot2::aes(y=rescaled_rank, x=group, fill=group)) +
       ggplot2::geom_violin(ggplot2::aes(colour=group)) +
       ggplot2::geom_point(alpha=0.5, size=3, pch='-', show.legend = FALSE) +
-      ggplot2::geom_hline(yintercept = threshold_marker, lty=2) + 
+      ggplot2::geom_hline(yintercept = median_rank_threshold, lty=2) + 
       ggplot2::scale_y_reverse() +
       ggplot2::ylab("Test geneset rank in reference cluster") + ggplot2::xlab("") +  
       ggplot2::stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median, geom = "crossbar", col="black", show.legend = FALSE) +
