@@ -7,13 +7,11 @@
 contrast_the_group_to_the_rest(dataset_se, the_group, pvalue_threshold = 0.01)
 }
 \arguments{
-\item{dataset_se}{Summarised experiment object containing count data. Also
-requires 'ID' and 'group' to be set within the cell information
-(see \code{colData()})}
+\item{dataset_se}{Datast summarisedExperiment object.}
 
-\item{the_group}{The group (as character) to contrast to rest.}
+\item{the_group}{group to test}
 
-\item{pvalue_threshold}{Information only, not used for calcs. Default 0.01.}
+\item{pvalue_threshold}{Default = 0.01}
 }
 \value{
 A tibble, the within-experiment de_table (differential expression

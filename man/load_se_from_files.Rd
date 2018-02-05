@@ -67,4 +67,6 @@ demo_se <- load_se_from_files(counts_file=counts_filepath, cell_info_file=cell_i
 }
 \seealso{
 \code{\link[RangedSummarizedExperiment-class]{SummarizedExperiment}} For general doco on the SummarizedExperiment objects.
+
+For reading in these objects in a form that works with this function see \code{\link[celaref]{lload_se_from_files}} or \code{\link[celaref]{load_dataset_10Xdata}}
 }

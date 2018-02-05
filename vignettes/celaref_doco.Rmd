@@ -1,5 +1,5 @@
 ---
-title: "Doco"
+title: "Manual"
 author: "Sarah Williams"
 date: "`r Sys.Date()`"
 output:
@@ -9,7 +9,7 @@ output:
      toc_depth: 5
      fig_caption: yes
 vignette: >
-  %\VignetteIndexEntry{Doco}
+  %\VignetteIndexEntry{Manual}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -44,8 +44,7 @@ draw it.
 ### Example: Simulated data, 100 genes
 
 Suppose there's a new single-cell RNAseq dataset (query), and the cells have 
-been clustered into 4 groups : Groups 1-4. But we don't know what they are.
-
+been clustered into 4 groups : Groups 1-4. But we don't know what they are. 
 Luckily, there's an older dataset (ref) of the same tissue type in which 
 someone has already determined the cell types. 
 
@@ -78,20 +77,14 @@ de_table.toy_query <- contrast_each_group_to_the_rest(toy_query_se,  dataset_nam
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.toy_query ,
    de_table.ref=de_table.toy_ref ,
-   test_dataset_name='toy_query')
+   test_dataset_name='query')
 
 # Plot
 make_ranking_violin_plot(de_table.marked.query_vs_ref)
 
+# And get group labels
+make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "ref")
 ```
-
-
-From this plot it looks like:
-
- * Group1 : The group was too small to test (it had 3 cells) and was removed
- * Group2 : Might be 'Exciting' cell type, or 'dunno'. However there are not enough 'top genes' (only 3) to be confident.
- * Group3 : Corresponds to 'dunno' cell type.
- * Group4 : Corresponds to 'Weird subtype' cell type.
 
 
 The above commands use a toy dataset within the package, and can be copy-pasted 
@@ -103,6 +96,11 @@ and run. It is a tiny simulated dataset that will complete very quickly.
 Describe input
 
 by file or by se or by 10X util func.
+
+Changing theh id convert_gene_se_ids
+
+
+
 
 ## Prepare data with within-experiment differential expression
 
