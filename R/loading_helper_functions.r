@@ -180,7 +180,7 @@ load_dataset_10Xdata <- function(dataset_path, dataset_genome, clustering_set, g
    #.../10X_pbmc5pExpr/analysis/clustering/kmeans_5_clusters/clusters.csv
    clustering_file <- file.path(dataset_path,"analysis","clustering",clustering_set,"clusters.csv")
    clustering_table <- readr::read_csv(clustering_file, col_types=cols() )
-   colnames(clustering_table) <- c(CELL_SAMPLE, GROUP)
+   colnames(clustering_table) <- c('cell_sample', 'group')
    clustering_table$group <- factor(clustering_table$group)
    
    # gene info

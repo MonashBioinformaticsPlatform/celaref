@@ -356,7 +356,7 @@ get_the_up_genes_for_group <- function(the_group, de_table.test, de_table.ref, r
 #' @seealso  \code{\link[celaref]{get_the_up_genes_for_group}} Function for testing a single group.
 #'
 #'
-#'@export
+#' @export
 get_the_up_genes_for_all_possible_groups <- function(de_table.test, de_table.ref, test_dataset_name, rankmetric='TOP100_LOWER_CI_GTE1'){
    
    # Run get_the_up_genes foreach group, 
@@ -377,6 +377,266 @@ get_the_up_genes_for_all_possible_groups <- function(de_table.test, de_table.ref
    
    return(de_table.marked)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#' contrast_each_group_to_the_rest_for_norm_ma_with_limma
+#'
+#' This function processes microarray data (from purified cell populations) that
+#' can be used as a reference. 
+#' 
+#' Sometimes there are microarray studies measureing purified cell populations 
+#' that would be measured together in a single-cell sequenicng experiment. E.g. 
+#' comparing PBMC scRNA to FACs-sorted blood cell populations. This function 
+#' will process microarray data with limma and format it for comparisions.
+#' 
+#' The microarray data used should consist of purified cell types 
+#' from /emph{one single study/experiment} (due to batch effects). 
+#' Ideally just those cell-types expected in the 
+#' scRNAseq, but the method appears relatively robust to a few extra cell 
+#' types. 
+#' 
+#' Note that unlike the single-cell workflow there are no summarisedExperiment 
+#' objects (they're not really comparable) - this function reads data and 
+#' generates a table of within-dataset differentential expression contrasts in 
+#' one step. Ie. equivalent to the output of 
+#' \code{\link[celaref]{contrast_each_group_to_the_rest}}. 
+#' 
+#' Also, note that while downstream functions can accept the microarray-derived 
+#' data as query datasets, its not really intended and assumptions might not
+#' hold (Generally, its known what got loaded onto a microarray!)
+#' 
+#' The (otherwise optional) 'limma' package must be installed to use this 
+#' function.
+#' 
+#' @param norm_expression_table A logged, normalised expression table. Any 
+#' filtering (removal of low-expression probes/genes)
+#' @param sample_sheet_table Tab-separated text file of sample information.
+#' Columns must have names. Sample/microarray ids should be listed under 
+#' \bold{sample_name} column. The cell-type (or 'group') of each sample should be 
+#' listed under a column \bold{group_name}.
+#' @param dataset_name Short, meaningful name for this dataset/experiment.
+#' @param sample_name Name of \bold{sample_sheet_table} with sample ID
+#' @param group_name Name of \bold{sample_sheet_table} with group/cell-type. Default = "group"
+#' @param groups2test An optional character vector specificing specific groups to check.
+#' By default (set to NA), all groups will be tested.
+#' @param extra_factor_name Optionally, an extra cross-group factor (as column name in 
+#' \bold{sample_sheet_table}) to include in the model used by limma. E.g. An  
+#' be a individual/mouse id. Refer limma docs. Default = NA
+#' @param pval_threshold For reporting only, a p-value threshold. Default = 0.01
+#' 
+#' @return A tibble, the within-experiment de_table (differential expression
+#' table)
+#'
+#' @examples
+#' 
+#' \dontrun{ 
+#' contrast_each_group_to_the_rest_for_norm_ma_with_limma(
+#'    norm_expression_table, sample_sheet_table=samples_table, 
+#'    dataset_name="Watkins2009PBMCs", extra_factor_name='description')
+#' }
+#'
+#' 
+#'
+#' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest}} is the funciton that makes comparable output on the scRNAseq data (dataset_se objects).
+#' @seealso \code{\link[Limma]{Limma}} Limma package for differential expression.
+#'
+#'@export
+contrast_each_group_to_the_rest_for_norm_ma_with_limma <- function(norm_expression_table, sample_sheet_table,
+                                                                   dataset_name, sample_name, group_name="group", 
+                                                                   groups2test=NA, extra_factor_name=NA, pval_threshold=0.01) {
+   
+   if (! requireNamespace("limma", quietly = TRUE)) {  stop("This function require limma installed.")  }
+   
+   # Which groups to look at? Default all in query dataset.
+   if (! is.factor(sample_sheet_table$group)) {sample_sheet_table$group <- factor(sample_sheet_table$group)}
+   if (length(groups2test) <= 1 && is.na(groups2test)) {
+      groups2test = levels(sample_sheet_table$group)
+   } else { # Check its sensible before long processing steps
+      if (! all(groups2test %in% levels(sample_sheet_table$group))) {
+         print(paste("can't find all of ",groups2test))
+         stop("Can't find all test groups in dataset")   
+         return(NA)   
+      }
+   }
+   
+   # Next for each group, test it versus everthing else
+   de_table_list <- lapply(groups2test, FUN=contrast_the_group_to_the_rest_with_limma_for_microarray, 
+                           norm_expression_table=norm_expression_table, 
+                           sample_sheet_table=sample_sheet_table, 
+                           extra_factor_name=extra_factor_name, # ie. individual id where applicable
+                           sample_name=sample_name, pval_threshold=pval_threshold)
+   de_table.allvsrest <- bind_rows(de_table_list)
+   
+   # Factorise group,and add dataset name
+   de_table.allvsrest$group   <- factor(de_table.allvsrest$group)
+   de_table.allvsrest$dataset <- dataset_name
+   
+   return(de_table.allvsrest)
+}
+
+
+
+
+#' contrast_the_group_to_the_rest_with_limma_for_microarray
+#'
+#' Private function used by contrast_each_group_to_the_rest_for_norm_ma_with_limma
+#' 
+#' 
+#' @param norm_expression_table A logged, normalised expression table. Any 
+#' filtering (removal of low-expression probes/genes)
+#' @param sample_sheet_table Tab-separated text file of sample information.
+#' Columns must have names. Sample/microarray ids should be listed under 
+#' \bold{sample_name} column. The cell-type (or 'group') of each sample should be 
+#' listed under a column \bold{group_name}.
+#' @param the_group Which query group is being tested.
+#' @param sample_name Name of \bold{sample_sheet_table} with sample ID
+#' @param extra_factor_name Optionally, an extra cross-group factor (as column name in 
+#' \bold{sample_sheet_table}) to include in the model used by limma. E.g. An  
+#' be a individual/mouse id. Refer limma docs. Default = NA
+#' @param pval_threshold For reporting only, a p-value threshold. Default = 0.01
+#' 
+#' @return A tibble, the within-experiment de_table (differential expression
+#' table), for the group specified.
+#'
+#' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest_for_norm_ma_with_limma}} public calling function
+#' @seealso \code{\link[Limma]{Limma}} Limma package for differential expression.
+#' @importFrom magrittr %>%
+contrast_the_group_to_the_rest_with_limma_for_microarray <- function(norm_expression_table, sample_sheet_table, the_group, 
+                                                                     sample_name, extra_factor_name=NA, pval_threshold=0.01){
+   
+   
+   if (! requireNamespace("limma", quietly = TRUE)) {  stop("This function require limma installed.")  }
+   
+   
+   if(! the_group %in% sample_sheet_table$group){
+      warning(paste("Couln't find group", the_group, "in samplesheet, only",base::paste(levels(sample_sheet_table$group), collapse="")))
+      stop(paste("Couln't find group", the_group, "in samplesheet, only",base::paste(levels(sample_sheet_table$group), collapse="")))
+   }
+   
+   
+   # explicitly match order (again)
+   norm_expression_table <- norm_expression_table[ ,sample_sheet_table %>% dplyr::pull(sample_name)]
+   
+   
+   # Design is only Test vs Rest
+   # 'cause that's how the single cell stuff is. 
+   TvsR <- factor(ifelse(sample_sheet_table$group==the_group, 'test', 'rest'), levels=c('rest','test'))
+   design <- model.matrix(~0+TvsR)
+   
+   # Optionally, include *one* other (balanced-ish) factor in the model e.g. individual.
+   # (more would just be less generic)
+   if(! is.na(extra_factor_name)) {
+      extra <- sample_sheet_table %>% dplyr::pull(extra_factor_name)
+      design <- model.matrix(~0+TvsR+extra)
+   }
+   
+   # Set contrast and run
+   contrast.matrix <- limma::makeContrasts( "TvsRtest-TvsRrest", levels=design) 
+   fit <- limma::lmFit(norm_expression_table, design)
+   fit2 <- limma::contrasts.fit(fit, contrast.matrix)
+   fit2 <- limma::eBayes(fit2)
+   
+   # Want toptable And some CI information from fit2.
+   de_table <- get_limma_top_table_with_ci(fit2, the_coef="TvsRtest-TvsRrest", ci=0.95)
+   
+   # Order by the inner CI of for ranking.
+   de_table <- de_table[order(de_table$ci_inner, decreasing = TRUE),]
+   
+   
+   # Adding some (duplicated) feilds here to match the ids used for the mast results 
+   de_table$log2FC        <- de_table$logFC
+   de_table$fdr           <- p.adjust(de_table$P.Value, 'fdr')
+   de_table$group         <- the_group
+   de_table$sig           <- de_table$fdr <= pval_threshold
+   de_table$sig_up        <- de_table$sig & de_table$log2FC > 0
+   de_table$gene_count    <- nrow(de_table)
+   de_table$rank          <- 1:nrow(de_table)
+   de_table$rescaled_rank <- 1:nrow(de_table) / nrow(de_table)
+   
+   return(de_table)
+   
+}
+
+
+
+
+
+
+
+
+
+#' get_limma_top_table_with_ci
+#'
+#' Internal function that wraps limma topTable output but also adds upper and 
+#' lower confidence intervals to the logFC. Calculated according to 
+#' \link{https://support.bioconductor.org/p/36108/}
+#'
+#' @param fit2 The fit2 object after calling eBayes as per standard limma workflow. 
+#' Ie object that topTable gets called on.
+#' @param the_coef Coeffient. As passed to topTable.
+#' @param ci Confidence interval. Number between 0 and 1, default 0.95 (95\%)
+#'
+#' @return Output of topTable, but with the (95%) confidence interval reported for the logFC.
+#'
+#' @seealso  \code{\link[celaref]{contrast_the_group_to_the_rest_with_limma_for_microarray}} Calling function.
+#' 
+get_limma_top_table_with_ci <- function(fit2, the_coef, ci=0.95){
+   if (! requireNamespace("limma", quietly = TRUE)) {  stop("This function require limma installed.")  }
+   
+   de_res <- limma::topTable(fit2, n=Inf, coef=the_coef)
+   de_res <- dplyr::bind_cols(ID=as.character(base::rownames(de_res)), de_res)
+   
+   # CI calculations from:   https://support.bioconductor.org/p/36108/
+   # (from Sunny Srivastava)
+   #log Int_g = b0 + b1 * trt b1 = logFC
+   #
+   #he CI of logFC can be found in the same manner as you would do in normal linear regression, 
+   #but here instead of usual t(0.975, df) quantile, you should use 
+   #
+   #the moderated t quantile ie 
+   #t(0.975, df.residual + df.prior) 
+   #
+   #So the 95% CI for logFC will be 
+   #logFC -+ t(0.975, fit3$df.residual + fit3$df.prior) * fit3$stdev.unscaled * sqrt(fit3$s2.post)
+   #
+   #T is transpose
+   #
+   #t(0.975, fit2$df.residual, fit2$df.prior)
+   #
+   # ~~~~~~~~~~~
+   # above is confirmed:
+   # Sunny's CI is exactly right. CIs could be an option in topTable(), but this the first request for them, so the demand doesn't seem enough for now. Best wishes Gordon
+   half_ci_outer <- 1-((1-0.95) / 2 )
+   ci_amount <- dt(half_ci_outer, fit2$df.residual, fit2$df.prior) * fit2$stdev.unscaled * sqrt(fit2$s2.post)
+   de_res$ci <- ci_amount[de_res$ID,]  
+   
+   # Get upper/lower then inner/outer CI.    
+   de_res$CI_upper <- de_res$logFC + de_res$ci
+   de_res$CI_lower <- de_res$logFC - de_res$ci
+   de_res$ci_inner <- base::mapply(FUN=get_inner_or_outer_ci, MoreArgs = list(get_inner=TRUE),   de_res$logFC, de_res$CI_upper, de_res$CI_lower)
+   de_res$ci_outer <- base::mapply(FUN=get_inner_or_outer_ci, MoreArgs = list(get_inner=FALSE),  de_res$logFC, de_res$CI_upper, de_res$CI_lower)
+   
+   return(de_res)
+   
+}
+
+
+
+
+
+
 
 
 
