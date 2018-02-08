@@ -31,7 +31,7 @@ first element of this will become the ID. Default = c("ensembl_ID","GeneSymbol")
 identifier to use as 'ID' in the returned SummarisedExperiment object.
 Many-to-one relationships betwen the assumed unique first element of 
 \bold{gene_id_cols_10X} and \bold{id_to_use} will be handled gracefully by 
-\code{\link[celaref]{convert_dataset_se_ids}}. 
+\code{\link[celaref]{convert_se_gene_ids}}. 
 Defaults to first element of \bold{gene_id_cols_10X}}
 }
 \value{
@@ -39,12 +39,29 @@ A SummarisedExperiment object containing the count data, cell info
 and gene info.
 }
 \description{
-Filter
+Convenience function to create a SummarizedExperiment object (dataset_se) 
+from a the output of 10X cell ranger pipeline run.
+}
+\details{
+This function makes a SummarizedExperiment object in a form that
+should work for celaref functions. Specifically, that means it will have an
+'ID' feild for genes (view with \code{rowData(dataset_se)}), and both
+'cell_sample' and 'group' feild for cells (view with
+\code{colData(dataset_se)}). See parameters for detail.
+Additionally, the counts will be an integer matrix (not a
+sparse matrix), and the \emph{group} feild (but not \emph{cell_sample}
+or \emph{ID}) will be a factor.
+
+The clustering information can be read from whichever cluster is specified,
+usually there will be several choices.
+
+This funciton is designed to work with output of version 2.0.1 of the 
+cellRanger pipeline, may not work with others (will not work for 1.x).
 }
 \examples{
 
 \dontrun{
-load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="GRCh38", clustering_set="kmeans_7_clusters") 
+dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="GRCh38", clustering_set="kmeans_7_clusters") 
 } 
 
 }
@@ -53,5 +70,9 @@ load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="GRCh38", clust
 
 \code{\link[RangedSummarizedExperiment-class]{SummarizedExperiment}} For general doco on the SummarizedExperiment objects.
 
-\code{\link[celaref]{convert_dataset_se_ids}} describes method for converting IDs.
+\code{\link[celaref]{convert_se_gene_ids}} describes method for converting IDs.
+
+Other Data loading functions: \code{\link{contrast_each_group_to_the_rest_for_norm_ma_with_limma}},
+  \code{\link{load_se_from_tables}}
 }
+\concept{Data loading functions}
