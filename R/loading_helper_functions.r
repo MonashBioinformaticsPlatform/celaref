@@ -3,11 +3,19 @@
 
 
 
-#' load_se_from_files
+
+
+
+
+
+
+
+#' load_se_from_tables
 #'
-#' Create a SummarizedExperiment object (dataset_se) from files.
+#' Create a SummarizedExperiment object (dataset_se) from a count matrix, cell 
+#' information and optionally gene information.
 #'
-#' This convenience function makes a SummarizedExperiment object in a form that
+#' This function makes a SummarizedExperiment object in a form that
 #' should work for celaref functions. Specifically, that means it will have an
 #' 'ID' feild for genes (view with \code{rowData(dataset_se)}), and both
 #' 'cell_sample' and 'group' feild for cells (view with
@@ -17,112 +25,173 @@
 #' or \emph{ID}) will be a factor.
 #'
 #' Note that data will be subsetted to cells present in both the counts matrix
-#' and cell info files, this is handy for loading subsets of cells.
+#' and cell info, this is handy for loading subsets of cells.
 #' However, if \bold{gene_info_file} is defined, all genes must match exactly.
 #'
-#' @param counts_file A tab-separated file of a matrix of read counts for each gene
-#' (row) and each cell (column). First column should be gene names,
-#' and top row cell ids.
+#' The \code{load_se_from_files} form of this function will run the same checks,
+#' but will read everything from files in one go. The \code{load_se_from_tables}
+#' form is perhaps more useful when the annotations need to be modified (e.g. 
+#' programmatically adding a different gene identifier, renaming groups, 
+#' removing unwanted samples). 
+#' 
+#' Note that the SummarizedExperiment object can also be created without using
+#' these functions, it just needs the \emph{cell_sample}, \emph{ID} and
+#' \emph{group} feilds as described above. Since sometimes it might be easier
+#' to add these to an existing \emph{SummarizedExperiment} from upstream
+#' analyses.
 #'
-#' @param cell_info_file Tab-separated text file of cell information.
-#' Columns must have names. If there is a column labelled
+#'
+#' @param counts_matrix A tab-separated matrix of read counts for each gene
+#' (row) and each cell (column). Columns and rows should be named.
+#' 
+#' @param cell_info_table Table of cell information. If there is a column labelled
 #' \emph{cell_sample}, that will be used as the unique cell identifiers. If not,
 #' the first column is assumed to be cell identifiers, and will be copied to a
 #' new feild labelled \emph{cell_sample}.
 #' Similarly - the clusters of these cells should be listed in one column -
 #' which can be called 'group' (case-sensitive) or specified with
-#' \bold{group_col_name}. \emph{Minimal file format: <cell_sample> <group>.}
-#'
-#' @param gene_info_file Optional tab-separated text file of gene information.
-#' Columns must have names. If there is a column labelled
+#' \bold{group_col_name}. \emph{Minimal data format: <cell_sample> <group>}
+#' 
+#' @param gene_info_table Optional table of gene information. If there is a
+#' column labelled
 #' \emph{ID}, that will be used as the gene identifiers (they must be unique!).
 #' If not, the first column is assumed to be a gene identifier, and will be copied to a
-#' new feild labelled \emph{ID}. Must match all rownames in counts_matrix file.
-#' If omitted, ID wll be generated from counts file rownames. Default=NA
-#'
-#' @param group_col_name Name of the column in \bold{cell_info_file} containing
+#' new feild labelled \emph{ID}. Must match all rownames in \bold{counts_matrix}.
+#' If omitted, ID wll be generated from the rownames of counts_matrix. Default=NA
+#' 
+#' @param group_col_name Name of the column in \bold{cell_info_table} containing
 #' the cluster/group that each cell belongs to. Case-sensitive. Default='group'
-#'
+#' 
+#' @param cell_col_name Name of the column in \bold{cell_info_table} containing
+#' a cell id. Ignored if \emph{cell_sample} column is already present. If omitted, 
+#' (and no \emph{cell_sample} column) will use first column.
+#' Case-sensitive. Default=NA
 #'
 #' @return A SummarisedExperiment object containing the count data, cell info
 #' and gene info.
 #'
 #' @examples
 #'
-#' # Use demo data files
+#' # From data frames (or a matrix for counts) :
+#' demo_se <- load_se_from_tables(counts_matrix=demo_counts_matrix, cell_info_table=demo_cell_info_table)
+#' demo_se <- load_se_from_tables(counts_matrix=demo_counts_matrix, cell_info_table=demo_cell_info_table, gene_info_table=demo_gene_info_table)
+#'
+#' # Or from data files : 
 #' counts_filepath    <- system.file("extdata", "sim_query_counts.tab",    package = "celaref")
 #' cell_info_filepath <- system.file("extdata", "sim_query_cell_info.tab", package = "celaref")
 #' gene_info_filepath <- system.file("extdata", "sim_query_gene_info.tab", package = "celaref")
 #'
 #' demo_se <- load_se_from_files(counts_file=counts_filepath, cell_info_file=cell_info_filepath)
-#'
-#' # Same counts, but with some extra info on the genes stored
 #' demo_se <- load_se_from_files(counts_file=counts_filepath, cell_info_file=cell_info_filepath, gene_info_filepath=gene_info_filepath )
 #'
 #' @seealso \code{\link[RangedSummarizedExperiment-class]{SummarizedExperiment}} For general doco on the SummarizedExperiment objects.
-#' @seealso For reading in these objects in a form that works with this function see \code{\link[celaref]{lload_se_from_files}} or \code{\link[celaref]{load_dataset_10Xdata}}
 #'
-#'@export
-load_se_from_files <- function(counts_file, cell_info_file, gene_info_file = NA, group_col_name="group") {
+#' @family Data-loading functions
+#'
+#' @export   
+load_se_from_tables <- function(counts_matrix, cell_info_table, gene_info_table = NA, group_col_name="group", cell_col_name=NA) {
+      
+   
+   # If there's no cell_sample, and no cell_col_name, make the first 'cell_sample', else use cell_col_name.
+   if (! "cell_sample" %in% colnames(cell_info_table)) {
+      if (is.na(cell_col_name)) {
+         cell_info_table <- cbind.data.frame(cell_sample=cell_info_table[,1], cell_info_table, stringsAsFactors = FALSE )
+      }
+      else {
+         stopifnot(cell_col_name %in% colnames(cell_info_table))
+         cell_info_table <- cbind.data.frame(cell_sample=cell_info_table[,cell_col_name], cell_info_table, stringsAsFactors = FALSE )
+      }
+   }
+   
+   # Check for 'group' anything from group_col_name will be copied into group
+   if (! group_col_name %in% colnames(cell_info_table)) {
+      stop( paste0("Couldn't find group/cluster column ", group_col_name ," in cell_info_table ",cell_info_table) )
+   }
+   if (group_col_name != "group") {cell_info_table$group <- cell_info_table[,group_col_name]}
+   
+   
+   # Only keep common cells, match order
+   cells <- intersect(cell_info_table$cell_sample, colnames(counts_matrix))
+   if (length(cells) <= 1) { stop("Couldn't find cells in common between counts matrix (col names) and cell_info_file (cell_sample column, first col or specified as cell_col_name)") }
+   if (length(cells) != nrow(cell_info_table) || length(cells) != ncol(counts_matrix) ) {
+      message(paste0("Not all cells were listed in both counts matrix and cell_info_file. Is this expected? Keeping the ", length(cells), " in common"))
+   }
+   cell_info_table <- cell_info_table[match(cells, cell_info_table$cell_sample),]
+   counts_matrix <- counts_matrix[,cells]
+   
+   
+   # NB factorising group after removal of unmatched cells
+   cell_info_table$group <- factor(cell_info_table$group)
+   
+   
 
-  counts_matrix   <- as.matrix(read.table(counts_file, row.names=1, header=TRUE, sep = "\t", stringsAsFactors = FALSE ))
-
-  cell_info_table <- read.table(cell_info_file, header=TRUE, sep = "\t", stringsAsFactors = FALSE )
-  # If there's no cell_sample, make the first 'cell_sample'
-  if (! "cell_sample" %in% colnames(cell_info_table)) {
-    cell_info_table <- cbind.data.frame(cell_sample=cell_info_table[,1], cell_info_table, stringsAsFactors = FALSE )
-  }
-
-  # Check for 'group' anything from group_col_name will be copied into group
-  if (! group_col_name %in% colnames(cell_info_table)) {
-    stop( paste0("Couldn't find group/cluster column ", group_col_name ," in cell_info_table ",cell_info_table) )
-  }
-  if (group_col_name != "group") {cell_info_table$group <- cell_info_table[,group_col_name]}
-
-
-  # Only keep common cells, match order
-  cells <- intersect(cell_info_table$cell_sample, colnames(counts_matrix))
-  if (length(cells) <= 1) { stop("Couldn't find cells in common between counts matrix (col names) and cell_info_file (first col) ") }
-  if (length(cells) != nrow(cell_info_table) || length(cells) != ncol(counts_matrix) ) {
-    message(paste0("Not all cells were listed in both counts matrix and cell_info_file. Is this expected? Keeping the ", length(cells), " in common"))
-  }
-  cell_info_table <- cell_info_table[match(cells, cell_info_table$cell_sample),]
-  counts_matrix <- counts_matrix[,cells]
-
-
-  # NB factorising group after removal of unmatched cells
-  cell_info_table$group <- factor(cell_info_table$group)
-
-
-  # Make summarised experiment.
-  # With or without gene info file.
-  dataset_se <- NA
-  if (is.na(gene_info_file)) {
-    dataset_se  <- SummarizedExperiment(counts_matrix,
-                                        colData=DataFrame(cell_info_table))
-    rowData(dataset_se)$ID <- rownames(assay(dataset_se))
-  }
-  else {
-
-    # If there's no ID col, make the first 'ID'
-    gene_info_table <- read.table(gene_info_file, header=TRUE, sep = "\t", stringsAsFactors = FALSE )
-    if (! "ID" %in% colnames(gene_info_table)) {
-      gene_info_table <- cbind.data.frame("ID"=gene_info_table[,1], gene_info_table)
-    }
-
-    # Cells might not, but genes should be matching.
-    genes <- intersect(gene_info_table$ID, rownames(counts_matrix))
-    if (length(genes) != nrow(gene_info_table) || length(genes) != nrow(counts_matrix))
-    { stop("Gene IDs did not match between ID feild of gene_info_file (or first column), and row names of counts matrix ") }
-
-    # Create a summarised experiment object.
-    dataset_se  <- SummarizedExperiment(counts_matrix,
-                                        colData=DataFrame(cell_info_table),
-                                        rowData=DataFrame(gene_info_table))
-  }
-
-  return(dataset_se)
+   
+   # Make summarised experiment.
+   # With or without gene info file.
+   dataset_se <- NA
+   if (all(is.na(gene_info_table))) {
+      dataset_se  <- SummarizedExperiment(counts_matrix,
+                                          colData=DataFrame(cell_info_table))
+      rowData(dataset_se)$ID <- rownames(assay(dataset_se))
+   }
+   else {
+      
+      # If there's no ID col, make the first 'ID'
+      if (! "ID" %in% colnames(gene_info_table)) {
+         gene_info_table <- cbind.data.frame("ID"=as.character(gene_info_table[,1]), gene_info_table, stringsAsFactors=FALSE)
+      }
+      
+      # Cells might not, but genes should be matching.
+      genes <- intersect(gene_info_table$ID, rownames(counts_matrix))
+      if (length(genes) != nrow(gene_info_table) || length(genes) != nrow(counts_matrix))
+      { stop("Gene IDs did not match between ID feild of gene_info_file (or first column), and row names of counts matrix ") }
+      
+      # Create a summarised experiment object.
+      dataset_se  <- SummarizedExperiment(counts_matrix,
+                                          colData=DataFrame(cell_info_table),
+                                          rowData=DataFrame(gene_info_table))
+   }
+   
+   return(dataset_se)
 }
+
+
+
+
+#' load_se_from_files
+#'
+#' \code{load_se_from_files} is a wrapper for \code{load_se_from_tables} that
+#' will read in tables from specified files. 
+#' 
+#' @param counts_file A tab-separated file of a matrix of read counts. As per 
+#' \bold{counts_matrix}. First column should be gene ID, and top row cell ids.
+#'
+#' @param cell_info_file Tab-separated text file of cell information, as per
+#' \bold{cell_info_table}. Columns must have names. 
+#'
+#' @param gene_info_file Optional tab-separated text file of gene information, 
+#' as per \bold{gene_info_file}. Columns must have names. Default=NA
+#' 
+#' @family Data loading functions
+#'
+#' @describeIn load_se_from_tables To read from files
+#' 
+#' @export   
+load_se_from_files <- function(counts_file, cell_info_file, gene_info_file = NA, group_col_name="group", cell_col_name=NA) {
+   
+   counts_matrix   <- as.matrix(read.table(counts_file, row.names=1, header=TRUE, sep = "\t", stringsAsFactors = FALSE, check.names=FALSE ))
+   
+   cell_info_table <- read.table(cell_info_file, header=TRUE, sep = "\t", stringsAsFactors = FALSE )
+   
+   # Read gene Info table, if specified
+   gene_info_table <- NA
+   if (! is.na(gene_info_file)) {
+      gene_info_table <- read.table(gene_info_file, header=TRUE, sep = "\t", stringsAsFactors = FALSE )
+   }
+   
+   return(load_se_from_tables(counts_matrix, cell_info_table, gene_info_table, group_col_name, cell_col_name = cell_col_name) )
+}
+
 
 
 
@@ -133,8 +202,25 @@ load_se_from_files <- function(counts_file, cell_info_file, gene_info_file = NA,
 
 #' load_dataset_10Xdata
 #'
-#' Filter 
-#'
+#' Convenience function to create a SummarizedExperiment object (dataset_se) 
+#' from a the output of 10X cell ranger pipeline run. 
+#' 
+#' 
+#' This function makes a SummarizedExperiment object in a form that
+#' should work for celaref functions. Specifically, that means it will have an
+#' 'ID' feild for genes (view with \code{rowData(dataset_se)}), and both
+#' 'cell_sample' and 'group' feild for cells (view with
+#' \code{colData(dataset_se)}). See parameters for detail.
+#' Additionally, the counts will be an integer matrix (not a
+#' sparse matrix), and the \emph{group} feild (but not \emph{cell_sample}
+#' or \emph{ID}) will be a factor.
+#' 
+#' The clustering information can be read from whichever cluster is specified,
+#' usually there will be several choices. 
+#' 
+#' This funciton is designed to work with output of version 2.0.1 of the 
+#' cellRanger pipeline, may not work with others (will not work for 1.x).
+#'     
 #' @param dataset_path Path to the directory of 10X data, as generated by the 
 #' cellRanger pipeline (versions 2.1.0 and 2.0.1). The directory should have 
 #' subdirecotires \emph{analysis}, \emph{filtered_gene_bc_matrices} and
@@ -153,7 +239,7 @@ load_se_from_files <- function(counts_file, cell_info_file, gene_info_file = NA,
 #' identifier to use as 'ID' in the returned SummarisedExperiment object.
 #' Many-to-one relationships betwen the assumed unique first element of 
 #' \bold{gene_id_cols_10X} and \bold{id_to_use} will be handled gracefully by 
-#' \code{\link[celaref]{convert_dataset_se_ids}}. 
+#' \code{\link[celaref]{convert_se_gene_ids}}. 
 #' Defaults to first element of \bold{gene_id_cols_10X}
 #' 
 #' @return A SummarisedExperiment object containing the count data, cell info
@@ -162,13 +248,14 @@ load_se_from_files <- function(counts_file, cell_info_file, gene_info_file = NA,
 #' @examples
 #' 
 #' \dontrun{
-#' load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="GRCh38", clustering_set="kmeans_7_clusters") 
+#' dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="GRCh38", clustering_set="kmeans_7_clusters") 
 #' } 
 #'
 #' @seealso \code{\link[celaref]{load_se_from_files}} For reading data from flat files (not 10X cellRanger output)
 #' @seealso \code{\link[RangedSummarizedExperiment-class]{SummarizedExperiment}} For general doco on the SummarizedExperiment objects.
-#' @seealso \code{\link[celaref]{convert_dataset_se_ids}} describes method for converting IDs.
+#' @seealso \code{\link[celaref]{convert_se_gene_ids}} describes method for converting IDs.
 #' 
+#' @family Data loading functions
 #'
 #'@export
 load_dataset_10Xdata <- function(dataset_path, dataset_genome, clustering_set, gene_id_cols_10X =c("ensembl_ID","GeneSymbol"), id_to_use = gene_id_cols_10X[1] ) {
@@ -179,13 +266,13 @@ load_dataset_10Xdata <- function(dataset_path, dataset_genome, clustering_set, g
    
    #.../10X_pbmc5pExpr/analysis/clustering/kmeans_5_clusters/clusters.csv
    clustering_file <- file.path(dataset_path,"analysis","clustering",clustering_set,"clusters.csv")
-   clustering_table <- readr::read_csv(clustering_file, col_types=cols() )
+   clustering_table <- readr::read_csv(clustering_file, col_types=readr::cols() )
    colnames(clustering_table) <- c('cell_sample', 'group')
    clustering_table$group <- factor(clustering_table$group)
    
    # gene info
    # Start with the first id (assumed uniq!), but change to specified after.
-   genes_table    <- readr::read_tsv(genes_file, col_names = gene_id_cols_10X, col_types = cols())
+   genes_table    <- readr::read_tsv(genes_file, col_names = gene_id_cols_10X, col_types = readr::cols())
    genes_table$ID <- dplyr::pull(genes_table, gene_id_cols_10X[1])
    
    
@@ -202,8 +289,9 @@ load_dataset_10Xdata <- function(dataset_path, dataset_genome, clustering_set, g
                                        rowData=genes_table)
    
    # Optionally change id (handles m:1)
+   rowData(dataset_se)$total_count <- rowSums(assay(dataset_se))
    if (id_to_use != gene_id_cols_10X[1] ) { 
-      dataset_se <- convert_dataset_se_ids(dataset_se, new_id_name=id_to_use)
+      dataset_se <- convert_se_gene_ids(dataset_se, new_id=id_to_use, eval_col='total_count')
    }
    
    return(dataset_se)
@@ -230,7 +318,8 @@ load_dataset_10Xdata <- function(dataset_path, dataset_genome, clustering_set, g
 #' (see \code{colData()})
 #' @param new_id  A column within the feature information (view 
 #' \code{colData(dataset_se)})) of the \bold{dataset_se}, which will become
-#' the new ID column. Non-uniqueness of this column is handled gracefully!
+#' the new ID column. Non-uniqueness of this column is handled gracefully! 
+#' Any \emph{NAs} will be dropped.
 #' @param eval_col Which column to use to break ties of duplicate \bold{new_id}.
 #' Must be a column within the feature information (view 
 #' \code{colData(dataset_se)})) of the \bold{dataset_se}. Total reads per gene
@@ -269,6 +358,7 @@ convert_se_gene_ids <- function(dataset_se, new_id, eval_col, find_max=TRUE) {
    
    row_data_df <- BiocGenerics::as.data.frame(rowData(dataset_se))[,c(old_id,new_id, eval_col)]
    colnames(row_data_df) <- c("old_lab", "new_lab", "eval_lab")
+   row_data_df <- row_data_df[!is.na(row_data_df$new_lab),] # If new ID is NA, drop it
    if (find_max) {
       row_data_df <- row_data_df %>% dplyr::arrange(new_lab, desc(eval_lab), old_lab)
    }else { #min
@@ -331,7 +421,7 @@ convert_se_gene_ids <- function(dataset_se, new_id, eval_col, find_max=TRUE) {
 #' demo_query_se.trimmed  <- trim_small_groups_and_low_expression_genes(demo_query_se)
 #' demo_query_se.trimmed2 <- trim_small_groups_and_low_expression_genes(demo_ref_se, min_group_membership = 10)
 #'
-#'@export
+#' @export
 trim_small_groups_and_low_expression_genes <- function(dataset_se,
                                                        min_lib_size=1000, min_group_membership=5,
                                                        min_reads_in_sample=1, min_detected_by_min_samples=5

@@ -13,7 +13,8 @@ requires 'ID' and 'group' to be set within the cell information
 
 \item{new_id}{A column within the feature information (view 
 \code{colData(dataset_se)})) of the \bold{dataset_se}, which will become
-the new ID column. Non-uniqueness of this column is handled gracefully!}
+the new ID column. Non-uniqueness of this column is handled gracefully! 
+Any \emph{NAs} will be dropped.}
 
 \item{eval_col}{Which column to use to break ties of duplicate \bold{new_id}.
 Must be a column within the feature information (view 

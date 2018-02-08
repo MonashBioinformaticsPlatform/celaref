@@ -125,6 +125,7 @@ contrast_each_group_to_the_rest <- function(dataset_se, dataset_name, groups2tes
 #' @return A tibble, the within-experiment de_table (differential expression
 #' table), for the group specified.
 #'
+#'
 #' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest}}
 #'
 contrast_the_group_to_the_rest <- function( dataset_se, the_group, pvalue_threshold=0.01) {
@@ -393,7 +394,7 @@ get_the_up_genes_for_all_possible_groups <- function(de_table.test, de_table.ref
 
 #' contrast_each_group_to_the_rest_for_norm_ma_with_limma
 #'
-#' This function processes microarray data (from purified cell populations) that
+#' This function loads and processes microarray data (from purified cell populations) that
 #' can be used as a reference. 
 #' 
 #' Sometimes there are microarray studies measureing purified cell populations 
@@ -448,7 +449,7 @@ get_the_up_genes_for_all_possible_groups <- function(de_table.test, de_table.ref
 #' }
 #'
 #' 
-#'
+#' @family Data loading functions
 #' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest}} is the funciton that makes comparable output on the scRNAseq data (dataset_se objects).
 #' @seealso \code{\link[Limma]{Limma}} Limma package for differential expression.
 #'
@@ -460,6 +461,8 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma <- function(norm_expressi
    if (! requireNamespace("limma", quietly = TRUE)) {  stop("This function require limma installed.")  }
    
    # Which groups to look at? Default all in query dataset.
+   if (! group_name %in% base::colnames(sample_sheet_table)) {stop(paste("Cannot find group specification '",group_name,"' in sample_sheet_table columns"))}
+   if (group_name != 'group') {sample_sheet_table$group <- dplyr::pull(sample_sheet_table[,group_name])}
    if (! is.factor(sample_sheet_table$group)) {sample_sheet_table$group <- factor(sample_sheet_table$group)}
    if (length(groups2test) <= 1 && is.na(groups2test)) {
       groups2test = levels(sample_sheet_table$group)
