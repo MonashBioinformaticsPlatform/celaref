@@ -246,12 +246,13 @@ load_se_from_files <- function(counts_file, cell_info_file, gene_info_file = NA,
 #' and gene info.
 #'
 #' @examples
+#' example_10X_dir <- system.file("extdata", "sim_cellrangerlikestruct_dataset", package = "celaref")
+#' dataset_se <- load_dataset_10Xdata(example_10X_dir, dataset_genome="GRCh38", clustering_set="kmeans_4_clusters", gene_id_cols_10X=c("gene")) 
 #' 
 #' \dontrun{
 #' dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="GRCh38", clustering_set="kmeans_7_clusters") 
 #' } 
 #'
-#' @seealso \code{\link[celaref]{load_se_from_files}} For reading data from flat files (not 10X cellRanger output)
 #' @seealso \code{\link[RangedSummarizedExperiment-class]{SummarizedExperiment}} For general doco on the SummarizedExperiment objects.
 #' @seealso \code{\link[celaref]{convert_se_gene_ids}} describes method for converting IDs.
 #' 
@@ -374,7 +375,7 @@ convert_se_gene_ids <- function(dataset_se, new_id, eval_col, find_max=TRUE) {
    rownames(dataset_se) <- rowData(dataset_se)[["ID"]]
    
    return(dataset_se)
-}
+} 
 
 
 

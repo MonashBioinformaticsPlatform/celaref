@@ -3,11 +3,7 @@ title: "Manual"
 author: "Sarah Williams"
 date: "`r Sys.Date()`"
 output:
-  html_document:
-     theme: flatly
-     toc: true
-     toc_depth: 5
-     fig_caption: yes
+  bookdown::gitbook:
 vignette: >
   %\VignetteIndexEntry{Manual}
   %\VignetteEngine{knitr::rmarkdown}
@@ -20,7 +16,16 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+<!--
 
+  html_document:
+     toc: true
+     toc_depth: 5
+     theme: flatly
+     fig_caption: yes
+     number_sections: true
+--> 
+ 
 After the clustering step of a single-cell RNAseq experiment, this
 package aims to suggest labels/cell types for the clusters, on the basis of 
 similarity to a reference dataset. It requires a table of read counts per 
@@ -31,11 +36,44 @@ cell per gene, and a list of the cells belonging to each of the clusters,
  
 why this is.
 
-# Workflow / Method
+# Overview
 
-wot it does.
+## Workflow 
 
-draw it.
+![Workflow of diagram \label{fig:workflow_diagram}](images/workflow_diagram.png)
+To characterise a query dataset’s cell clusters on the basis of transcriptomic similarity to a annotated reference dataset, the workflow is described in figure \ref{fig:workflow_diagram}. 
+
+
+### Prepare dataset
+
+The input required is a counts matrix of number of reads per gene per cell, and the cluster assignment for each cell. Cell clusters might be defined by any cell-clustering technique, such as those implemented in tools such as Seurat[cite], cellRanger (10X genomics), SC3[cite], among many others.
+
+### Within dataset DE (Differential Expression)
+
+Every dataset, whether a query or a reference, is prepared the same way. For every cluster, cells within that cluster are compared to the rest of the cells pooled together, calculating differential gene expression using MAST [cite]. Because of the low counts and potential dropout issues in single cell RNAseq data, only genes enriched in each cluster are considered. For every cluster – cells are ranked from most to least enriched according to their lower 95% CI of fold-change[cite]. Each gene is assigned a ‘rescaled rank’ from 0 (most enriched) to 1. This step is the most time consuming, but only needs to be done once per dataset.
+
+### Query-Ref Comparison
+
+A list of ‘Up’ genes are extracted for each query cluster – defined as those that have significantly higher expression in that cluster versus the rest of the sample (p<0.01 after BH multiple hypothesis correction). The ‘Up’ gene list is capped at the top 100 (ranked by lower 95% FC).   Then, those genes are looked up in the ranking of genes in each reference cell cluster.  The distribution of these ‘up gene’ ranks is plotted to evaluate similarity of the query cell-group to a reference cell-group. 
+
+### Interpreting output
+
+Typically, every cell cluster in the query data (each box) is plotted against everything in the reference data (X-axis). Each of the ‘up’ genes is represented by a tick mark, and a the median of ranks is shown as a thick bar. A bias near the top indicates similarity of the groups – essentially the same genes are representative of the clusters within their respective samples. The dotted line at 0.25 is an arbitrary threshold of similarity (the top quartile of genes). Note that 0.5 indicates a completely random distribution, but lower values are common due to the reciprocal nature of the within-dataset differential expression. 
+
+
+
+## Assigning labels to clusters
+
+![Cluster labelling \label{fig:cluster_labelling}](images/clustering_labelling.png )
+This package suggests some semi-sensible query cluster labels on the basis of similarity to the annotated reference clusters. A rough indication of similarity is when the median gene rank (thick bar) is less than (plotted above) the arbitrary threshold of similarity at 0.25 (dotted line). Because some cell populations are more distinct then others, so some further logic is applied:
+
+(A)	If only one reference group is above the threshold, use that group name.
+(B)	If nothing meets the threshold, report a lack of similarity.
+(C)	If two (or more) reference groups are above the threshold, run a Kolmogorov–Smirnov test on the rescaled rank distributions. If they are significantly (p <= 0.01) different (which might occur for similar but distinct cell types), report only the first. 
+(D)	Or if they are not, report both. If there are more than two groups above the threshold, keep testing the first to the second, second to third e.t.c, until a significant difference is found, or there are no more above-threshold groups, reporting everything seen up to that point.
+
+
+
 
 # Using the package
 
@@ -51,7 +89,7 @@ someone has already determined the cell types.
 Use the reference dataset to figure out what type of cells are in each cluster 
 of the new experiment
 
-```{r toy_example, message=FALSE}
+```{r toy_example, message=FALSE, eval=FALSE}
 
 library(celaref)
 
@@ -91,18 +129,265 @@ The above commands use a toy dataset within the package, and can be copy-pasted
 and run. It is a tiny simulated dataset that will complete very quickly.
 
 
-## Loading data
+## Input {#Input}
 
-Describe input
+The celaref package works with datasets in 'SummarizedExperiment' objects. 
+While they can be constructed 'by hand' there are several functions (below) to 
+create them in a format with all the required information.
 
-by file or by se or by 10X util func.
+The following peices of information are needed to use a single cell RNAseq 
+dataset with celaref.
 
-Changing theh id convert_gene_se_ids
+1. **Counts Matrix** Number of gene tags per gene per cell.
+2. **Cell information** A sample-sheet table of cell-level information. Only two 
+   fields are essential:
+    * *cell_sample*: A unique cell identifier 
+    * _group_: The cluster/group to which the cell has been assigned. 
+3. **Gene information** Optional. A table of extra gene-level information.
+    * *ID*: A unique gene identifier 
+
+The cell information tables can contain whatever experimentally relevant data 
+is desired, like treatment, batches, individual ...
+
+The celaref package doesn't do any clustering itself - cells should have 
+already been assigned to cluster groups on the basis of transcriptional 
+similarity using one of the many single-cell clustering tools available. Note 
+that any cells not assigned to a group will not be processed.
+
+For a querying dataset clusters will of course have arbitrary names like 
+c1,c2,c3.., but for reference datasets they should be something meaningful
+(e.g. 'macrophages'). 
+
+Providing gene-level information is entirely optional, because it can be taken 
+from the counts matrix. It is useful for tracking multiple IDs, e.g. [Converting-IDs] 
+
+
+### Loading data 
+
+#### From tables or flat files
+
+The simplest way to load data is with two files. 
+
+A tab-delimited counts matrix formatted as follows:
+
+gene  | Cell1 | cell2 | cell3 | cell4 |  ...  | cell954
+------|-------|-------|-------|-------|-------|--------|
+GeneA |     0 |     1 |     0 |    1  |  ...  |    0
+GeneB |     0 |     3 |     0 |    2  |  ...  |    2
+GeneC |     1 |    40 |     1 |    0  |  ...  |    0
+
+And a tab-delimited cell info / sample-sheet file of cell-level information, including the 
+group assignment foreach cell ('Cluster'), and any other useful information.
+
+CellId  | Sample  |  Cluster
+--------|---------|---------
+cell1   | Control | cluster1 
+cell2   | Control | cluster7
+ ...    | ...     | ...
+cell954 | KO      | cluster8
+
+Internally, (and throughout this doco), there are references to the 
+'cell_sample' and 'group' columns. They can be named as such in the input cell 
+info table, or just assumed or specified when loaded.
+
+The following commands are equivalent, because the first column of the cell 
+info table is assumed to be the cell identifier if not specified.
+
+```{r eval=FALSE}
+
+dataset_se <- load_se_from_files(counts_matrix   = "counts_matrix_file.tab", 
+                                  cell_info_file = "cell_info_file.tab", 
+                                  group_col_name  = "Cluster")
+
+dataset_se <- load_se_from_files(counts_matrix   = "counts_matrix_file.tab", 
+                                  cell_info_file = "cell_info_file.tab",
+                                  group_col_name  = "Cluster",
+                                  cell_col_name   = "CellId" )
+```
+
+If there was a table of extra information on the genes:
+
+Gene   | NiceName
+-------|-----------       
+GeneA  | NiceNameA
+GeneB  | NiceNameB
+GeneC  | NiceNameC
+
+```{r eval=FALSE}
+dataset_se <- load_se_from_files(counts_matrix   = "counts_matrix_file.tab", 
+                                  cell_info_file = "cell_info_file.tab", 
+                                  gene_info_file = "gene_info_file.tab",
+                                  group_col_name = "Cluster")
+
+```
+
+If extra gene information is included, the first column (or a column named ID) 
+must be unique. Every gene must match between the counts matrix and gene info.
+
+In contrast, if cell information is missing (from cell info or from the counts),
+the cell will just be dropped from the analysis. 
+This is useful when excluding cells or subsetting the analysis - it is enough to
+remove entries from the cell info table.
+If this happens, a warning message will display the number of cells kept.
+
+
+If the data is already loaded into R, the *load_se_from_tables* funtion
+will accept data frames instead of filenames.
+
+```{r eval=FALSE}
+dataset_se <- load_se_from_tables(counts_matrix   = "counts_matrix_file.tab", 
+                                  cell_info_table = "cell_info_file.tab", 
+                                  group_col_name  = "Cluster")
+```
 
 
 
 
-## Prepare data with within-experiment differential expression
+#### From 10X pipeline output
+
+
+The 10X cellRanger pipelines produce a directory of output including the counts 
+matrix files and several different clusters. This kind of output directory 
+will contain sub-directories called 'analysis', 'filtered_gene_bc_matrices'
+
+To read in a human (GRCh38) dataset using the 'kmeans_7_clusters' clustering:
+
+```{r eval=FALSE}
+dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_mydata', 
+                                   dataset_genome = "GRCh38", 
+                                   clustering_set = "kmeans_7_clusters") 
+
+```
+
+Note that the cell ranger pipelines seem to produce many different cluster sets, 
+their names should be seen in the cell loupe broswer, or listed in 
+the 10X_mydata/analysis/clustering directory.
+
+
+NB: This function assumed the file at 10X_mydata/filtered_gene_bc_matrices/GRCh38/genes.csv
+will have columns <ensemblID><GeneSymbol>. See function doco if not the case.
+
+
+
+#### Special case: Directly with SummarizedExperiment objects
+
+The data loding functions here are just convenient ways of making the SummarizedExperiment 
+objects with the content that celaref functions expect, handling naming and 
+checking uniqueness e.t.c. 
+See [SummarizedExperiment doco](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html)
+
+The minimum mandatory feilds are described in [Input], specifically:
+
+* Within colData(dataset_se): **cell_sample** and **group** columns.
+* Within rowData(dataset_se): **ID** column.
+
+Note that **group** needs to be a factor, but **cell_sample** and **ID** 
+should _not_ be factors.
+
+The colData (cell information) and rowData (gene information) should exactly 
+match the columns and rows of the counts matrix. 
+
+The counts matrix should be integer counts, and a matrix (sparse matrix not 
+currently supported). 
+
+
+#### Reading microarray data {#Reading-microarray-data}
+
+Microarray datasets of purified celltypes can be used as references too. 
+However, the analysis doesn't use summarisedExperiment objects the same way, so 
+it does the within-experiment differential expression directly.
+
+Refer to [Prepare-data-with-within-experiment-differential-expression] for details.
+
+
+[Limma](http://bioconductor.org/packages/release/bioc/html/limma.html) needs to 
+be installed to use this function. Limma is used to calculate the differential 
+expression on the microarrays, rather than MAST which is used for the single-cell
+RNAseq data.
+
+```{r eval=FALSE}
+
+de_table.microarray <- contrast_each_group_to_the_rest_for_norm_ma_with_limma(
+    norm_expression_table=demo_microarray_expr, 
+    sample_sheet_table=demo_microarray_sample_sheet,
+    dataset_name="DemoSimMicroarrayRef", 
+    sample_name="cell_sample", group_name="group") 
+
+```
+
+
+
+### Extra data preparation
+
+#### Filtering low-expression genes, cells
+
+It is standard practice to remove uninformative low-expression genes before
+calculating differential expression. And in single-cell sequencing, low counts 
+can indicate a problem cell - which can be dropped. 
+Similarly, for the celaref package, very small cell groups will not have the 
+statistical power to detect similarity.
+
+The *trim_small_groups_and_low_expression_genes* function will remove cells and 
+genes that dont meet such thresholds. Defaults are fairly inclusive, and may 
+require tweaking according to different experiments or technologies.
+
+It can be helpful to check the number of genes and cells surviving 
+*trim_small_groups_and_low_expression_genes* filtering with *dim(dataset_se)*. 
+
+```{r eval=FALSE}
+# Default filtering
+dataset_se <- trim_small_groups_and_low_expression_genes(dataset_se)
+
+# Also defaults, but specified
+dataset_se <- trim_small_groups_and_low_expression_genes(dataset_se, 
+                                    min_lib_size = 1000, 
+                                    min_group_membership = 5,  
+                                    min_detected_by_min_samples = 5)
+
+```
+Refer to function doco for exact meaning of these parameters.
+
+
+
+#### Converting IDs {#Converting-IDs}
+
+Converting one type of gene identfier to another gene identifier is annoying. 
+Even with major identifers like ensembl IDs (ENSG00000139618) or gene symbols
+(SYN1) there will be imperfect matching (missing ids, multiple matches).
+
+If multiple gene IDs were provided when creating the summarizedExperiment 
+object, (ie a gene info table/file), a convenience function 
+*convert_se_gene_ids* will allow a graceful conversion between them. 
+
+The function needs a tie-breaker for many-to-one gene relationships - picking
+the one with higher read counts is a decent choice. Note that if both match, 
+the choice is essentially arbitrary (and not neccesarily consistant).
+
+The following code will convert from the original gene IDs (e.g.if ID is 
+ensemblID), to 'GeneSymbol' 
+(which should be a column name in rowData(dataset_se))
+
+ * Remove any genes that have no GeneGymbol associated with the ensembl ID
+ * If the same GeneSymbol is assigned to multiple ensembl IDs - it looks up the 
+   *eval_col* value (here specified as 'total_count') and picks the bigger one.
+
+```{r eval=FALSE} 
+# Count and store total reads/gene.
+rowData(dataset_se)$total_count <- rowSums(assay(dataset_se))
+# rowData(dataset_se) must already list column 'GeneSymbol'
+dataset_se <- convert_se_gene_ids(dataset_se, new_id='GeneSymbol', eval_col = 'total_count')
+
+```
+
+It can be helpful to check the number of genes before and after 
+*convert_se_gene_ids* with *dim(dataset_se)*. 
+
+
+
+## Prepare data with within-experiment differential expression {#Prepare-data-with-within-experiment-differential-expression}
+
+
+See [Reading-microarray-data]
 
 
 
