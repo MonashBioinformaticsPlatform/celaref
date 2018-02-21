@@ -67,6 +67,11 @@ function.
 }
 \examples{
 
+contrast_each_group_to_the_rest_for_norm_ma_with_limma(norm_expression_table=demo_microarray_expr, 
+    sample_sheet_table=demo_microarray_sample_sheet,
+    dataset_name="DemoSimMicroarrayRef", 
+    sample_name="cell_sample", group_name="group") 
+    
 \dontrun{ 
 contrast_each_group_to_the_rest_for_norm_ma_with_limma(
    norm_expression_table, sample_sheet_table=samples_table, 
