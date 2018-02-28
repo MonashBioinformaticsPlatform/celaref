@@ -485,7 +485,7 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma <- function(norm_expressi
                            sample_sheet_table=sample_sheet_table, 
                            extra_factor_name=extra_factor_name, # ie. individual id where applicable
                            sample_name=sample_name, pval_threshold=pval_threshold)
-   de_table.allvsrest <- bind_rows(de_table_list)
+   de_table.allvsrest <- dplyr::bind_rows(de_table_list)
    
    # Factorise group,and add dataset name
    de_table.allvsrest$group   <- factor(de_table.allvsrest$group)
