@@ -20,11 +20,16 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+library(celaref)
+library(knitr) #kable
 ```
 <!--
 can't use gitbiook
   bookdown::gitbook:
 --> 
+<!--
+load("/mnt/ceph/mbp/servers/bioinformatics-platform/home/sarah.williams/projects/cell_groupings/analysis/10_data_for_doco/larger_doco_examples.rdata")
+-->
 
 
 # Overview {#overview}
@@ -125,7 +130,7 @@ of the new experiment
 
 
 
-```{r toy_example, message=FALSE, eval=TRUE}
+```{r toy_example, message=FALSE, eval=TRUE, cache=TRUE}
 
 library(celaref)
 
@@ -366,7 +371,8 @@ genes that dont meet such thresholds. Defaults are fairly inclusive, and may
 require tweaking according to different experiments or technologies.
 
 It can be helpful to check the number of genes and cells surviving 
-*trim_small_groups_and_low_expression_genes* filtering with *dim(dataset_se)*. 
+*trim_small_groups_and_low_expression_genes* filtering with *dim(dataset_se)*, 
+and the number of cells per group with *table(dataset_se$group)*.
 
 ```{r eval=FALSE}
 # Default filtering
@@ -440,12 +446,12 @@ statistical power (from a p-value ranking), discussed in [@topconfect].
 
 This is done with the _contrast_each_group_to_the_rest_ function:
 
-```{r eval=FALSE}
+```{r eval=TRUE, cache=TRUE}
 de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "a_demo_query",      num_cores = 4)
 ```
 
 And note that any reference datasets are prepared with the same command:
-```{r eval=FALSE}
+```{r eval=TRUE, cache=TRUE}
 de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "a_demo_reference",  num_cores = 4)
 ```
 
@@ -487,7 +493,7 @@ as system resources permit.
 Microarray reference data is treated differently, with function _contrast_each_group_to_the_rest_for_norm_ma_with_limma()_ that both loads data
 and does within sample differential expression in one step. Its output is much the same. See 
 [section on microarray input](#reading-microarray-data) for details.
-```{r eval=TRUE}
+```{r eval=TRUE, cache=TRUE}
 de_table.microarray <- contrast_each_group_to_the_rest_for_norm_ma_with_limma(
     norm_expression_table=demo_microarray_expr, 
     sample_sheet_table=demo_microarray_sample_sheet,
@@ -519,7 +525,8 @@ See section [Interpreting output](#interpreting-output) and the [overview diagra
 To make that output, run function *make_ranking_violin_plot* on the output 
 of *de_table.marked.query_vs_ref*:
 
-```{r eval=TRUE}
+```{r eval=FALSE, cache=TRUE}
+
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.demo_query ,
    de_table.ref=de_table.demo_ref ,
@@ -559,7 +566,8 @@ In this example - there are too few 'top' genes in Group2 to distinguish it from
 Group3, but in the reciprocal contrast the 'top' Genes for group3 do separate 
 the two groups. So the groups are reasonable. 
 
-```{r eval=TRUE}
+```{r eval=TRUE, cache=TRUE} 
+
 de_table.marked.query_vs_self <- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.demo_query ,
    de_table.ref=de_table.demo_query ,
@@ -578,7 +586,7 @@ query groups. The method used is described in
 [Assigning labels to clusters](#assigning-labels-to-clusters). These names might
 make a good starting point for downstream characterisation.
 
-```{r eval=TRUE}
+```{r eval=FALSE, cache=TRUE} 
 # And get group labels
 make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "a_demo_reference")
 ```
@@ -586,10 +594,415 @@ make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref, the_test_d
 # Example Analyses
 
 
-## Neuronal cell types
-
-
 ## PBMCs - 10X vs Microarray Reference
+
+PBMCs from blood are an easily accessable heterogenous cell sample with several 
+similar yet distinct cell types.
+
+10X genomics has severaldatasets available to download from their 
+website, including the [pbmc4k dataset](https://support.10xgenomics.com/single-cell-gene-expression/datasets/2.1.0/pbmc4k), 
+which contains PBMCs derived from a healthy individual. This example data is the
+output of 10X's [cell-ranger](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger) pipeline, which includes
+the output of several different unsupervised cell-clustering analyses. 
+
+So there are two questions for the pmbc4k dataset we'd like to address by
+comparing it against a reference of known PBMC cell-types:
+
+* What cell-types are in each cluster?
+* Which of the clustering analysis is most appropriate?
+
+A suitable reference (a 'HaemAtlas') has been published by @Watkins2009. They
+purified populations of PBMC cell types and measured gene expression via 
+microarray. The data used here was downloaded in a normalised table from the 
+'haemosphere' website [@DeGraaf2016].
+
+***
+
+
+Going to work with two versions of the kmeans clustering produced by the cell 
+ranger pipeline - with k=7 and k=9. For reference, here is how they look when 
+colour-coded on a t-SNE plot in the cell-loupe viewer 
+(should the brown group be separate to green?):
+
+**kmeans 7**
+![kmeans7](images/pbmc4k_cloupe_kmeans7.png) 
+
+**kmeans 9**
+![kmeans9](images/pbmc4k_cloupe_kmeans9.png)
+
+
+First, load in both datasets and filter the input for genes with low expression,
+and too-small groups.
+
+```{r eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
+# Silently load processed data into memory.
+load("/mnt/ceph/mbp/servers/bioinformatics-platform/home/sarah.williams/projects/cell_groupings/analysis/10_data_for_doco/larger_doco_examples.rdata")
+```
+
+```{r eval=FALSE}
+library(celaref)
+datasets_dir <- "~/celaref_extra_vignette_data/datasets"
+
+dataset_se.10X_pbmc4k_k7 <- load_dataset_10Xdata(dataset_path  = file.path(datasets_dir,'10X_pbmc4k'), 
+                                                 dataset_genome = "GRCh38", 
+                                                 clustering_set = "kmeans_7_clusters", 
+                                                 id_to_use      = "GeneSymbol")
+dataset_se.10X_pbmc4k_k7 <- load_dataset_10Xdata( dataset_path  = file.path(datasets_dir,'10X_pbmc4k'), 
+                                                 dataset_genome = "GRCh38", 
+                                                 clustering_set = "kmeans_9_clusters", 
+                                                 id_to_use      = "GeneSymbol")
+
+dataset_se.10X_pbmc4k_k7 <- trim_small_groups_and_low_expression_genes(dataset_se.10X_pbmc4k_k7)
+dataset_se.10X_pbmc4k_k9 <- trim_small_groups_and_low_expression_genes(dataset_se.10X_pbmc4k_k9)
+```
+
+Then prepare the datasts with the within-experiment comparsions. 
+Setting the num-cores to the number of groups so they can all run together.
+```{r eval=FALSE}
+de_table.10X_pbmc4k_k7   <- contrast_each_group_to_the_rest(dataset_se.10X_pbmc4k_k7, dataset_name="10X_pbmc4k_k7", num_cores=7) 
+de_table.10X_pbmc4k_k9   <- contrast_each_group_to_the_rest(dataset_se.10X_pbmc4k_k9, dataset_name="10X_pbmc4k_k9", num_cores=9) 
+```
+
+
+
+
+```{r eval=FALSE, cache=TRUE}
+this_dataset_dir     <- file.path(datasets_dir,     'haemosphere_datasets','watkins')
+norm_expression_file <- file.path(this_dataset_dir, "watkins_expression.txt")
+samples_file         <- file.path(this_dataset_dir, "watkins_samples.txt")
+
+norm_expression_table.full <- read.table(norm_expression_file, sep="\t", header=TRUE, quote="", comment.char="", row.names=1, check.names=FALSE)
+
+samples_table              <- read_tsv(samples_file, col_types = cols())
+samples_table$description  <- make.names( samples_table$description) # Avoid group or extra_factor names starting with numbers, for microarrays
+
+samples_table
+```
+
+From the sample table, can see that this dataset includes other tissues, but 
+as a PBMC reference, we only want to consider the peripheral blood samples.
+
+```{r eval=FALSE }
+samples_table        <- samples_table[samples_table$tissue == "Peripheral Blood",] 
+```
+
+```{r echo=FALSE}
+kable(head(samples_table))
+```
+
+
+
+As usually seems to be the case, the hardest part is formatting the input. 
+Microarray expression values should be provided as _normalised, log-transformed 
+data_ using the _same IDs as the query datset_. Any probe or sample level filtering
+should also be performed beforehand. In this case, the data was 
+normalised when aquired from the haemosphere website - but still need to match the IDs.
+
+This data is from Illumina HumanWG-6 v2 Expression BeadChips, and gives expression at the probe level.
+To be a reference to the single cell PBMC data, it needs to have use same IDs,
+gene symbols in this case. Note that it doesn't matter if IDs are only present 
+in one or the other dataset - just that the rest match. 
+
+NB: Converting between IDs is easier for single cell datasets using the 
+*convert_se_gene_ids* function. But that function expects a SummarizedExperiment 
+object, which isn't used for microarray data. 
+So it has to be done manually.
+
+
+```{r eval=FALSE }    
+library("tidyverse")
+library("illuminaHumanv2.db")
+probes_with_gene_symbol_and_with_data <- intersect(keys(illuminaHumanv2SYMBOL),rownames(norm_expression_table.full))
+
+# Get mappings - non NA
+probe_to_symbol <- select(illuminaHumanv2.db, keys=rownames(norm_expression_table.full), columns=c("SYMBOL"), keytype="PROBEID")
+probe_to_symbol <- unique(probe_to_symbol[! is.na(probe_to_symbol$SYMBOL),])
+# no multimapping probes
+genes_per_probe <- table(probe_to_symbol$PROBEID) # How many genes a probe is annotated against?
+multimap_probes <- names(genes_per_probe)[genes_per_probe  > 1]
+probe_to_symbol <- probe_to_symbol[!probe_to_symbol$PROBEID %in% multimap_probes, ]
+
+
+convert_expression_table_ids<- function(expression_table, the_probes_table, old_id_name, new_id_name){
+    
+    the_probes_table <- the_probes_table[,c(old_id_name, new_id_name)]
+    colnames(the_probes_table) <- c("old_id", "new_id")
+    
+    # Before DE, just pick the top expresed probe to represent the gene
+    # Not perfect, but this is a ranking-based analysis.
+    # hybridisation issues aside, would expect higher epressed probes to be more relevant to Single cell data anyway.
+    probe_expression_levels <- rowSums(expression_table)
+    the_probes_table$avgexpr <- probe_expression_levels[as.character(the_probes_table$old_id)]
+    
+    the_genes_table <-  the_probes_table %>% 
+        group_by(new_id) %>%
+        top_n(1, avgexpr)
+    
+    expression_table <- expression_table[the_genes_table$old_id,]
+    rownames(expression_table) <- the_genes_table$new_id
+    
+    return(expression_table)
+}
+
+# Just the most highly expressed probe foreach gene.
+norm_expression_table.genes <- convert_expression_table_ids(norm_expression_table.full, 
+                                                            probe_to_symbol, old_id_name="PROBEID", new_id_name="SYMBOL")
+```
+
+
+Now read the data and run the within-experiment contrast with 
+*contrast_each_group_to_the_rest_for_norm_ma_with_limma*.
+
+Because there is information on which individual each sample is from in the 
+'description' feild, this is specified with **extra_factor_name**, and is 
+included as a factor in the linear model for limma. This is optional.
+
+```{r, eval=FALSE}    
+# Go...
+de_table.Watkins2009PBMCs <- contrast_each_group_to_the_rest_for_norm_ma_with_limma(
+                 norm_expression_table = norm_expression_table.genes, 
+                 sample_sheet_table    = samples_table, 
+                 dataset_name          = "Watkins2009PBMCs", 
+                 extra_factor_name     = 'description', 
+                 sample_name           = "sampleId",
+                 group_name            = 'celltype')
+
+```
+
+
+
+
+Compare both the 7 cluster and 9 cluster sets to the purified PBMCs:
+```{r eval=TRUE}
+de_table.pbmc4k_k7_vs_Watkins2009PBMCs <- get_the_up_genes_for_all_possible_groups(
+    de_table.test=de_table.10X_pbmc4k_k7 , 
+    de_table.ref=de_table.Watkins2009PBMCs, 
+    test_dataset_name='pbmc4k_k7')
+
+de_table.pbmc4k_k9_vs_Watkins2009PBMCs <- get_the_up_genes_for_all_possible_groups(
+    de_table.test=de_table.10X_pbmc4k_k9 , 
+    de_table.ref=de_table.Watkins2009PBMCs, 
+    test_dataset_name='pbmc4k_k9')
+```
+
+
+How does the 7-cluster set look?
+```{r, eval=TRUE}
+make_ranking_violin_plot(de_table.pbmc4k_k7_vs_Watkins2009PBMCs)
+```
+
+Hmmm, there's a few clusters where different the top genes are bunched near the 
+top for a couple of different reference cell types. Obviously quite similar. 
+Logging the plot will be more informative at the top end.
+
+```{r, eval=TRUE}
+make_ranking_violin_plot(de_table.pbmc4k_k7_vs_Watkins2009PBMCs, log10trans = TRUE)
+```
+
+The median rank threshold (dotted line) is still at 0.25, but the different 
+degrees of match are more obvious. 
+
+What are the group labels?
+
+```{r eval=TRUE}
+label_table.pbmc4k_k7_vs_Watkins2009PBMCs <- make_ref_similarity_names_for_groups_ks(de_table.pbmc4k_k7_vs_Watkins2009PBMCs, 
+                                        the_test_dataset = "pbmc4k_k7", 
+                                        the_ref_dataset  = "Watkins2009PBMCs")
+
+kable(label_table.pbmc4k_k7_vs_Watkins2009PBMCs)
+```
+
+
+How does that compare to the 9 cluster set?
+```{r, eval=TRUE}
+make_ranking_violin_plot(de_table.pbmc4k_k9_vs_Watkins2009PBMCs, log10trans = TRUE)
+
+label_table.pbmc4k_k9_vs_Watkins2009PBMCs <- make_ref_similarity_names_for_groups_ks(de_table.pbmc4k_k9_vs_Watkins2009PBMCs, 
+                                        the_test_dataset = "pbmc4k_k9", 
+                                        the_ref_dataset  = "Watkins2009PBMCs")
+
+kable(label_table.pbmc4k_k9_vs_Watkins2009PBMCs)
+```
+
+
+<COMMENTS ON RESUTLS.>
+
+
+## Mouse neuronal tissue cell-types
+
+In their paper _Cell types in the mouse cortex and hippocampus revealed by 
+single-cell RNA-seq_  @Zeisel2015 performed single cell RNA sequencing in 
+mouse, in two tissues (sscortex and ca1hippocampus). 
+
+These cell types are have already been described - so this is not how this
+method would usually be used. However, this data is included as an example to 
+visualise how single cell datasets of similar and different tissue types look,
+with respect to a 'known truth'.
+
+First, load the data:
+```{r eval=TRUE, cache=TRUE }
+library(celaref)
+datasets_dir <- "~/celaref_extra_vignette_data/datasets"
+zeisel_cell_info_file <- file.path(datasets_dir, "zeisel2015", "zeisel2015_mouse_scs_detail.tab")
+zeisel_counts_file    <- file.path(datasets_dir, "zeisel2015", "zeisel2015_mouse_scs_counts.tab")
+```
+
+
+Note the sample data in *zeisel2015_mouse_scs_detail.tab* has the following
+information. They specify cell type groups at two different levels, and for 
+this example, just going to use *level1class*. Also need to say that *cell_id* 
+is, unsurprisingly, the cell identifier.
+
+tissue|total mRNA mol|well|sex|age|diameter|cell_id|level1class|level2class
+------|--------------|----|---|---|--------|-------|-----------|-----------
+sscortex|21580|11|1|21|0|1772071015_C02|interneurons|Int10
+sscortex|21748|95|-1|20|9.56|1772071017_G12|interneurons|Int10
+ca1hippocampus|20389|66|-1|23|10.9|1772067060_B09|interneurons|Int9
+ca1hippocampus|22515|52|1|31|0|1772067082_D07|interneurons|Int2
+
+```{r eval=TRUE, cache=TRUE }
+dataset_se.zeisel <- load_se_from_files(zeisel_counts_file, zeisel_cell_info_file,
+                                 group_col_name = "level1class", 
+                                 cell_col_name  = "cell_id" )
+```
+
+
+That dataset_se object contains all the data, so subset it into two
+objects by tissue (its a SummarizedExperiment object). 
+Then separately filter both for low-expression genes and groups with too few 
+cells to analyse.
+
+```{r eval=TRUE, cache=TRUE }
+# Make two subsets of the sample sheet for the tissues
+dataset_se.cortex <- dataset_se.zeisel[,dataset_se.zeisel$tissue == "sscortex"]
+dataset_se.hippo  <- dataset_se.zeisel[,dataset_se.zeisel$tissue == "ca1hippocampus"]
+
+# Remove too-small groups, unwanted cells
+dataset_se.cortex  <- trim_small_groups_and_low_expression_genes(dataset_se.cortex )
+dataset_se.hippo   <- trim_small_groups_and_low_expression_genes(dataset_se.hippo )
+```
+
+
+Next, need to prepare the within-dataset comparisons. 
+There are 6 groups in each sample, so assign 6 cores to run them all at once. 
+This may take a couple of hours to finish, so be sure to save the result for reuse.
+
+```{r eval=FALSE}
+de_table.zeisel.cortex <- contrast_each_group_to_the_rest(dataset_se.cortex, dataset_name="zeisel_sscortex",       num_cores=6) 
+de_table.zeisel.hippo  <- contrast_each_group_to_the_rest(dataset_se.hippo,  dataset_name="zeisel_ca1hippocampus", num_cores=6) 
+```
+
+
+Now compare the two: 
+
+```{r eval=FALSE }
+# Cross-experimet comparison
+de_table.marked.cortex_vs_hippo <- get_the_up_genes_for_all_possible_groups(
+   de_table.test=de_table.zeisel.cortex  ,
+   de_table.ref=de_table.zeisel.hippo ,
+   test_dataset_name='zeisel_sscortex')
+
+# Plot
+make_ranking_violin_plot(de_table.marked.cortex_vs_hippo)
+```
+
+Perhaps unsurprisingly given they're from the same experiment, the cell-type
+annotations do almost perfectly correlate one-to-one.
+
+
+***
+
+
+What does a contrast of dissimilar tissues look like? @Farmer2017 have 
+recently published a survey of cell types in the mouse lacrimal gland 
+(*Defining epithelial cell dynamics and lineage relationships in the developing 
+lacrimal gland*) - which should have very different cellular composition.
+
+
+
+They have sequenced at the E16 and P4 development stages, we will use
+the more developed P4 sample.
+
+```{r eval=FALSE}
+library(Matrix) 
+
+
+Farmer2017lacrimal_dir  <- file.path(datasets_dir, "Farmer2017_lacrimal", "GSM2671416_P4")
+
+Farmer2017lacrimal_matrix_file   <- file.path(Farmer2017lacrimal_dir, "GSM2671416_P4_matrix.mtx")
+Farmer2017lacrimal_barcodes_file <- file.path(Farmer2017lacrimal_dir, "GSM2671416_P4_barcodes.tsv")
+Farmer2017lacrimal_genes_file    <- file.path(Farmer2017lacrimal_dir, "GSM2671416_P4_genes.tsv")
+
+Farmer2017lacrimal_cells2groups_file  <- file.path(datasets_dir, "Farmer2017_lacrimal", "Farmer2017_supps", paste0(timepoint,"_cellinfo.tab"))
+Farmer2017lacrimal_clusterinfo_file   <- file.path(datasets_dir, "Farmer2017_lacrimal", "Farmer2017_supps", paste0("Farmer2017_clusterinfo_",timepoint,".tab"))
+
+
+
+ genes <- read.table(genes_file, sep="", stringsAsFactors = FALSE)[,1]
+    cells <- read.table(cells_file, sep="", stringsAsFactors = FALSE)[,1]
+    counts_matrix <- readMM(matrix_file) #Hmm, some non integers?
+    rownames(counts_matrix) <- genes
+    colnames(counts_matrix) <- cells
+    
+    # I'd like to use sparse matrix, but think MAST does not like? Propagates through as an S4 obj after log.
+    # Unsure, force as bog std int matrix.
+    counts_matrix <- as.matrix(counts_matrix)
+    storage.mode(counts_matrix) <- "integer"
+
+#--------------
+# counts matrix
+counts_matrix.Farmer2017lacrimal <- read_cells_genes_and_matrix_to_count_matrix(matrix_file = Farmer2017lacrimal_matrix_file, 
+                                                                                cells_file  = Farmer2017lacrimal_barcodes_file, 
+                                                                                genes_file  = Farmer2017lacrimal_genes_file)
+
+#-------------
+# Gene info
+gene_info_table.Farmer2017lacrimal <- as.data.frame(read.table(Farmer2017lacrimal_genes_file, sep="", stringsAsFactors = FALSE), stringsAsFactors = FALSE)
+colnames(gene_info_table.Farmer2017lacrimal) <- c("ensemblID","GeneSymbol") # ensemblID is first, will become ID
+
+#----------------
+# Cell/sample info
+
+# Cells to cluster number (just a number)
+Farmer2017lacrimal_cells2groups_table <- read_tsv(Farmer2017lacrimal_cells2groups_file, col_types=cols())
+# Cluster info - number to classification
+Farmer2017lacrimal_clusterinfo_table <- read_tsv(Farmer2017lacrimal_clusterinfo_file, col_types=cols())  
+# Add in cluster info
+Farmer2017lacrimal_cells2groups_table <- merge(x=Farmer2017lacrimal_cells2groups_table, y=Farmer2017lacrimal_clusterinfo_table, by.x="cluster", by.y="ClusterNum")
+
+# Cell sample2group
+cell_sample_2_group.Farmer2017lacrimal <- Farmer2017lacrimal_cells2groups_table[,c("Cell identity","ClusterID", "nGene", "nUMI")]
+colnames(cell_sample_2_group.Farmer2017lacrimal) <- c("cell_sample", "group", "nGene", "nUMI")
+# Add -1 onto each of the names, that seems to be in the counts
+cell_sample_2_group.Farmer2017lacrimal$cell_sample <- paste0(cell_sample_2_group.Farmer2017lacrimal$cell_sample, "-1")
+
+
+#----------------
+# Create a summarised experiment objct.
+dataset_se  <- load_se_from_tables(counts_matrix.Farmer2017lacrimal, 
+                                   cell_info_table = cell_sample_2_group.Farmer2017lacrimal,
+                                   gene_info_table = gene_info_table.Farmer2017lacrimal )
+
+
+# Use gene symbols for ids (this does remove some genes)
+rowData(dataset_se)$total_count <- rowSums(assay(dataset_se))
+dataset_se  <-  convert_se_gene_ids( dataset_se,  new_id='GeneSymbol', eval_col='total_count')
+
+# Useful filtering  - remove too-small groups, unwanted cells
+dataset_se <- trim_small_groups_and_low_expression_genes(dataset_se)
+
+return(dataset_se)
+
+
+```
+
+
+
+
+
+
+
+
 
 
 
