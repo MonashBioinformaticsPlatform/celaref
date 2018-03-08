@@ -2,3 +2,5 @@
 .Rhistory
 .RData
 inst/doc
+vignettes/celaref_doco_files
+vignettes/celaref_doco_cache
