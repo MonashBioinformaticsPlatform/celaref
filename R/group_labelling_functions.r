@@ -56,7 +56,7 @@
 #' Note that comparisons with small numbers of 'top' genes will never be 
 #' 'significantly' different - these should be taken with a grain of salt 
 #' anyway. This parameter unlikely to need change. Default = 0.01.
-#' #' @param median_rank_threshold A threshold for similarity. Number betweeen 0 
+#' @param median_rank_threshold A threshold for similarity. Number betweeen 0 
 #' (top-rank) and 1.  If the median ranking of the 'top' query genes is 
 #' below this, consider possible similarity. 
 #' Consider reducing for very similar cell clusters. Note that 0.5 is 
