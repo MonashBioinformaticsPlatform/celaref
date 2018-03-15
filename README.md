@@ -1,5 +1,9 @@
 # celaref
 
+
+__***DEV VERSION : Method and doco still under active development***__
+
+
 ### Function  
 
 Single cell RNA sequencing (scRNAseq) has made it possible to examine the 
@@ -29,7 +33,7 @@ To look for cluster similarities celaref needs:
 
 
 ![](vignettes/images/violin_plot_example.png) 
-
+(Zeisel et al. 2015 + Darmanis et al. 2015 references. To be updated.)
 
 
 ### More information?
