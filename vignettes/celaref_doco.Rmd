@@ -4,16 +4,15 @@ author: "Sarah Williams"
 date: "`r Sys.Date()`"
 output:
    html_document:
-     toc: true
-     toc_depth: 5
-     theme: flatly
      fig_caption: yes
-     number_sections: true  
+     theme: united
+     toc: yes
+     toc_depth: 5
 bibliography: /home/sarah.williams/data/mendeley/library.bib
 vignette: >
   %\VignetteIndexEntry{Manual}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
@@ -38,13 +37,13 @@ load("/mnt/ceph/mbp/servers/bioinformatics-platform/home/sarah.williams/projects
 
 
 Single cell RNA sequencing (scRNAseq) has made it possible to examine the 
-cellular heterogeny within a tissue or sample, and observe changes and 
+cellular heterogeneity within a tissue or sample, and observe changes and 
 characteristics in specific cell types. To do this, we need to group the cells
 into clusters and figure out what they are.
 
 In a typical scRNAseq experiment the 
-gene expression levels are first quantified to per-cell counts (a relatively 
-well-established process). Then, cells are clustered into related groups 
+gene expression levels are first quantified to per-cell counts. 
+Then, cells are clustered into related groups 
 (or clusters) on the basis of transcriptional similarity. There are many 
 different cell-clustering tools that can do this [@Freytag2017]. 
 
@@ -52,14 +51,14 @@ Clustering tools generally define groups of similar cells - but do not
 offer explanation as to their biological contents. The annotation of the 
 'cell type' of each cluster is performed by a domain expert biologist - who 
 can examine the known marker genes, or differential expression to understand 
-what each cluster might describe. This can be a time-consuming semi-manual 
-process, and must be performed before addressing the actual biological 
+what type of cell each cluster might describe. This can be a time-consuming 
+semi-manual process, and must be performed before addressing the actual biological 
 question of interest. 
 
 
 The celaref package aims to streamline this cell-type identification step, by 
 suggesting cluster labels on the basis of similarity to an already-characterised
-reference dataset - wheather that's from a similar experiment performed 
+reference dataset - whether that's from a similar experiment performed 
 previously in the same lab, or from a public dataset from a similar sample. 
 
 
@@ -72,46 +71,72 @@ in each query group to match cell types.
 ## Workflow {#workflow}
 
 
-A typical celaref workflow is below, characterisising a query dataset’s cell clusters on the basis of transcriptomic similarity to a annotated reference dataset.
+A typical celaref workflow is below, characterising a query dataset’s cell clusters on the basis of transcriptomic similarity to a annotated reference dataset.
 
 ![ \label{fig:workflow_diagram}](images/workflow_diagram.png)
 
 
 ### Prepare dataset
 
-The input required is a counts matrix of number of reads per gene per cell, and the cluster assignment for each cell. Cell clusters might be defined by any cell-clustering technique, such as those implemented in tools such as Seurat [@Satija2015], cellRanger (10X genomics), SC3[@Kiselev2017], among many others.
+To compare scRNAseq datasets with celaref, two inputs are needed for each dataset:
+
+* A counts matrix of number of reads per gene, per cell.
+* Cluster assignment for each cell. 
+
+Cell clusters might be defined by any cell-clustering technique, such as those implemented in tools such as Seurat [@Satija2015], cellRanger (10X genomics), SC3[@Kiselev2017], among many others.
 
 ### Within dataset differential expression
 
-Every dataset, whether a query or a reference, is prepared the same way. For every cluster, cells within that cluster are compared to the rest of the cells pooled together, calculating differential gene expression using MAST [@Finak2015]. Because of the low counts and potential dropout issues in single cell RNAseq data, only genes enriched in each cluster are considered. For every cluster – cells are ranked from most to least enriched according to their lower 95% CI of fold-change (for a reasonably robust estimate of fold-change[@topconfect]). Each gene is assigned a ‘rescaled rank’ from 0 (most enriched) to 1. 
+Every dataset, whether a query or a reference, is prepared the same way. For each cluster, cells within that cluster are compared to the rest of the cells pooled together, calculating differential gene expression using MAST [@Finak2015]. Because of the low counts and potential drop-out issues in single cell RNAseq data, only genes enriched in each cluster are considered. For every cluster – cells are ranked from most to least enriched according to their lower 95% CI of fold-change. Each gene is assigned a ‘rescaled rank’ from 0 (most enriched) to 1 (most absent). 
 
-Note that this step is the most time consuming, but only needs to be done once per dataset.
+That this step is the most time consuming, but only needs to be done once per dataset.
 
-### Query-Ref comparison
+### Cross-experiment comparison
 
-A list of ‘Up’ genes are extracted for each query cluster – defined as those that have significantly higher expression in that cluster versus the rest of the sample (p<0.01 after BH multiple hypothesis correction). The ‘Up’ gene list is capped at the top 100 (ranked by lower 95% FC).   Then, those genes are looked up in the ranking of genes in each reference cell cluster.  The distribution of these ‘up gene’ ranks is plotted to evaluate similarity of the query cell-group to a reference cell-group. 
+A list of ‘Up’ genes are extracted for each query cluster – defined as those that have significantly higher expression in that cluster versus the rest of the sample (p<0.01 after BH multiple hypothesis correction). The ‘Up’ gene list is capped at the top 100 (ranked by lower 95% FC). Then, those genes are looked up in the ranking of genes in each reference cell cluster.  The distribution of these ‘up gene’ ranks is plotted to evaluate similarity of the query cell-group to a reference cell-group. 
 
 ### Interpreting output {#interpreting-output}
 
-Typically, every cell cluster in the query data (each box) is plotted against everything in the reference data (X-axis). Each of the ‘up’ genes is represented by a tick mark, and a the median of ranks is shown as a thick bar. A bias near the top indicates similarity of the groups – essentially the same genes are representative of the clusters within their respective samples. The dotted line at 0.25 is an arbitrary threshold of similarity (the top quartile of genes). Note that 0.5 indicates a completely random distribution, but lower values are common due to the reciprocal nature of the within-dataset differential expression. 
+Typically, every cell cluster in the query data (each box) is plotted against everything in the reference data (X-axis). Each of the ‘up’ genes is represented by a tick mark, and the median generank is shown as a thick bar. A biased distribution near the top (i.e.. rescaled rank of 0) indicates similarity of the groups – essentially the same genes are representative of the clusters within their respective samples. The dotted line at 0.25 is an arbitrary threshold of the top quarter of genes. 
+
+!!!!!!!!!!!!!!!!!!!!!
+---
+EXAMPLE IMIAGE GOES HERE.
+---
+!!!!!!!!!!!!!!!!!!!!!
+
+
+* A median gene rank of 0.5 would indicate a completely random distribution. However, much lower values are common. 
+The reciprocal nature of the within-dataset differential expression can cause this - what's up in 
+one cluster is down in another.
+* A small or heterogeneous cell group will not have much statistical power to select many 'top' genes.
+And with a low number of 'top' genes, the test won't be reliable. 
+They're still plotted though - judge the utility of these cases by eye.
+See 'Group 2' in the the [quickstart example](#quickstart) on test data for an example. 
+* Because 'top' genes are compared to total reference rankings - the comparison 
+between two datasets is not symmetrical. In ambiguous cases, it might helpful 
+to check the reverse comparison from reference to query. Especially when
+it is the query group that is too small to detect significant 'top' genes. 
+For an example, see the plot in section 
+[Compare groups within a single dataset](#compare-groups-within-a-single-dataset)
 
 
 
 ### Assigning labels to clusters {#assigning-labels-to-clusters}
 
-Lastly, this package suggests some semi-sensible query cluster labels based on the most similar reference cluster names.
+Lastly, there is a function to suggest some semi-sensible query cluster labels.
 
-A rough indication of similarity is when the median gene rank (thick bar) is less than (plotted above) the arbitrary threshold of similarity at 0.25 (dotted line). 
 
-However, multiple reference groups will meet that threshold for one query group. This is common when there are similar cell sub-populations in the reference data.
+While a rough indication of similarity can be taken from the reference group 
+with the highest median rank, often multiple reference groups will meet the 
+arbitrary arbitrary threshold of similarity at 0.25 (dotted line). This is 
+expected when there are similar cell sub-populations in the reference data.
 
-In these cases (see example), some further logic is applied to decide which reference groups should be in the group label :
-
+In these cases some further logic is applied to decide which reference groups should be in the group label. See example distributions below :
 (a)	If only one reference group is above the threshold, use that group name.
 (b)	If nothing meets the threshold, report a lack of similarity.
-(c)	If two (or more) reference groups are above the threshold, run a Kolmogorov–Smirnov test on the rescaled rank distributions. If they are significantly (p <= 0.01) different (which might occur for similar but distinct cell types), report only the first. 
-(d)	Or if they are not, report both. If there are more than two groups above the threshold, keep testing the first to the second, second to third e.t.c, until a significant difference is found, or there are no more above-threshold groups, reporting everything seen up to that point.
-
+(c)	If two (or more) reference groups are above the threshold, run a Kolmogorov–Smirnov test on the rescaled rank distributions. If they are significantly (p <= 0.01) different assume they are similar but distinct cell types and report only the first. 
+(d)	Or if they are not, report both. If there are more than two groups above the threshold, keep testing the first to the second, second to third e.t.c, until a significant difference is found, or there are no more above-threshold groups. Report every reference group seen up to that point.
 
 ![\label{fig:cluster_labelling}](images/clustering_labelling.png )
 
@@ -121,14 +146,17 @@ In these cases (see example), some further logic is applied to decide which refe
 
 ## Quickstart
 
-Suppose there's a new single-cell RNAseq dataset (query), and the cells have 
-been clustered into 4 groups : Groups 1-4. But we don't know what they are. 
-Luckily, there's an older dataset (ref) of the same tissue type in which 
-someone has already determined the cell types (Which they helpfully named 'dunno', 
-'Exciting', 'Mystery cell type' and 'Weird subtype').
+Suppose there's a new scRNAseq dataset (the query), whose cells have already 
+been clustered into 4 groups : Groups 1-4. But we don't know which 
+group corresponds to which cell type yet.
 
-Use the reference dataset to figure out what type of cells are in each cluster 
-of the new experiment
+Luckily, there's an older dataset (the reference) of the same tissue type in which 
+someone else has already determined the cell types. 
+They very helpfully named them  'Weird subtype', 'Exciting', 'Mystery cell type' and 'dunno'.
+
+This example uses the reference dataset to flag likely cell types in the new experiment.
+
+It is a tiny simulated dataset of 100 genes included in the package that can be copy-pasted, and will complete very quickly.
 
 
 
@@ -154,7 +182,7 @@ toy_query_se   <- trim_small_groups_and_low_expression_genes(toy_query_se)
 de_table.toy_ref   <- contrast_each_group_to_the_rest(toy_ref_se,    dataset_name="ref")
 de_table.toy_query <- contrast_each_group_to_the_rest(toy_query_se,  dataset_name="query")
 
-# Cross-experimet comparison
+# Cross-experiment comparison
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.toy_query ,
    de_table.ref=de_table.toy_ref ,
@@ -162,23 +190,25 @@ de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
 
 # Plot
 make_ranking_violin_plot(de_table.marked.query_vs_ref)
-
+```
+```{r toy_example2, message=FALSE, eval=FALSE, cache=TRUE}
 # And get group labels
 make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "ref")
 ```
+```{r toy_example3, message=FALSE, eval=TRUE, echo=FALSE, cache=TRUE}
+kable(make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "ref"))
+```
 
 
-The above commands use a toy dataset within the package, and can be copy-pasted 
-and run. It is a tiny simulated dataset of 100 genes that will complete very quickly.
 
 
 ## Prepare data {#Input}
 
 The celaref package works with datasets in 'SummarizedExperiment' objects. 
-While they can be constructed 'by hand' there are several functions (below) to 
+While they can be constructed manually there are several functions (below) to 
 create them in a format with all the required information.
 
-The following peices of information are needed to use a single cell RNAseq 
+The following pieces of information are needed to use a single cell RNAseq 
 dataset with celaref.
 
 1. **Counts Matrix** Number of gene tags per gene per cell.
@@ -190,7 +220,7 @@ dataset with celaref.
     * *ID*: A unique gene identifier 
 
 The cell information tables can contain whatever experimentally relevant data 
-is desired, like treatment, batches, individual ...
+is desired, like treatment, batches, individual e.t.c
 
 The celaref package doesn't do any clustering itself - cells should have 
 already been assigned to cluster groups on the basis of transcriptional 
@@ -198,12 +228,11 @@ similarity using one of the many single-cell clustering tools available (For a e
 that any cells not assigned to a group will not be processed.
 
 For a querying dataset clusters will of course have arbitrary names like 
-c1,c2,c3.., but for reference datasets they should be something meaningful
+c1,c2,c3 e.t.c but for reference datasets they should be something meaningful
 (e.g. 'macrophages'). 
 
 Providing gene-level information is entirely optional, because it can be taken 
-from the counts matrix. It is useful for tracking multiple IDs, e.g. [Converting-IDs] 
-
+from the counts matrix. It is useful for tracking multiple IDs, see [Converting IDs](#converting-ids)
 
 ### Input data 
 
@@ -211,7 +240,7 @@ from the counts matrix. It is useful for tracking multiple IDs, e.g. [Converting
 
 The simplest way to load data is with two files. 
 
-A tab-delimited counts matrix formatted as follows:
+1. A tab-delimited counts matrix:
 
 gene  | Cell1 | cell2 | cell3 | cell4 |  ...  | cell954
 ------|-------|-------|-------|-------|-------|--------|
@@ -219,8 +248,8 @@ GeneA |     0 |     1 |     0 |    1  |  ...  |    0
 GeneB |     0 |     3 |     0 |    2  |  ...  |    2
 GeneC |     1 |    40 |     1 |    0  |  ...  |    0
 
-And a tab-delimited cell info / sample-sheet file of cell-level information, including the 
-group assignment foreach cell ('Cluster'), and any other useful information.
+2. And a tab-delimited cell info / sample-sheet file of cell-level information, including the 
+group assignment for each cell ('Cluster'), and any other useful information.
 
 CellId  | Sample  |  Cluster
 --------|---------|---------
@@ -229,26 +258,40 @@ cell2   | Control | cluster7
  ...    | ...     | ...
 cell954 | KO      | cluster8
 
-Internally, (and throughout this doco), there are references to the 
-'cell_sample' and 'group' columns. They can be named as such in the input cell 
-info table, or just assumed or specified when loaded.
-
-The following commands are equivalent, because the first column of the cell 
-info table is assumed to be the cell identifier if not specified.
+This example dataset would be loaded with *load_se_from_files*:
 
 ```{r eval=FALSE}
-
 dataset_se <- load_se_from_files(counts_matrix   = "counts_matrix_file.tab", 
                                   cell_info_file = "cell_info_file.tab", 
-                                  group_col_name  = "Cluster")
+                                  group_col_name = "Cluster")
+```
 
+
+Note the specification of the 'Cluster' column as the *group_col_name*. 
+Internally, (and throughout this doco), there are references to the 
+'cell_sample' and 'group' columns. 
+They can use these exact names in the input tables, or be assumed or 
+specified when loaded.
+
+The following command does exactly the same thing, but explicitly specifies the cell 
+identifier as 'CellId'. If *cell_col_name* is omitted, it is assumed to be
+the first column of the cell info table.
+
+```{r eval=FALSE}
 dataset_se <- load_se_from_files(counts_matrix   = "counts_matrix_file.tab", 
                                   cell_info_file = "cell_info_file.tab",
                                   group_col_name  = "Cluster",
                                   cell_col_name   = "CellId" )
 ```
+If cell information is missing (from cell info or from the counts),
+the cell will just be dropped from the analysis. 
+This is useful when excluding cells or subsetting the analysis - it is enough to
+remove entries from the cell info table before loading.
+When this happens a warning message displays the number of cells kept.
 
-If there was a table of extra information on the genes:
+-----
+
+Optionally, a third file, with gene-level information might be included.
 
 Gene   | NiceName
 -------|-----------       
@@ -264,18 +307,16 @@ dataset_se <- load_se_from_files(counts_matrix   = "counts_matrix_file.tab",
 
 ```
 
-If extra gene information is included, the first column (or a column named ID) 
-must be unique. Every gene must match between the counts matrix and gene info.
-
-In contrast, if cell information is missing (from cell info or from the counts),
-the cell will just be dropped from the analysis. 
-This is useful when excluding cells or subsetting the analysis - it is enough to
-remove entries from the cell info table.
-If this happens, a warning message will display the number of cells kept.
+If extra gene information is provided, the first column (or a column named 'ID') 
+must be unique. Every gene in the counts matrix must have an entry in the 
+gene info table, and vice versa.
 
 
-If the data is already loaded into R, the *load_se_from_tables* funtion
-will accept data frames instead of filenames.
+-----
+
+Alternatively, if the data is already loaded into R, the *load_se_from_tables* function
+will accept data frames instead of filenames. The *load_se_from_files* function 
+is just a wrapper for *load_se_from_tables*.
 
 ```{r eval=FALSE}
 dataset_se <- load_se_from_tables(counts_matrix   = "counts_matrix_file.tab", 
@@ -303,23 +344,24 @@ dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_mydata',
 ```
 
 Note that the cell ranger pipelines seem to produce many different cluster sets, 
-their names should be seen in the cell loupe broswer, or listed in 
+their names should be seen in the cell loupe browser, or listed in 
 the 10X_mydata/analysis/clustering directory.
 
 
-NB: This function assumed the file at 10X_mydata/filtered_gene_bc_matrices/GRCh38/genes.csv
-will have columns <ensemblID><GeneSymbol>. See function doco if not the case.
-
+NB: This function is quite basic and assumes the file at 10X_mydata/filtered_gene_bc_matrices/GRCh38/genes.csv
+will have columns `<ensemblID><GeneSymbol>`. See function doco if this is not the case. 
+For more involved cases, the [cellrangerRkit](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/rkit)
+package may be necessary.
 
 
 #### Special case: Directly with SummarizedExperiment objects
 
-The data loding functions here are just convenient ways of making the SummarizedExperiment 
+The data loading functions here are just convenient ways of making the SummarizedExperiment 
 objects with the content that celaref functions expect, handling naming and 
 checking uniqueness e.t.c. 
 See [SummarizedExperiment doco](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html)
 
-The minimum mandatory feilds are described in [Input], specifically:
+The minimum mandatory fields are described in section [Input data](#input-data), specifically:
 
 * Within colData(dataset_se): **cell_sample** and **group** columns.
 * Within rowData(dataset_se): **ID** column.
@@ -336,14 +378,15 @@ currently supported).
 
 #### Reading microarray data {#reading-microarray-data}
 
-Microarray datasets of purified celltypes can be used as references too. 
-However, the analysis doesn't use summarisedExperiment objects the same way, so 
+Microarray datasets of purified cell-types can be used as references too. 
+However, the analysis doesn't use summarizedExperiment objects the same way, so 
 it does the within-experiment differential expression directly.
 
-Refer to (#prepare-data-with-within-experiment-differential-expression) for details.
+Refer to section [Prepare data with within-experiment differential expression](#prepare-data-with-within-experiment-differential-expression) for details.
 
-[Limma](http://bioconductor.org/packages/release/bioc/html/limma.html) needs to 
-be installed to use this function. Limma is used to calculate the differential 
+The [Limma](http://bioconductor.org/packages/release/bioc/html/limma.html) package
+needs to be installed to use this function. 
+Limma is used to calculate the differential 
 expression on the microarrays, rather than MAST which is used for the single-cell
 RNAseq data.
 
@@ -369,7 +412,7 @@ Similarly, for the celaref package, very small cell groups will not have the
 statistical power to detect similarity.
 
 The *trim_small_groups_and_low_expression_genes* function will remove cells and 
-genes that dont meet such thresholds. Defaults are fairly inclusive, and may 
+genes that don't meet such thresholds. Defaults are fairly inclusive, and will 
 require tweaking according to different experiments or technologies.
 
 It can be helpful to check the number of genes and cells surviving 
@@ -387,31 +430,33 @@ dataset_se <- trim_small_groups_and_low_expression_genes(dataset_se,
                                     min_detected_by_min_samples = 5)
 
 ```
-Refer to function doco for exact meaning of these parameters.
+Refer to function doco for exact definitions of these parameters.
 
 
 
 #### Converting IDs {#converting-ids}
 
-Converting one type of gene identfier to another gene identifier is annoying. 
-Even with major identifers like ensembl IDs (ENSG00000139618) or gene symbols
+Converting one type of gene identifier to another gene identifier is annoying. 
+Even with major identifiers like ensembl IDs (ENSG00000139618) or gene symbols
 (SYN1) there will be imperfect matching (missing ids, multiple matches).
 
 If multiple gene IDs were provided when creating the summarizedExperiment 
-object, (ie a gene info table/file), a convenience function 
+object, (i.e. a gene info table/file), a convenience function 
 *convert_se_gene_ids* will allow a graceful conversion between them. 
 
-The function needs a tie-breaker for many-to-one gene relationships - picking
+The function needs a tie-breaker for many-to-one gene relationships though - picking
 the one with higher read counts is a decent choice. Note that if both match, 
-the choice is essentially arbitrary (and not neccesarily consistant).
+the choice is essentially arbitrary (consistency is not guaranteed).
 
 The following code will convert from the original gene IDs (e.g.if ID is 
-ensemblID), to 'GeneSymbol' 
-(which should be a column name in rowData(dataset_se))
+ensemblID), to 'GeneSymbol' (which should be a column name in rowData(dataset_se))
 
- * Remove any genes that have no GeneGymbol associated with the ensembl ID
+It will:
+
+ * Define a genotype data level column *total_count* with summed read counts per gene to use as the *eval_col*.
+ * Remove any genes that have no GeneSymbol associated with the ensembl ID
  * If the same GeneSymbol is assigned to multiple ensembl IDs - it looks up the 
-   *eval_col* value (here specified as 'total_count') and picks the bigger one.
+   *eval_col* value and picks the bigger one.
 
 ```{r eval=FALSE} 
 # Count and store total reads/gene.
@@ -430,23 +475,24 @@ It can be helpful to check the number of genes before and after
 
 Once data is loaded into summarizedExperiment objects, the groups in each 
 dataset need to be analysed within-dataset before any cross-dataset comparisons 
-can be done.
+can be done. This is the most time consuming step, but only needs to be done once per dataset.
 
-Essentially, we want to rank all genes from most to least 'distinctive' for each dataset. 
+Essentially, we want to rank all genes from most to least 'distinctive' for each group in the dataset. 
 
-So, using MAST [@Finak2015], differential expression is calculated for every group 
-versus the rest of the dataset pooled together. This will provide relative 
+Differential expression is calculated for every group 
+versus the rest of the dataset pooled together using MAST[@Finak2015]. 
+This will provide relative 
 expression for everything relative to the rest of the tissue or sample as 
-background (which is likely to be similar in other experiments). 
-But because single cell RNA seq data can have many zeros and drop outs, celaref 
-focusses on overrepresented genes. So genes are ranked from most to least
+background.An independent experiment will have its own biases, but with any luck the same 
+genes should be 'distinctive' for the same cell type regardless. 
+Since single cell RNAseq data can have many zeros and drop outs, celaref 
+focuses on overrepresented genes. Genes are ranked from most to least
 overrepresented on the basis of their most conservative ('inner') 95% confidence 
 interval of log2FC. This rank is a simple compromise between expected size-of-effect 
 (log2FC - which can change over-dramatically for low-expression genes), and 
-statistical power (from a p-value ranking), discussed in [@topconfect]. 
+statistical power (from a p-value ranking).
 
-
-This is done with the _contrast_each_group_to_the_rest_ function 
+This is done with the *contrast_each_group_to_the_rest* function 
 after [filtering](#filtering):
 
 ```{r eval=TRUE, cache=TRUE}
@@ -455,60 +501,57 @@ demo_query_se.filtered <- trim_small_groups_and_low_expression_genes(demo_query_
 de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se.filtered, "a_demo_query",      num_cores = 4)
 ```
 
-And note that any reference datasets are prepared with the same command:
+Reference datasets are prepared with the same command, there's no difference in the result.
 ```{r eval=TRUE, cache=TRUE}
 demo_ref_se.filtered <- trim_small_groups_and_low_expression_genes(demo_ref_se)
 de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se.filtered,   "a_demo_reference",  num_cores = 4)
 ```
 
+This object can be now passed to subsequent comparison functions - see section [Compare groups to reference](#Making-comparisons-to-reference-data). 
+
+-----
+
 For clarity, the results objects have names starting with de_table, but they are simply
 tibble (data.frame-like) objects that look like this:
-```{r eval=TRUE, echo=TRUE}
-head(de_table.demo_query)
+```{r eval=TRUE, echo=FALSE}
+kable(head(de_table.demo_query))
 ```
 
-
-This object can be now passed to subsequent comparison functions - see [Compare groups to reference](#Making-comparisons-to-reference-data). 
-
-
-
-As for what it contains, the important feilds are:
+As for what it contains, the important fields are:
 
  * __ID__       : Gene ID
- * __fdr__      : The multiple hypothesis corrected p-value
+ * __fdr__      : The multiple hypothesis corrected p-value (BH method)
  * __log2FC__   : Log2 fold-change of for this gene's expression in the (test group) - (rest of sample)
- * __ci_inner__ : The inner (most conservative/nearest 0) 95% confidence interval of __log2FC__. This is used to rank genes from most-to-least overrepresnted in this group in the context of the sample tissue.
+ * __ci_inner__ : The inner (most conservative/nearest 0) 95% confidence interval of __log2FC__. This is used to rank genes from most-to-least overrepresented in this group, with respect to the rest of the sample.
  * __group__    : Group being tested (all are tested by default)
  * __sig_up__   : Is this gene significantly (__fdr__ <=0.01) enriched (__log2FC__ > 0) in this group.
  * __rank__     : Numerical rank of __ci_inner__ from most (1) to least (n).
  * __rescaled_rank__ : Rank rescaled from most (0) to least (1) - used in analyses and plotting.
  * __dataset__  : Name of this dataset
 
- 
-
+-----
 
 This function is parallelised. Due to the differential expression calculations, this is a 
 time-consuming step (e.g. a few hours, depending on data size). 
 But the result can and should be saved and reused for any comparisons to other datasets. 
 If *num_cores* is specified, up to that many groups will be processed in 
-parallel. This is highly recommended, and defaults to a modest 4. For best 
+parallel. This is highly recommended, and defaults to 4. For best 
 results *num_cores* should be set to the number of groups in the query so long
 as system resources permit.
 
+-----
 
 Microarray reference data is treated differently, with function _contrast_each_group_to_the_rest_for_norm_ma_with_limma()_ that both loads data
 and does within sample differential expression in one step. Its output is much the same. See 
 [section on microarray input](#reading-microarray-data) for details.
-```{r eval=TRUE, cache=TRUE}
+```{r eval=FALSE, cache=TRUE}
 de_table.microarray <- contrast_each_group_to_the_rest_for_norm_ma_with_limma(
     norm_expression_table=demo_microarray_expr, 
     sample_sheet_table=demo_microarray_sample_sheet,
     dataset_name="DemoSimMicroarrayRef", 
     sample_name="cell_sample", group_name="group") 
-
-head(de_table.microarray)
-
 ```
+
 
 
 
@@ -518,18 +561,18 @@ head(de_table.microarray)
 
 ### Compare groups to reference
 
-Once the dataset has been compared to itself (see [Prepare data with within-experiment differential expression](#prepare-data-with-within-experiment-differential-expression)), its
+Once the dataset has been compared to itself (see [Prepare data with within-experiment differential expression](#prepare-data-with-within-experiment-differential-expression)), the 
 groups can be compared to the reference dataset.
 
 
 The main output of celaref are the violin plots of the reference group rankings of query group 
 'top' genes. Each query group gets its own panel, with a violin plot of 
 its 'top' gene rankings in each reference group. 
-See section [Interpreting output](#interpreting-output) and the [overview diagram](#overview) for full information on intepreting these plots. 
+See section [Interpreting output](#interpreting-output) and the [overview diagram](#overview) full description of these plots. 
 
 
 To make that output, run function *make_ranking_violin_plot* on the output 
-of *de_table.marked.query_vs_ref*:
+of *get_the_up_genes_for_all_possible_groups*:
 
 ```{r eval=TRUE, cache=TRUE}
 
@@ -544,7 +587,7 @@ make_ranking_violin_plot(de_table.marked.query_vs_ref)
 
 The *get_the_up_genes_for_all_possible_groups* function will do two things
 
-1. Identify 'top' genes for each group in the query dataset. I.e what is most 
+1. Identify 'top' genes for each group in the query dataset. i.e what is most 
 distinctively high for this cell-type/group in the context of this 
 tissue/sample. This is defined 
 as up to the __first 100 genes with an inner log2FC 95% confidence interval >=1__. 
@@ -552,25 +595,25 @@ as up to the __first 100 genes with an inner log2FC 95% confidence interval >=1_
 of 'top' genes in each reference group. 
 
 
-With a low number of 'top' genes, usually due to small or heterogenous cell 
-group, results will be unreliable. Results are still reported though - its 
-quite easy to see these cases with few tick marks on the violin plots and judge
-any similarity by eye.
+NB: 'Group 1' is missing entirely because the reference dataset (*toy_ref_se* from the [Quickstart example](#quickstart)) only had 3 'Group 1' cells. They were removed in the filtering step.
 
-NB: This is why the comparison is directional. Because the 'top' genes in
-the reference will be different to those in the query. 
+NB: Because there are only 24 cells in 'Group 2' of this toy 100-gene dataset - it has low statistical power and only produced 3 'top' genes. They're still plotted - but you can see by eye that 3 genes will not give a reliable indication of similarity. 
 
 
-### Compare groups within a single dataset
+### Compare groups within a single dataset{#compare-groups-within-a-single-dataset}
 
 Its often useful to compare a dataset to itself. Just specify the same dataset 
 for *de_table.test* and *de_table.ref*. This will show how similar the groups are.
 Clusters that can't be distinguished from each other might be a sign that too
 many clusters were defined. 
 
-In this example - there are too few 'top' genes in Group2 to distinguish it from 
-Group3, but in the reciprocal contrast the 'top' Genes for group3 do separate 
-the two groups. So the groups are reasonable. 
+In this example because there are only 24 cells in Group2, it only had the 
+statistical power to detect 3 'Top' genes. And that is too few to 
+distinguish it from Group3. In the reciprocal contrast however the 'top' genes for 
+Group3 do separate the two groups. So in this example - it seems that Group3 and 
+Group2 are genuinely different, but Group2 might be difficult to characterise 
+due to its (demo!) size.
+
 
 ```{r eval=TRUE, cache=TRUE} 
 
@@ -587,52 +630,63 @@ make_ranking_violin_plot(de_table.marked.query_vs_self)
 
 ### Make labels for groups
 
-Lastly, celaref can parse these comparions and suggest group names for the 
-query groups. The method used is described in 
+Lastly, celaref can parse these comparisons and suggest group names for the 
+query groups. The method used is described in section
 [Assigning labels to clusters](#assigning-labels-to-clusters). These names might
 make a good starting point for downstream characterisation.
 
-```{r eval=FALSE, cache=TRUE} 
+```{r eval=TRUE, cache=TRUE} 
 # And get group labels
-make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "a_demo_reference")
+group_names_table <- make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "a_demo_reference")
 ```
+```{r eval=TRUE, echo=FALSE} 
+kable(group_names_table)
+```
+
+NB: The format of this table may change in future versions.
 
 # Example Analyses
 
 
 ## PBMCs - 10X vs Microarray Reference
 
-PBMCs from blood are an easily accessable heterogenous cell sample with several 
+PBMCs from blood are an easily accessible heterogeneous cell sample with several 
 similar yet distinct cell types.
 
-10X genomics has severaldatasets available to download from their 
+10X genomics has several datasets available to download from their 
 website, including the [pbmc4k dataset](https://support.10xgenomics.com/single-cell-gene-expression/datasets/2.1.0/pbmc4k), 
 which contains PBMCs derived from a healthy individual. This example data is the
-output of 10X's [cell-ranger](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger) pipeline, which includes
+direct output of 10X's [cell-ranger](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger) pipeline, which includes
 the output of several different unsupervised cell-clustering analyses. 
+This is the kind of data that might be initially provided by a sequencing facility.
+
 
 These clustering algorithms produce a set of numbered cell clusters - 
-But what cell-types are in each cluster?
+_But what cell-types are in each cluster?_
 
-We will use a reference of PBMC cells to assign some biological cell types to these clusters.
+This example will use a reference of PBMC cells to assign some biological cell types to these clusters.
 
 A suitable PBMC reference (a 'HaemAtlas') has been published by @Watkins2009. They
 purified populations of PBMC cell types and measured gene expression via 
 microarray. The data used here was downloaded in a normalised table from the 
 'haemosphere' website [@DeGraaf2016].
 
-***
+-----
 
-The cell-ranger pipeline produced several different clustering run. 
-Going to use the kmeans k=7 set for this example, but comparing different 
-cluster-sets to a reference like this might be one way to assess which is most appropriate.
+The cell-ranger pipeline produced several different clustering runs. 
+None of which is likely to be perfect.
+This example use the kmeans k=7 set, but comparing different 
+cluster-sets to a reference like this might help assess which is most appropriate.
 
-For reference, here are the groups colour-coded on a t-SNE plot in the cell-loupe viewer. 
+For reference, here are the groups for this data colour-coded on a t-SNE plot in the cell-loupe viewer. 
 The number in brackets after the cell group label is the number of cells in the group.
 
 ![](images/pbmc4k_cloupe_kmeans7.png) 
 
-First, load the dataset into a SummarisedExperiment object and filter out genes 
+
+### Prepare 10X query dataset
+
+First, load the dataset into a SummarizedExperiment object and filter out genes 
 with low expression, or groups that have too few members.
 
 ```{r eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
@@ -644,23 +698,23 @@ load("/mnt/ceph/mbp/servers/bioinformatics-platform/home/sarah.williams/projects
 library(celaref)
 datasets_dir <- "~/celaref_extra_vignette_data/datasets"
 
-dataset_se.10X_pbmc4k_k7 <- load_dataset_10Xdata(dataset_path  = file.path(datasets_dir,'10X_pbmc4k'), 
-                                                 dataset_genome = "GRCh38", 
-                                                 clustering_set = "kmeans_7_clusters", 
-                                                 id_to_use      = "GeneSymbol")
+dataset_se.10X_pbmc4k_k7 <- load_dataset_10Xdata(
+   dataset_path   = file.path(datasets_dir,'10X_pbmc4k'), 
+   dataset_genome = "GRCh38", 
+   clustering_set = "kmeans_7_clusters", 
+   id_to_use      = "GeneSymbol")
 dataset_se.10X_pbmc4k_k7 <- trim_small_groups_and_low_expression_genes(dataset_se.10X_pbmc4k_k7)
 
 ```
 
-Then prepare the datasts with the within-experiment comparsions. 
-Setting the num-cores to the 7 - one per group run in parallel. If the computer 
-can't support that many simultaneous processes, fewer is fine.
+Then prepare the datasets with the within-experiment comparisons. 
+Setting the num-cores to 7 to let each group run in parallel. 
 
 ```{r eval=FALSE}
 de_table.10X_pbmc4k_k7   <- contrast_each_group_to_the_rest(dataset_se.10X_pbmc4k_k7, dataset_name="10X_pbmc4k_k7", num_cores=7) 
 ```
 
-
+### Prepare reference microarray dataset
 
 Next, do the same with the Watkins2009 reference data. However, because this is 
 microarray data, it is a different process - the data loading and 
@@ -704,7 +758,7 @@ As usually seems to be the case, the hardest part is formatting the input.
 Microarray expression values should be provided as _normalised, log-transformed 
 data_ using the _same IDs as the query datset_. Any probe or sample level filtering
 should also be performed beforehand. In this case, the data was 
-normalised when aquired from the haemosphere website - but still need to match the IDs.
+normalised when acquired from the haemosphere website - but still need to match the IDs.
 
 This data is from Illumina HumanWG-6 v2 Expression BeadChips, and gives expression at the probe level.
 These probes need to be converted to gene symbols to match the PBMC data.
@@ -712,7 +766,7 @@ These probes need to be converted to gene symbols to match the PBMC data.
 NB: Converting between IDs is easier for single cell datasets using the 
 *convert_se_gene_ids* function. But that function expects a SummarizedExperiment 
 object, which isn't used for microarray data. 
-So it has to be done manually.
+So it has to be done manually here.
 
 NB: Note that it doesn't matter if IDs are only present 
 in one or the other dataset - just that they are the same type of ID and most match!
@@ -762,9 +816,9 @@ Now read the data and run the within-experiment contrast with
 *contrast_each_group_to_the_rest_for_norm_ma_with_limma*.
 
 Because there is information on which individual each sample is from in the 
-'description' feild, this is specified with **extra_factor_name**, and is 
+'description' field, this is specified with *extra_factor_name*, and is 
 included as a factor in the linear model for limma. This is optional, and 
-only one extra factor is supported.
+only one extra factor can be added this way.
 
 ```{r, eval=FALSE}    
 # Go...
@@ -778,7 +832,7 @@ de_table.Watkins2009PBMCs <- contrast_each_group_to_the_rest_for_norm_ma_with_li
 
 ```
 
-
+### Compare 10X query PBMCs to to reference 
 
 Finally! Compare the single cell data to the purified PBMCs:
 ```{r eval=TRUE}
@@ -793,7 +847,7 @@ Plot it!
 make_ranking_violin_plot(de_table.pbmc4k_k7_vs_Watkins2009PBMCs)
 ```
 
-Hmmm, there's a few clusters where different the top genes are bunched near the 
+Hmm, there's a few clusters where different the top genes are bunched near the 
 top for a couple of different reference cell types. 
 
 Logging the plot will be more informative at the top end for this dataset. 
@@ -808,10 +862,8 @@ make_ranking_violin_plot(de_table.pbmc4k_k7_vs_Watkins2009PBMCs, log10trans = TR
 Now get some some group labels. 
 
 As described in section [Assigning lables to clusters](#assigning-labels-to-clusters),
-multiple similarities will be reported (in decending order of median rank)
-unless a clear (significantly differnt) frontrunner can be flagged.
-
-
+multiple similarities will be reported (in descending order of median rank)
+unless a clear (significantly different) frontrunner can be flagged.
 
 
 
@@ -820,10 +872,16 @@ unless a clear (significantly differnt) frontrunner can be flagged.
 label_table.pbmc4k_k7_vs_Watkins2009PBMCs <- make_ref_similarity_names_for_groups_ks(de_table.pbmc4k_k7_vs_Watkins2009PBMCs, 
                                         the_test_dataset = "pbmc4k_k7", 
                                         the_ref_dataset  = "Watkins2009PBMCs")
-
-# Longlab is less interesting and may change.
+```
+```{r eval=TRUE, echo=FALSE}
 kable(label_table.pbmc4k_k7_vs_Watkins2009PBMCs[,1:2] %>% arrange(test_group) ) 
 ```
+
+
+NB: only displaying 'shortlab'. That's the most interesting column, and the 
+rest of the table may change in future versions.
+
+
 
 They may not be perfect but they're a good start. Tc and Th lymphocytes can be similar, 
 so groups 1 and 3 have multiple similarities to be considered. 
@@ -831,7 +889,7 @@ Its worth remembering the clustering process itself isn't perfect, there may
 be mixed or over-split populations and this parallels the cluster's relationship
 in the t-SNE plot.
 
-On the other hand monocytes and B lympocytes were uniquely
+On the other hand monocytes and B lymphocytes were uniquely
 labelled. Clusters 4 and 5 are quite distinct in the t-SNE but both are labelled 
 as B-lymphocytes. From the violin plot its obvious that the similarity is 
 stronger for the much larger cluster 4. The 37-gene cluster 5 could correspond 
@@ -851,8 +909,8 @@ In their paper _Cell types in the mouse cortex and hippocampus revealed by
 single-cell RNA-seq_  @Zeisel2015 performed single cell RNA sequencing in 
 mouse, in two tissues (sscortex and ca1hippocampus). 
 
-Simiarlly, @Farmer2017 have 
-recently published a survey of cell types in the mouse lacrimal gland at two 
+Similarly, @Farmer2017 have 
+published a survey of cell types in the mouse lacrimal gland at two 
 developmental stages.
 (*Defining epithelial cell dynamics and lineage relationships in the developing 
 lacrimal gland*).
@@ -860,11 +918,11 @@ lacrimal gland*).
 
 These cell types are have already been expertly described - so they don't really 
 need to be compared to any reference. Rather, these datasets are contrasted to 
-visualise how single cell datasets of similar and different tissue types look,
+visualise how real single cell datasets of similar and different tissue types look,
 with respect to a 'known truth'.
 
 
-***
+### Load and compare mouse brain datasets
 
 First, start by loading the brain cell data from [@Zeisel2015]:
 
@@ -876,7 +934,7 @@ zeisel_counts_file    <- file.path(datasets_dir, "zeisel2015", "zeisel2015_mouse
 
 Note the sample data in *zeisel2015_mouse_scs_detail.tab* has the following
 information. They specify cell type groups at two different levels, and for 
-this example, just going to use *level1class*. Also need to say that *cell_id* 
+this example, just going to use *level1class*. Also need to specify that *cell_id* 
 is, unsurprisingly, the cell identifier.
 
 tissue|total mRNA mol|well|sex|age|diameter|cell_id|level1class|level2class
@@ -936,18 +994,16 @@ Perhaps unsurprisingly given they're from the same experiment, the cell-type
 annotations do almost perfectly correlate one-to-one.
 
 
-***
+### Load lacrimal gland dataset
 
 Next, compare that to a dissimilar tissue - lacrimal gland from @Farmer2017. 
 Only the more mature P4 timepoint will be used here.
 
 
-
-
 The format of this data that is a little more 
-complicated. There was an effience MatrixMarket format for the counts matrix, 
+complicated. There was a MatrixMarket formatted file for the counts matrix, 
 and cell assignment and cluster information are in separate files. So this data 
-needs to be convered into the form that *load_se_from_tables* expects.
+needs to be converted into the form that *load_se_from_tables* expects.
 
 
 
@@ -1011,11 +1067,11 @@ kable(head(colData(dataset_se.P4)))
 kable(head(rowData(dataset_se.P4)))
 ```
 
-Note that 'ID' is the ensembl gene id. Need to switch this to the gene symbol 
-so it matches the Zeisel data. Could equally well use ensembl ids for both.
+Note that 'ID' is the ensembl gene id, and it needs to switch to the gene symbol 
+to match the Zeisel data. Could equally well use ensembl ids for both.
 
 Gene symbol to ID is *almost* a one to one mapping, so a few genes are lost in 
-this step. Calculating the total readcount foreach gene is a simple way of 
+this step. Calculating the total read count for each gene is a simple way of 
 producing a tie-breaker.
 This is also the reason why the data was loaded with ensemblID as the ID in 
 *load_se_from_tables*, because GeneSymbol is not unique.
@@ -1033,9 +1089,10 @@ de_table.Farmer2017lacrimalP4  <- contrast_each_group_to_the_rest(dataset_se.P4,
 ```
 
 
+### Cross-tissue comparision
 
-Now compare the mouse cortex samples to the lacrimal gland. Wouldn't expect 
-many cell types in common.
+Now compare the mouse cortex samples to the lacrimal gland. 
+Being completely different tissues there shouldn't be many cell types in common.
 
 ```{r eval=TRUE, cache=TRUE}
 # Cross-experimet comparison
@@ -1060,12 +1117,13 @@ label_table.cortex_vs_lacrimal <-
 kable(label_table.cortex_vs_lacrimal[,1:2] %>% arrange(test_group) ) 
 ```
 
-The cross-tissue comparison looks very different - as expected, most clusters 
-have 'no similarity'.
+This cross-tissue comparison looks very different to the brain-brain contrast
+- as expected, most clusters have 'no similarity'.
 
-A few do though - the 'endothelial-mural' cluster from the mouse cortex is most 
-similar to the 'Endothelial' and 'Mes 1'(Mesenchymal) groups (just) in the 
-lacrimal gland sample. The cortex 'microglia' have their similarity with 
+Not all though. The 'endothelial-mural' cluster from the mouse cortex is most 
+similar to the 'Endothelial' and 'Mes 3'(Mesenchymal) groups in the 
+lacrimal gland sample. Though inspection of the plots shows that the 'Mes 3' 
+similarity is marginal. The cortex 'microglia' have their similarity with 
 the 'Macrophage/Monocyte' group highlighted. This makes sense - as they are 
 biological similar cell types.
 
