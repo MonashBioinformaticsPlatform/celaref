@@ -22,6 +22,9 @@ knitr::opts_chunk$set(
 library(celaref)
 library(knitr) #kable
 library(tidyverse)
+
+
+
 ```
 <!--
 can't use gitbiook
@@ -91,20 +94,20 @@ Every dataset, whether a query or a reference, is prepared the same way. For eac
 
 That this step is the most time consuming, but only needs to be done once per dataset.
 
-### Cross-experiment comparison
+### Query-Reference comparison
 
 A list of ‘Up’ genes are extracted for each query cluster – defined as those that have significantly higher expression in that cluster versus the rest of the sample (p<0.01 after BH multiple hypothesis correction). The ‘Up’ gene list is capped at the top 100 (ranked by lower 95% FC). Then, those genes are looked up in the ranking of genes in each reference cell cluster.  The distribution of these ‘up gene’ ranks is plotted to evaluate similarity of the query cell-group to a reference cell-group. 
+
+
+Output plots are described [here](#output).
+
+## Output{#output}
 
 ### Interpreting output {#interpreting-output}
 
 Typically, every cell cluster in the query data (each box) is plotted against everything in the reference data (X-axis). Each of the ‘up’ genes is represented by a tick mark, and the median generank is shown as a thick bar. A biased distribution near the top (i.e.. rescaled rank of 0) indicates similarity of the groups – essentially the same genes are representative of the clusters within their respective samples. The dotted line at 0.25 is an arbitrary threshold of the top quarter of genes. 
 
-!!!!!!!!!!!!!!!!!!!!!
----
-EXAMPLE IMIAGE GOES HERE.
----
-!!!!!!!!!!!!!!!!!!!!!
-
+![ \label{fig:workflow_diagram}](images/violin_plot_example.png)
 
 * A median gene rank of 0.5 would indicate a completely random distribution. However, much lower values are common. 
 The reciprocal nature of the within-dataset differential expression can cause this - what's up in 
@@ -117,8 +120,8 @@ See 'Group 2' in the the [quickstart example](#quickstart) on test data for an e
 between two datasets is not symmetrical. In ambiguous cases, it might helpful 
 to check the reverse comparison from reference to query. Especially when
 it is the query group that is too small to detect significant 'top' genes. 
-For an example, see the plot in section 
-[Compare groups within a single dataset](#compare-groups-within-a-single-dataset)
+For an example of this, see the plot in section 
+[Compare groups within a single dataset](#compare-groups-within-a-single-dataset).
 
 
 
@@ -126,6 +129,16 @@ For an example, see the plot in section
 
 Lastly, there is a function to suggest some semi-sensible query cluster labels.
 
+e.g.
+
+Query Group   | Short Label
+--------------|-----------       
+cluster_1     | cluster_1:astrocytes_ependymal
+cluster_2     | cluster_2:endothelial-mural
+cluster_3     | cluster_3:no_similarity
+cluster_4     | cluster_4:microglia
+cluster_5     | cluster_5:pyramidal SS\|interneurons
+cluster_6     | cluster_6:oligodendrocytes
 
 While a rough indication of similarity can be taken from the reference group 
 with the highest median rank, often multiple reference groups will meet the 
@@ -691,7 +704,11 @@ with low expression, or groups that have too few members.
 
 ```{r eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
 # Silently load processed data into memory.
-load("/mnt/ceph/mbp/servers/bioinformatics-platform/home/sarah.williams/projects/cell_groupings/analysis/10_data_for_doco/larger_doco_examples.rdata")
+#load("/mnt/ceph/mbp/servers/bioinformatics-platform/home/sarah.williams/projects/cell_groupings/analysis/10_data_for_doco/larger_doco_examples.rdata")
+
+larger_doco_example_filename <- system.file("extdata", "larger_doco_examples.rdata", package = "celaref")
+load(larger_doco_example_filename)
+
 ```
 
 ```{r eval=FALSE}
@@ -955,7 +972,7 @@ objects by tissue (its a SummarizedExperiment object).
 Then separately filter both for low-expression genes and groups with too few 
 cells to analyse.
 
-```{r eval=TRUE, cache=TRUE }
+```{r eval=FALSE, cache=TRUE }
 # Subset the summarizedExperiment object into two tissue-specific objects
 dataset_se.cortex <- dataset_se.zeisel[,dataset_se.zeisel$tissue == "sscortex"]
 dataset_se.hippo  <- dataset_se.zeisel[,dataset_se.zeisel$tissue == "ca1hippocampus"]
@@ -1064,7 +1081,7 @@ kable(head(colData(dataset_se.P4)))
 
 ... and the gene information (rowData):
 ```{r eval=TRUE, echo=FALSE}
-kable(head(rowData(dataset_se.P4)))
+kable(head(rowData(dataset_se.P4)[,1:3])) #edit because total count is added later, but is in the obj during doco production
 ```
 
 Note that 'ID' is the ensembl gene id, and it needs to switch to the gene symbol 

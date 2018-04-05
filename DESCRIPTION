@@ -14,13 +14,15 @@ Imports:
    ggplot2,
    reshape2,
    Matrix,
-   tidyverse
+   tidyverse,
+   magrittr
 Suggests:
    limma,
    parallel,
    knitr,
    rmarkdown,
    BiocStyle
+biocViews: SingleCell
 VignetteBuilder: knitr
 License: What license is it under?
 Encoding: UTF-8

@@ -11,7 +11,7 @@ cellular heterogeny within a tissue or sample, and observe changes and
 characteristics in specific cell types. To do this, we need to group the cells
 into clusters and figure out what they are.
 
-The celaref package aims to streamline the cell-type identification step, by 
+The celaref (*ce*ll *la*belling by *ref*erence) package aims to streamline the cell-type identification step, by 
 suggesting cluster labels on the basis of similarity to an already-characterised
 reference dataset - wheather that's from a similar experiment performed 
 previously in the same lab, or from a public dataset from a similar sample. 
@@ -33,10 +33,24 @@ To look for cluster similarities celaref needs:
 
 
 ![](vignettes/images/violin_plot_example.png) 
-(Zeisel et al. 2015 + Darmanis et al. 2015 references. To be updated.)
+
+Query Group   | Short Label
+--------------|-----------       
+cluster_1     | cluster_1:astrocytes_ependymal
+cluster_2     | cluster_2:endothelial-mural
+cluster_3     | cluster_3:no_similarity
+cluster_4     | cluster_4:microglia
+cluster_5     | cluster_5:pyramidal SS\|interneurons
+cluster_6     | cluster_6:oligodendrocytes
+
+
+This is a comparison of brain scRNAseq data from :
+
+ * Zeisel, A., Manchado, A. B. M., Codeluppi, S., Lonnerberg, P., La Manno, G., Jureus, A., … Linnarsson, S. (2015). *Cell types in the mouse cortex and hippocampus revealed by single-cell RNA-seq.* Science, 347(6226), 1138–42. http://doi.org/10.1126/science.aaa1934
+ * Darmanis, S., Sloan, S. A., Zhang, Y., Enge, M., Caneda, C., Shuer, L. M., … Quake, S. R. (2015). *A survey of human brain transcriptome diversity at the single cell level.* Proceedings of the National Academy of Sciences, 112(23), 201507125. http://doi.org/10.1073/pnas.1507125112
 
 
 ### More information?
 
-Full details in the vignette.
+Full details in the vignette [html](https://github.com/MonashBioinformaticsPlatform/celaref/blob/master/vignettes/celaref_doco.html) - method description, manual and example analyses.
 
