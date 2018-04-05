@@ -52,5 +52,5 @@ This is a comparison of brain scRNAseq data from :
 
 ### More information?
 
-Full details in the vignette [html](https://github.com/MonashBioinformaticsPlatform/celaref/blob/master/vignettes/celaref_doco.html) - method description, manual and example analyses.
+Full details in the vignette [html](http://bioinformatics.erc.monash.edu/home/sarah.williams/projects/cell_groupings/doco/celaref_doco.html) - method description, manual and example analyses.
 
