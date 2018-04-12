@@ -23,17 +23,7 @@ library(celaref)
 library(knitr) #kable
 library(tidyverse)
 
-
-
 ```
-<!--
-can't use gitbiook
-  bookdown::gitbook:
---> 
-<!--
-load("/mnt/ceph/mbp/servers/bioinformatics-platform/home/sarah.williams/projects/cell_groupings/analysis/10_data_for_doco/larger_doco_examples.rdata")
--->
-
 
 # Overview {#overview}
 
@@ -65,6 +55,12 @@ reference dataset - whether that's from a similar experiment performed
 previously in the same lab, or from a public dataset from a similar sample. 
 
 
+Celaref differs from other cell-type identification tools like scmap 
+[@Kiselev2018] in that it operates at the cluster-level.
+
+
+
+
 Celaref requires a table of read counts per cell per gene, and a list of the cells 
 belonging to each of the clusters, (for both test and reference data). 
 It compares the reference sample rankings of the most distinctly enriched genes 
@@ -83,8 +79,24 @@ A typical celaref workflow is below, characterising a query dataset’s cell clu
 
 To compare scRNAseq datasets with celaref, two inputs are needed for each dataset:
 
-* A counts matrix of number of reads per gene, per cell.
-* Cluster assignment for each cell. 
+1. A counts matrix of number of reads per gene, per cell.
+
+gene  | Cell1 | cell2 | cell3 | cell4 |  ...  | cell954
+------|-------|-------|-------|-------|-------|--------|
+GeneA |     0 |     1 |     0 |    1  |  ...  |    0
+GeneB |     0 |     3 |     0 |    2  |  ...  |    2
+GeneC |     1 |    40 |     1 |    0  |  ...  |    0
+
+2. Cluster assignment for each cell. 
+
+CellId  | Cluster
+--------|---------
+cell1   | cluster1 
+cell2   | cluster7
+ ...    | ...    
+cell954 | cluster8
+
+See [Input](#input) for details.
 
 Cell clusters might be defined by any cell-clustering technique, such as those implemented in tools such as Seurat [@Satija2015], cellRanger (10X genomics), SC3[@Kiselev2017], among many others.
 
@@ -142,7 +154,7 @@ cluster_6     | cluster_6:oligodendrocytes
 
 While a rough indication of similarity can be taken from the reference group 
 with the highest median rank, often multiple reference groups will meet the 
-arbitrary arbitrary threshold of similarity at 0.25 (dotted line). This is 
+arbitrary threshold of similarity at 0.25 (dotted line). This is 
 expected when there are similar cell sub-populations in the reference data.
 
 In these cases some further logic is applied to decide which reference groups should be in the group label. See example distributions below :
@@ -192,8 +204,8 @@ toy_ref_se     <- trim_small_groups_and_low_expression_genes(toy_ref_se)
 toy_query_se   <- trim_small_groups_and_low_expression_genes(toy_query_se)
 
 # Setup within-experiment differential expression
-de_table.toy_ref   <- contrast_each_group_to_the_rest(toy_ref_se,    dataset_name="ref")
-de_table.toy_query <- contrast_each_group_to_the_rest(toy_query_se,  dataset_name="query")
+de_table.toy_ref   <- contrast_each_group_to_the_rest(toy_ref_se,    dataset_name="ref", num_cores = 2)
+de_table.toy_query <- contrast_each_group_to_the_rest(toy_query_se,  dataset_name="query", num_cores = 2)
 
 # Cross-experiment comparison
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
@@ -215,7 +227,7 @@ kable(make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref, the_
 
 
 
-## Prepare data {#Input}
+## Prepare data {#input}
 
 The celaref package works with datasets in 'SummarizedExperiment' objects. 
 While they can be constructed manually there are several functions (below) to 
@@ -247,9 +259,9 @@ c1,c2,c3 e.t.c but for reference datasets they should be something meaningful
 Providing gene-level information is entirely optional, because it can be taken 
 from the counts matrix. It is useful for tracking multiple IDs, see [Converting IDs](#converting-ids)
 
-### Input data 
+### Input data {#input-data}
 
-#### From tables or flat files
+#### From tables or flat files {#from-tables-or-flat-files}
 
 The simplest way to load data is with two files. 
 
@@ -511,13 +523,13 @@ after [filtering](#filtering):
 ```{r eval=TRUE, cache=TRUE}
 demo_query_se.filtered <- trim_small_groups_and_low_expression_genes(demo_query_se)
 
-de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se.filtered, "a_demo_query",      num_cores = 4)
+de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se.filtered, "a_demo_query",      num_cores = 2)
 ```
 
 Reference datasets are prepared with the same command, there's no difference in the result.
 ```{r eval=TRUE, cache=TRUE}
 demo_ref_se.filtered <- trim_small_groups_and_low_expression_genes(demo_ref_se)
-de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se.filtered,   "a_demo_reference",  num_cores = 4)
+de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se.filtered,   "a_demo_reference",  num_cores = 2)
 ```
 
 This object can be now passed to subsequent comparison functions - see section [Compare groups to reference](#Making-comparisons-to-reference-data). 
@@ -611,6 +623,10 @@ of 'top' genes in each reference group.
 NB: 'Group 1' is missing entirely because the reference dataset (*toy_ref_se* from the [Quickstart example](#quickstart)) only had 3 'Group 1' cells. They were removed in the filtering step.
 
 NB: Because there are only 24 cells in 'Group 2' of this toy 100-gene dataset - it has low statistical power and only produced 3 'top' genes. They're still plotted - but you can see by eye that 3 genes will not give a reliable indication of similarity. 
+
+NB: There is scope for the ranking criteria to be changed, but currently only 
+the inner log2FC 95% confidence interval is implemented. Use of 'topconfects' 
+is planned [@topconfect], as this is expected to be a better ranking metric.
 
 
 ### Compare groups within a single dataset{#compare-groups-within-a-single-dataset}

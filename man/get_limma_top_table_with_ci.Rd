@@ -20,7 +20,7 @@ Output of topTable, but with the (95%) confidence interval reported for the logF
 \description{
 Internal function that wraps limma topTable output but also adds upper and 
 lower confidence intervals to the logFC. Calculated according to 
-\link{https://support.bioconductor.org/p/36108/}
+\url{https://support.bioconductor.org/p/36108/}
 }
 \seealso{
 \code{\link[celaref]{contrast_the_group_to_the_rest_with_limma_for_microarray}} Calling function.

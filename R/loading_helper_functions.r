@@ -73,8 +73,11 @@
 #' @examples
 #'
 #' # From data frames (or a matrix for counts) :
-#' demo_se <- load_se_from_tables(counts_matrix=demo_counts_matrix, cell_info_table=demo_cell_info_table)
-#' demo_se <- load_se_from_tables(counts_matrix=demo_counts_matrix, cell_info_table=demo_cell_info_table, gene_info_table=demo_gene_info_table)
+#' demo_se <- load_se_from_tables(counts_matrix=demo_counts_matrix, 
+#'                                cell_info_table=demo_cell_info_table)
+#' demo_se <- load_se_from_tables(counts_matrix=demo_counts_matrix, 
+#'                                cell_info_table=demo_cell_info_table, 
+#'                                gene_info_table=demo_gene_info_table)
 #'
 #' # Or from data files : 
 #' counts_filepath    <- system.file("extdata", "sim_query_counts.tab",    package = "celaref")
@@ -82,12 +85,15 @@
 #' gene_info_filepath <- system.file("extdata", "sim_query_gene_info.tab", package = "celaref")
 #'
 #' demo_se <- load_se_from_files(counts_file=counts_filepath, cell_info_file=cell_info_filepath)
-#' demo_se <- load_se_from_files(counts_file=counts_filepath, cell_info_file=cell_info_filepath, gene_info_filepath=gene_info_filepath )
+#' demo_se <- load_se_from_files(counts_file=counts_filepath, cell_info_file=cell_info_filepath, 
+#'                               gene_info_file=gene_info_filepath )
 #'
-#' @seealso \code{\link[RangedSummarizedExperiment-class]{SummarizedExperiment}} For general doco on the SummarizedExperiment objects.
+#' @seealso \href{https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{SummarizedExperiment} For general doco on the SummarizedExperiment objects.
 #'
 #' @family Data-loading functions
 #'
+#' @import SummarizedExperiment
+#' 
 #' @export   
 load_se_from_tables <- function(counts_matrix, cell_info_table, gene_info_table = NA, group_col_name="group", cell_col_name=NA) {
       
@@ -131,7 +137,7 @@ load_se_from_tables <- function(counts_matrix, cell_info_table, gene_info_table 
    dataset_se <- NA
    if (all(is.na(gene_info_table))) {
       dataset_se  <- SummarizedExperiment(counts_matrix,
-                                          colData=DataFrame(cell_info_table))
+                                          colData=base::as.data.frame(cell_info_table))
       rowData(dataset_se)$ID <- rownames(assay(dataset_se))
    }
    else {
@@ -148,8 +154,8 @@ load_se_from_tables <- function(counts_matrix, cell_info_table, gene_info_table 
       
       # Create a summarised experiment object.
       dataset_se  <- SummarizedExperiment(counts_matrix,
-                                          colData=DataFrame(cell_info_table),
-                                          rowData=DataFrame(gene_info_table))
+                                          colData=S4Vectors::DataFrame(cell_info_table),
+                                          rowData=S4Vectors::DataFrame(gene_info_table))
    }
    
    return(dataset_se)
@@ -176,17 +182,19 @@ load_se_from_tables <- function(counts_matrix, cell_info_table, gene_info_table 
 #'
 #' @describeIn load_se_from_tables To read from files
 #' 
+#' @import SummarizedExperiment
+#' 
 #' @export   
 load_se_from_files <- function(counts_file, cell_info_file, gene_info_file = NA, group_col_name="group", cell_col_name=NA) {
    
-   counts_matrix   <- as.matrix(read.table(counts_file, row.names=1, header=TRUE, sep = "\t", stringsAsFactors = FALSE, check.names=FALSE ))
+   counts_matrix   <- as.matrix(utils::read.table(counts_file, row.names=1, header=TRUE, sep = "\t", stringsAsFactors = FALSE, check.names=FALSE ))
    
-   cell_info_table <- read.table(cell_info_file, header=TRUE, sep = "\t", stringsAsFactors = FALSE )
+   cell_info_table <- utils::read.table(cell_info_file, header=TRUE, sep = "\t", stringsAsFactors = FALSE )
    
    # Read gene Info table, if specified
    gene_info_table <- NA
    if (! is.na(gene_info_file)) {
-      gene_info_table <- read.table(gene_info_file, header=TRUE, sep = "\t", stringsAsFactors = FALSE )
+      gene_info_table <- utils::read.table(gene_info_file, header=TRUE, sep = "\t", stringsAsFactors = FALSE )
    }
    
    return(load_se_from_tables(counts_matrix, cell_info_table, gene_info_table, group_col_name, cell_col_name = cell_col_name) )
@@ -246,19 +254,23 @@ load_se_from_files <- function(counts_file, cell_info_file, gene_info_file = NA,
 #' and gene info.
 #'
 #' @examples
-#' example_10X_dir <- system.file("extdata", "sim_cellrangerlikestruct_dataset", package = "celaref")
-#' dataset_se <- load_dataset_10Xdata(example_10X_dir, dataset_genome="GRCh38", clustering_set="kmeans_4_clusters", gene_id_cols_10X=c("gene")) 
+#' example_10X_dir <- system.file("extdata", "sim_cr_dataset", package = "celaref")
+#' dataset_se <- load_dataset_10Xdata(example_10X_dir, dataset_genome="GRCh38", 
+#'     clustering_set="kmeans_4_clusters", gene_id_cols_10X=c("gene")) 
 #' 
 #' \dontrun{
-#' dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="GRCh38", clustering_set="kmeans_7_clusters") 
+#' dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="GRCh38", 
+#'     clustering_set="kmeans_7_clusters") 
 #' } 
 #'
-#' @seealso \code{\link[RangedSummarizedExperiment-class]{SummarizedExperiment}} For general doco on the SummarizedExperiment objects.
+#' @seealso \href{https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{SummarizedExperiment} For general doco on the SummarizedExperiment objects.
 #' @seealso \code{\link[celaref]{convert_se_gene_ids}} describes method for converting IDs.
 #' 
 #' @family Data loading functions
 #'
-#'@export
+#' @import SummarizedExperiment
+#' 
+#' @export
 load_dataset_10Xdata <- function(dataset_path, dataset_genome, clustering_set, gene_id_cols_10X =c("ensembl_ID","GeneSymbol"), id_to_use = gene_id_cols_10X[1] ) {
 
    matrix_file <- file.path(dataset_path,"filtered_gene_bc_matrices",dataset_genome,"matrix.mtx")
@@ -345,11 +357,12 @@ load_dataset_10Xdata <- function(dataset_path, dataset_genome, clustering_set, g
 #' 
 #' dataset_se <- convert_se_gene_ids(dataset_se, new_id='dummyname', eval_col='total_count') 
 #'
-#' @seealso  \code{\link[celaref]{SummarizedExperiment}} For general doco on the SummarizedExperiment objects.
+#' @seealso  \href{https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{SummarizedExperiment} For general doco on the SummarizedExperiment objects.
 #' @seealso \code{\link[celaref]{load_se_from_files}} For reading data from flat files (not 10X cellRanger output)
 #'
-#'
+#' @import SummarizedExperiment
 #' @importFrom magrittr %>%
+#' @importFrom rlang .data
 #' @export
 convert_se_gene_ids <- function(dataset_se, new_id, eval_col, find_max=TRUE) {
    old_id = "ID" 
@@ -361,12 +374,12 @@ convert_se_gene_ids <- function(dataset_se, new_id, eval_col, find_max=TRUE) {
    colnames(row_data_df) <- c("old_lab", "new_lab", "eval_lab")
    row_data_df <- row_data_df[!is.na(row_data_df$new_lab),] # If new ID is NA, drop it
    if (find_max) {
-      row_data_df <- row_data_df %>% dplyr::arrange(new_lab, desc(eval_lab), old_lab)
+      row_data_df <- row_data_df %>% dplyr::arrange(.data$new_lab, dplyr::desc(.data$eval_lab), .data$old_lab)
    }else { #min
-      row_data_df <- row_data_df %>% dplyr::arrange(new_lab, eval_lab, old_lab)
+      row_data_df <- row_data_df %>% dplyr::arrange(.data$new_lab, .data$eval_lab, .data$old_lab)
    }
    row_data_unique <- row_data_df %>%
-      dplyr::group_by(new_lab) %>% 
+      dplyr::group_by(.data$new_lab) %>% 
       dplyr::slice(1)
    
    # Subset to just those representative old ids, and give the unique new id names.
@@ -420,8 +433,11 @@ convert_se_gene_ids <- function(dataset_se, new_id, eval_col, find_max=TRUE) {
 #'
 #' @examples
 #' demo_query_se.trimmed  <- trim_small_groups_and_low_expression_genes(demo_query_se)
-#' demo_query_se.trimmed2 <- trim_small_groups_and_low_expression_genes(demo_ref_se, min_group_membership = 10)
+#' demo_query_se.trimmed2 <- trim_small_groups_and_low_expression_genes(demo_ref_se, 
+#'                                                                      min_group_membership = 10)
 #'
+#' @import SummarizedExperiment
+#' 
 #' @export
 trim_small_groups_and_low_expression_genes <- function(dataset_se,
                                                        min_lib_size=1000, min_group_membership=5,

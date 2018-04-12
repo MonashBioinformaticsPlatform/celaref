@@ -8,6 +8,8 @@ make_ref_similarity_names_for_groups_ks(de_table.ref.marked, the_test_dataset,
   the_ref_dataset, ks_pval = 0.01, median_rank_threshold = 0.25)
 }
 \arguments{
+\item{de_table.ref.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
+
 \item{the_test_dataset}{A short meaningful name for the experiment. (Should match \emph{test_dataset} column in \bold{de_table.marked})}
 
 \item{the_ref_dataset}{A short meaningful name for the experiment. (Should match \emph{dataset} column in \bold{de_table.marked})}
@@ -27,8 +29,6 @@ below this, consider possible similarity.
 Consider reducing for very similar cell clusters. Note that 0.5 is 
 theoretically random (but do occur, see detail), so values larger than that
 are pointless. Default 0.25.}
-
-\item{de_table.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
 }
 \value{
 A table of automagically-generated labels for each query group, given 
@@ -77,13 +77,11 @@ E.g.
 }
 \examples{
 
-de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query")
-de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
-de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(de_table.demo_query, de_table.demo_ref, 'demo_query')
+de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query", num_cores=2)
+de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref", num_cores=2)
+de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
+     de_table.demo_query, de_table.demo_ref, 'demo_query')
 
-make_ref_similarity_names_for_groups_ksfunction(de_table.marked.query_vs_ref,
-                              the_test_dataset="demo_query",
-                              the_ref_dataset="demo_ref")
 
 }
 \seealso{

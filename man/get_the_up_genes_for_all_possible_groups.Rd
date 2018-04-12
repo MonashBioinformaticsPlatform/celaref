@@ -43,8 +43,9 @@ each group in the query into one table.
 }
 \examples{
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
-de_table.test=de_table.demo_query , 
-de_table.ref=de_table.demo_ref ) 
+   test_dataset_name="query",
+   de_table.test=de_table.demo_query ,
+   de_table.ref=de_table.demo_ref )
 
 }
 \seealso{
