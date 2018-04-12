@@ -45,7 +45,7 @@
 #' 
 #'   
 #'
-#' @param de_table.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
+#' @param de_table.ref.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
 #' @param the_test_dataset A short meaningful name for the experiment. (Should match \emph{test_dataset} column in \bold{de_table.marked})
 #' @param the_ref_dataset A short meaningful name for the experiment. (Should match \emph{dataset} column in \bold{de_table.marked})
 #' @param ks_pval When multiple reference groups pass the median rank threshold, 
@@ -71,13 +71,14 @@
 #'
 #' @examples
 #' 
-#' de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query")
-#' de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
-#' de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(de_table.demo_query, de_table.demo_ref, 'demo_query')
+#' de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query", num_cores=2)
+#' de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref", num_cores=2)
+#' de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
+#'      de_table.demo_query, de_table.demo_ref, 'demo_query')
 #'
-#' make_ref_similarity_names_for_groups_ksfunction(de_table.marked.query_vs_ref,
-#'                               the_test_dataset="demo_query",
-#'                               the_ref_dataset="demo_ref")
+# make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref,
+#                               the_test_dataset="demo_query",
+#                               the_ref_dataset="demo_ref")
 #'
 #' @seealso \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} To prepare the \bold{de_table.ref.marked} input.
 #' 
@@ -99,12 +100,12 @@ make_ref_similarity_names_for_groups_ks <- function(de_table.ref.marked, the_tes
    
    # Just for when there are labells to be made
    labels_by_similarity_table <- ks_res_table %>% 
-      dplyr::filter(in_name==TRUE) %>%
-      dplyr::arrange(test_group, grouprank ) %>%
-      dplyr::group_by(test_group) %>%
-      dplyr::mutate(shortlab  = paste0(test_group, ":", paste0(group, collapse = "|")), 
-                    longlab  = paste0(test_group, ":", paste0(group, collapse = "|"),":",ref_dataset,"_similarity")  ) %>%
-      dplyr::select(test_group, shortlab, longlab) %>% base::unique()
+      dplyr::filter(.data$in_name==TRUE) %>%
+      dplyr::arrange(.data$test_group, .data$grouprank ) %>%
+      dplyr::group_by(.data$test_group) %>%
+      dplyr::mutate(shortlab  = paste0(.data$test_group, ":", paste0(.data$group, collapse = "|")), 
+                    longlab  = paste0(.data$test_group, ":", paste0(.data$group, collapse = "|"),":",.data$ref_dataset,"_similarity")  ) %>%
+      dplyr::select(.data$test_group, .data$shortlab, .data$longlab) %>% base::unique()
    
    
    # Add no-similarity groups back in.
@@ -131,11 +132,18 @@ make_ref_similarity_names_for_groups_ks <- function(de_table.ref.marked, the_tes
 #' Internal function to get reference group similarity contrasts for an individual query qroup. 
 #' 
 #' For use by \bold{make_ref_similarity_names_for_groups_ks}, see that function for parameter details.
-#' 
-#' @param the_test_group Additional parameter for which query group is being tested.
+#' This function just runs this for a single query group \bold{the_test_group}
 #'
+#' @param de_table.ref.marked see \link[celaref]{make_ref_similarity_names_for_groups_ks}
+#' @param the_test_group The group to calculate the ks stats on.
+#' @param the_test_dataset see \link[celaref]{make_ref_similarity_names_for_groups_ks}
+#' @param the_ref_dataset see \link[celaref]{make_ref_similarity_names_for_groups_ks}
+#' @param ks_pval see \link[celaref]{make_ref_similarity_names_for_groups_ks}
+#' @param median_rank_threshold see \link[celaref]{make_ref_similarity_names_for_groups_ks}
+#'  
 #' @seealso \code{\link[celaref]{make_ref_similarity_names_for_groups_ks}} which calls this. 
 #' @importFrom magrittr %>%
+#' @importFrom rlang .data
 get_ranking_and_ks_test_results <- function (de_table.ref.marked, the_test_group, the_test_dataset, the_ref_dataset, ks_pval=0.01,  median_rank_threshold=0.25) {
    
    # Anything that each stepwise ks test is NOT significant (with top contrast over threshold) :
@@ -157,7 +165,7 @@ get_ranking_and_ks_test_results <- function (de_table.ref.marked, the_test_group
    #      CC  | 
    
    # Should only be one test datast, and one reference dataset in de_table.ref_marked. Not needed, but forced here for paranoia reasons.
-   de_table.ref.marked <- de_table.ref.marked %>% dplyr::filter(test_dataset==the_test_dataset, dataset==the_ref_dataset )
+   de_table.ref.marked <- de_table.ref.marked %>% dplyr::filter(.data$test_dataset==the_test_dataset, .data$dataset==the_ref_dataset )
    
    
    # Get the average rankings in order.
@@ -176,7 +184,7 @@ get_ranking_and_ks_test_results <- function (de_table.ref.marked, the_test_group
    last_above_median_rank <- max(which(rankstat_table$median_rank <= median_rank_threshold))
    
    # Sanity checks    
-   if (nrow(rankstat_table) ==1) { warn("Only 1 reference group. Something odd is happening.") }
+   if (nrow(rankstat_table) ==1) { rlang::warn("Only 1 reference group. Something odd is happening.") }
    if (last_above_median_rank == nrow(rankstat_table)) { 
       stop("All references above median rank?? Something odd is happening. Can't handle.") 
    }
@@ -191,7 +199,7 @@ get_ranking_and_ks_test_results <- function (de_table.ref.marked, the_test_group
    #pairset.step$contrast_run <- "step"
    
    ks_res_table.step <- pairset.step %>% dplyr::rowwise() %>% 
-      dplyr::do (run_pair_ks_stats(de_table.ref.marked=de_table.ref.marked, the_test_group, .$groupA, .$groupB))
+      dplyr::do (run_pair_ks_stats(de_table.ref.marked=de_table.ref.marked, the_test_group, .data$groupA, .data$groupB)) #, .$groupA, .$groupB))
    
    
    
@@ -202,7 +210,7 @@ get_ranking_and_ks_test_results <- function (de_table.ref.marked, the_test_group
    pairset.first <- dplyr::bind_cols(groupA=rep(as.character(rankstat_table$group[1]), num_groups-1),
                                      groupB=as.character(rankstat_table$group[c(2:(num_groups))])) 
    ks_res_table.first <- pairset.first %>% dplyr::rowwise() %>% 
-      dplyr::do (run_pair_ks_stats(de_table.ref.marked=de_table.ref.marked, the_test_group, .$groupA, .$groupB))
+      dplyr::do (run_pair_ks_stats(de_table.ref.marked=de_table.ref.marked, the_test_group, .data$groupA, .data$groupB)) #, .$groupA, .$groupB))
    
    
    
@@ -212,8 +220,8 @@ get_ranking_and_ks_test_results <- function (de_table.ref.marked, the_test_group
                                    by.x="group", by.y="groupB", all.x=TRUE)
    ranking_and_ks_results <- merge(x=ranking_and_ks_results, y=ks_res_table.step, 
                                    by.x="group", by.y="groupB",suffixes=c("_first","_step"), all.x=TRUE)                        
-   ranking_and_ks_results <- ranking_and_ks_results %>% dplyr::arrange(grouprank) %>%
-      dplyr::rename(top_contrast_group_first=groupA_first) %>%  dplyr::rename(up_contrast_group_step=groupA_step) %>% 
+   ranking_and_ks_results <- ranking_and_ks_results %>% dplyr::arrange(.data$grouprank) %>%
+      dplyr::rename(top_contrast_group_first=.data$groupA_first) %>%  dplyr::rename(up_contrast_group_step=.data$groupA_step) %>% 
       tibble::add_column( test_group=the_test_group, test_dataset=the_test_dataset, ref_dataset=the_ref_dataset,
                   .before=1)
    
@@ -261,7 +269,7 @@ get_ranking_and_ks_test_results <- function (de_table.ref.marked, the_test_group
 #' comparison in \bold{de_table.ref.marked} - number of 'top' genes and their 
 #' median rank in each of the reference groups, with reference group rankings.
 #'
-#' @param de_table.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
+#' @param de_table.ref.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
 #' @param the_test_group Name of query group to test
 #'
 #' @return A tibble of query group name (test_group), number of 'top' genes (n), 
@@ -270,9 +278,12 @@ get_ranking_and_ks_test_results <- function (de_table.ref.marked, the_test_group
 #'
 #' @examples
 #'
-#' de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query")
-#' de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
-#' de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(de_table.demo_query, de_table.demo_ref, 'demo_query')
+#' de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, 
+#'                            "demo_query", num_cores=2)
+#' de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   
+#'                            "demo_ref", num_cores=2)
+#' de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
+#'     de_table.demo_query, de_table.demo_ref, 'demo_query')
 #'
 #' get_rankstat_table(de_table.marked.query_vs_ref, "Group3")
 #'
@@ -280,18 +291,25 @@ get_ranking_and_ks_test_results <- function (de_table.ref.marked, the_test_group
 #'
 #' @export
 #' @importFrom magrittr %>%
+#' @importFrom dplyr n
 get_rankstat_table <- function(de_table.ref.marked, the_test_group){
    
    # Get the average rankings in order.
    # For this test_group
    rankstat_table <- de_table.ref.marked %>%
-      dplyr::group_by(group) %>%
-      dplyr::filter(test_group == the_test_group) %>% #only test group
-      dplyr::summarise(median_rank=median(rescaled_rank),
-                n=n() ) %>% #n() is part of dplyr, but yeilds error if specified as dplyr::n 'Evaluation error: This function should not be called directly.'
-      dplyr::arrange(median_rank)
-   rankstat_table$grouprank <- base::rownames(rankstat_table)
+      dplyr::group_by(.data$group) %>%
+      dplyr::filter(.data$test_group == the_test_group) %>% #only test group
+      dplyr::summarise(median_rank=stats::median(.data$rescaled_rank),
+                n=n() ) %>%
+      dplyr::arrange(.data$median_rank)
+   rankstat_table$grouprank <- base::as.integer(base::rownames(rankstat_table))
    return(rankstat_table)
+   
+   # NB:
+   #n() is part of dplyr, but yeilds error if specified as 
+   #dplyr::n 'Evaluation error: This function 
+   #should not be called directly.'
+
 }
 
 
@@ -304,7 +322,7 @@ get_rankstat_table <- function(de_table.ref.marked, the_test_group){
 #'
 #' For use by make_ref_similarity_names_for_groups_ks
 #'
-#' @param de_table.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
+#' @param de_table.ref.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
 #' @param the_test_group Name of the test group in query dataset.
 #' @param groupA One of the reference group names
 #' @param groupB Another of the reference group names
@@ -317,15 +335,15 @@ get_rankstat_table <- function(de_table.ref.marked, the_test_group){
 run_pair_ks_stats <- function(de_table.ref.marked, the_test_group, groupA, groupB) {
    
    groupA_ranks <- de_table.ref.marked %>% 
-      dplyr::filter(test_group == the_test_group, group==groupA ) %>%
-      dplyr::pull(rescaled_rank)
+      dplyr::filter(.data$test_group == the_test_group, .data$group==groupA ) %>%
+      dplyr::pull(.data$rescaled_rank)
    
    groupB_ranks <- de_table.ref.marked %>% 
-      dplyr::filter(test_group == the_test_group, group==groupB ) %>%
-      dplyr::pull(rescaled_rank)
+      dplyr::filter(.data$test_group == the_test_group, .data$group==groupB ) %>%
+      dplyr::pull(.data$rescaled_rank)
    
    # even specificed exact==FALSE, I still get warning about presence of ties.
-   suppressMessages(suppressWarnings( ks.res <- ks.test(groupA_ranks,groupB_ranks, alternative = "greater", exact=FALSE)))
+   suppressMessages(suppressWarnings( ks.res <- stats::ks.test(groupA_ranks,groupB_ranks, alternative = "greater", exact=FALSE)))
    
    return( dplyr::bind_cols("groupA"=groupA,"groupB"=groupB,
                      "D"=as.numeric(ks.res$statistic),  "pval"=as.numeric(ks.res$p.value)))

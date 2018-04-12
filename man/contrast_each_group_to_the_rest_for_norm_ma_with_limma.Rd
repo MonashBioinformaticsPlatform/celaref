@@ -83,7 +83,7 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma(
 \seealso{
 \code{\link[celaref]{contrast_each_group_to_the_rest}} is the funciton that makes comparable output on the scRNAseq data (dataset_se objects).
 
-\code{\link[Limma]{Limma}} Limma package for differential expression.
+\href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma} Limma package for differential expression.
 
 Other Data loading functions: \code{\link{load_dataset_10Xdata}},
   \code{\link{load_se_from_tables}}

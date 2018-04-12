@@ -61,7 +61,9 @@ MAST reccomendataions, the proportion of genes seen in each cell is included
 in the model.
 }
 \examples{
-de_table.demo_query  <- contrast_each_group_to_the_rest(demo_query_se, "a_demo_query")
-de_table.demo_ref    <- contrast_each_group_to_the_rest(demo_ref_se, "a_demo_ref", num_cores=2)
+de_table.demo_query  <- contrast_each_group_to_the_rest(
+     demo_query_se, "a_demo_query", num_cores=2)
+de_table.demo_ref    <- contrast_each_group_to_the_rest(
+     demo_ref_se, "a_demo_ref", num_cores=2)
 
 }

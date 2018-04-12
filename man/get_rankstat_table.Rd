@@ -7,9 +7,9 @@
 get_rankstat_table(de_table.ref.marked, the_test_group)
 }
 \arguments{
-\item{the_test_group}{Name of query group to test}
+\item{de_table.ref.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
 
-\item{de_table.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
+\item{the_test_group}{Name of query group to test}
 }
 \value{
 A tibble of query group name (test_group), number of 'top' genes (n), 
@@ -23,9 +23,12 @@ median rank in each of the reference groups, with reference group rankings.
 }
 \examples{
 
-de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query")
-de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
-de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(de_table.demo_query, de_table.demo_ref, 'demo_query')
+de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, 
+                           "demo_query", num_cores=2)
+de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   
+                           "demo_ref", num_cores=2)
+de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
+    de_table.demo_query, de_table.demo_ref, 'demo_query')
 
 get_rankstat_table(de_table.marked.query_vs_ref, "Group3")
 
