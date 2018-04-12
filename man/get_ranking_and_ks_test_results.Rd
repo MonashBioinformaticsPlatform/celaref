@@ -9,13 +9,24 @@ get_ranking_and_ks_test_results(de_table.ref.marked, the_test_group,
   median_rank_threshold = 0.25)
 }
 \arguments{
-\item{the_test_group}{Additional parameter for which query group is being tested.}
+\item{de_table.ref.marked}{see \link[celaref]{make_ref_similarity_names_for_groups_ks}}
+
+\item{the_test_group}{The group to calculate the ks stats on.}
+
+\item{the_test_dataset}{see \link[celaref]{make_ref_similarity_names_for_groups_ks}}
+
+\item{the_ref_dataset}{see \link[celaref]{make_ref_similarity_names_for_groups_ks}}
+
+\item{ks_pval}{see \link[celaref]{make_ref_similarity_names_for_groups_ks}}
+
+\item{median_rank_threshold}{see \link[celaref]{make_ref_similarity_names_for_groups_ks}}
 }
 \description{
 Internal function to get reference group similarity contrasts for an individual query qroup.
 }
 \details{
 For use by \bold{make_ref_similarity_names_for_groups_ks}, see that function for parameter details.
+This function just runs this for a single query group \bold{the_test_group}
 }
 \seealso{
 \code{\link[celaref]{make_ref_similarity_names_for_groups_ks}} which calls this.

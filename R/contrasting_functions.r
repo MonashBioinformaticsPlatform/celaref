@@ -55,9 +55,13 @@
 #'
 #'
 #' @examples
-#' de_table.demo_query  <- contrast_each_group_to_the_rest(demo_query_se, "a_demo_query")
-#' de_table.demo_ref    <- contrast_each_group_to_the_rest(demo_ref_se, "a_demo_ref", num_cores=2)
+#' de_table.demo_query  <- contrast_each_group_to_the_rest(
+#'      demo_query_se, "a_demo_query", num_cores=2)
+#' de_table.demo_ref    <- contrast_each_group_to_the_rest(
+#'      demo_ref_se, "a_demo_ref", num_cores=2)
 #'
+#' @import SummarizedExperiment
+#' 
 #' @export
 contrast_each_group_to_the_rest <- function(dataset_se, dataset_name, groups2test=NA, num_cores=4) {
    
@@ -125,9 +129,9 @@ contrast_each_group_to_the_rest <- function(dataset_se, dataset_name, groups2tes
 #' @return A tibble, the within-experiment de_table (differential expression
 #' table), for the group specified.
 #'
-#'
 #' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest}}
 #'
+#' @import SummarizedExperiment
 contrast_the_group_to_the_rest <- function( dataset_se, the_group, pvalue_threshold=0.01) {
    
    TEST = 'test'
@@ -200,7 +204,7 @@ contrast_the_group_to_the_rest <- function( dataset_se, the_group, pvalue_thresh
    de_table <- de_table[order(de_table$ci_inner, decreasing = TRUE),]
    
    
-   de_table$fdr           <- p.adjust(de_table$pval, 'fdr')
+   de_table$fdr           <- stats::p.adjust(de_table$pval, 'fdr')
    de_table$group         <- the_group
    de_table$sig           <- de_table$fdr <= pvalue_threshold
    de_table$sig_up        <- de_table$sig & de_table$log2FC > 0
@@ -350,9 +354,10 @@ get_the_up_genes_for_group <- function(the_group, de_table.test, de_table.ref, r
 #' representative 'up' genes, or due to some problem in the analysis)
 #'
 #' @examples
-#' de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
-#' de_table.test=de_table.demo_query , 
-#' de_table.ref=de_table.demo_ref ) 
+#'de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
+#'    test_dataset_name="query",
+#'    de_table.test=de_table.demo_query ,
+#'    de_table.ref=de_table.demo_ref )
 #'
 #' @seealso  \code{\link[celaref]{get_the_up_genes_for_group}} Function for testing a single group.
 #'
@@ -456,7 +461,7 @@ get_the_up_genes_for_all_possible_groups <- function(de_table.test, de_table.ref
 #' 
 #' @family Data loading functions
 #' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest}} is the funciton that makes comparable output on the scRNAseq data (dataset_se objects).
-#' @seealso \code{\link[Limma]{Limma}} Limma package for differential expression.
+#' @seealso \href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma} Limma package for differential expression.
 #'
 #'@export
 contrast_each_group_to_the_rest_for_norm_ma_with_limma <- function(norm_expression_table, sample_sheet_table,
@@ -519,13 +524,13 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma <- function(norm_expressi
 #' table), for the group specified.
 #'
 #' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest_for_norm_ma_with_limma}} public calling function
-#' @seealso \code{\link[Limma]{Limma}} Limma package for differential expression.
+#' @seealso \href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma} Limma package for differential expression.
 #' @importFrom magrittr %>%
 contrast_the_group_to_the_rest_with_limma_for_microarray <- function(norm_expression_table, sample_sheet_table, the_group, 
                                                                      sample_name, extra_factor_name=NA, pval_threshold=0.01){
    
    
-   if (! requireNamespace("limma", quietly = TRUE)) {  stop("This function require limma installed.")  }
+   if (! requireNamespace("limma", quietly = TRUE)) {  stop("This function requires limma installed.")  }
    
    
    if(! the_group %in% sample_sheet_table$group){
@@ -535,19 +540,19 @@ contrast_the_group_to_the_rest_with_limma_for_microarray <- function(norm_expres
    
    
    # explicitly match order (again)
-   norm_expression_table <- norm_expression_table[ ,sample_sheet_table %>% dplyr::pull(sample_name)]
+   norm_expression_table <- norm_expression_table[ ,sample_sheet_table %>% dplyr::pull(sample_name)] 
    
    
    # Design is only Test vs Rest
    # 'cause that's how the single cell stuff is. 
    TvsR <- factor(ifelse(sample_sheet_table$group==the_group, 'test', 'rest'), levels=c('rest','test'))
-   design <- model.matrix(~0+TvsR)
+   design <- stats::model.matrix(~0+TvsR)
    
    # Optionally, include *one* other (balanced-ish) factor in the model e.g. individual.
    # (more would just be less generic)
    if(! is.na(extra_factor_name)) {
       extra <- sample_sheet_table %>% dplyr::pull(extra_factor_name)
-      design <- model.matrix(~0+TvsR+extra)
+      design <- stats::model.matrix(~0+TvsR+extra)
    }
    
    # Set contrast and run
@@ -565,7 +570,7 @@ contrast_the_group_to_the_rest_with_limma_for_microarray <- function(norm_expres
    
    # Adding some (duplicated) feilds here to match the ids used for the mast results 
    de_table$log2FC        <- de_table$logFC
-   de_table$fdr           <- p.adjust(de_table$P.Value, 'fdr')
+   de_table$fdr           <- stats::p.adjust(de_table$P.Value, 'fdr')
    de_table$group         <- the_group
    de_table$sig           <- de_table$fdr <= pval_threshold
    de_table$sig_up        <- de_table$sig & de_table$log2FC > 0
@@ -589,7 +594,7 @@ contrast_the_group_to_the_rest_with_limma_for_microarray <- function(norm_expres
 #'
 #' Internal function that wraps limma topTable output but also adds upper and 
 #' lower confidence intervals to the logFC. Calculated according to 
-#' \link{https://support.bioconductor.org/p/36108/}
+#' \url{https://support.bioconductor.org/p/36108/}
 #'
 #' @param fit2 The fit2 object after calling eBayes as per standard limma workflow. 
 #' Ie object that topTable gets called on.
@@ -627,7 +632,7 @@ get_limma_top_table_with_ci <- function(fit2, the_coef, ci=0.95){
    # above is confirmed:
    # Sunny's CI is exactly right. CIs could be an option in topTable(), but this the first request for them, so the demand doesn't seem enough for now. Best wishes Gordon
    half_ci_outer <- 1-((1-0.95) / 2 )
-   ci_amount <- dt(half_ci_outer, fit2$df.residual, fit2$df.prior) * fit2$stdev.unscaled * sqrt(fit2$s2.post)
+   ci_amount <- stats::dt(half_ci_outer, fit2$df.residual, fit2$df.prior) * fit2$stdev.unscaled * sqrt(fit2$s2.post)
    de_res$ci <- ci_amount[de_res$ID,]  
    
    # Get upper/lower then inner/outer CI.    

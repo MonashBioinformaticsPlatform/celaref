@@ -8,11 +8,11 @@ make_ranking_violin_plot(de_table.marked, median_rank_threshold = 0.25,
   log10trans = FALSE)
 }
 \arguments{
+\item{de_table.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
+
 \item{median_rank_threshold}{Where to draw horizontal threshold line as a rough indicator of similarity. Number betweeen 0 (top-rank) and 1. Default 0.25.}
 
 \item{log10trans}{Plot on a log scale? Useful for distinishing multiple similar, yet distinct cell type that bunch at top of plot. Default=FALSE.}
-
-\item{de_tabled.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
 }
 \value{
 A ggplot object.
@@ -42,8 +42,16 @@ if there are only two reference groups, they'll be complete opposites.
 }
 \examples{
 
-de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,    dataset_name="demo_ref")
-de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups( de_table.test=de_table.demo_query , de_table.ref=de_table.demo_ref , 'demo_query')
+de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,    
+                                                       dataset_name="demo_ref",
+                                                       num_cores=2)
+de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se,  
+                                                       dataset_name="demo_query",
+                                                       num_cores=2)
+de_table.marked.query_vs_ref <- 
+     get_the_up_genes_for_all_possible_groups( de_table.test=de_table.demo_query, 
+                                               de_table.ref=de_table.demo_ref, 
+                                               'demo_query')
 make_ranking_violin_plot(de_table.marked.query_vs_ref)
 
 }

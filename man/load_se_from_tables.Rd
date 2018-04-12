@@ -92,8 +92,11 @@ analyses.
 \examples{
 
 # From data frames (or a matrix for counts) :
-demo_se <- load_se_from_tables(counts_matrix=demo_counts_matrix, cell_info_table=demo_cell_info_table)
-demo_se <- load_se_from_tables(counts_matrix=demo_counts_matrix, cell_info_table=demo_cell_info_table, gene_info_table=demo_gene_info_table)
+demo_se <- load_se_from_tables(counts_matrix=demo_counts_matrix, 
+                               cell_info_table=demo_cell_info_table)
+demo_se <- load_se_from_tables(counts_matrix=demo_counts_matrix, 
+                               cell_info_table=demo_cell_info_table, 
+                               gene_info_table=demo_gene_info_table)
 
 # Or from data files : 
 counts_filepath    <- system.file("extdata", "sim_query_counts.tab",    package = "celaref")
@@ -101,11 +104,12 @@ cell_info_filepath <- system.file("extdata", "sim_query_cell_info.tab", package 
 gene_info_filepath <- system.file("extdata", "sim_query_gene_info.tab", package = "celaref")
 
 demo_se <- load_se_from_files(counts_file=counts_filepath, cell_info_file=cell_info_filepath)
-demo_se <- load_se_from_files(counts_file=counts_filepath, cell_info_file=cell_info_filepath, gene_info_filepath=gene_info_filepath )
+demo_se <- load_se_from_files(counts_file=counts_filepath, cell_info_file=cell_info_filepath, 
+                              gene_info_file=gene_info_filepath )
 
 }
 \seealso{
-\code{\link[RangedSummarizedExperiment-class]{SummarizedExperiment}} For general doco on the SummarizedExperiment objects.
+\href{https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{SummarizedExperiment} For general doco on the SummarizedExperiment objects.
 
 Other Data loading functions: \code{\link{contrast_each_group_to_the_rest_for_norm_ma_with_limma}},
   \code{\link{load_dataset_10Xdata}}

@@ -59,16 +59,18 @@ This funciton is designed to work with output of version 2.0.1 of the
 cellRanger pipeline, may not work with others (will not work for 1.x).
 }
 \examples{
-example_10X_dir <- system.file("extdata", "sim_cellrangerlikestruct_dataset", package = "celaref")
-dataset_se <- load_dataset_10Xdata(example_10X_dir, dataset_genome="GRCh38", clustering_set="kmeans_4_clusters", gene_id_cols_10X=c("gene")) 
+example_10X_dir <- system.file("extdata", "sim_cr_dataset", package = "celaref")
+dataset_se <- load_dataset_10Xdata(example_10X_dir, dataset_genome="GRCh38", 
+    clustering_set="kmeans_4_clusters", gene_id_cols_10X=c("gene")) 
 
 \dontrun{
-dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="GRCh38", clustering_set="kmeans_7_clusters") 
+dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="GRCh38", 
+    clustering_set="kmeans_7_clusters") 
 } 
 
 }
 \seealso{
-\code{\link[RangedSummarizedExperiment-class]{SummarizedExperiment}} For general doco on the SummarizedExperiment objects.
+\href{https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{SummarizedExperiment} For general doco on the SummarizedExperiment objects.
 
 \code{\link[celaref]{convert_se_gene_ids}} describes method for converting IDs.
 

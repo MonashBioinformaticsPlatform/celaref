@@ -37,5 +37,5 @@ Private function used by contrast_each_group_to_the_rest_for_norm_ma_with_limma
 \seealso{
 \code{\link[celaref]{contrast_each_group_to_the_rest_for_norm_ma_with_limma}} public calling function
 
-\code{\link[Limma]{Limma}} Limma package for differential expression.
+\href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma} Limma package for differential expression.
 }

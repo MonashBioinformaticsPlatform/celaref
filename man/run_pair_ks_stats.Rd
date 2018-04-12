@@ -7,13 +7,13 @@
 run_pair_ks_stats(de_table.ref.marked, the_test_group, groupA, groupB)
 }
 \arguments{
+\item{de_table.ref.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
+
 \item{the_test_group}{Name of the test group in query dataset.}
 
 \item{groupA}{One of the reference group names}
 
 \item{groupB}{Another of the reference group names}
-
-\item{de_table.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
 }
 \value{
 A tibble of KS test results for this contrast (pval, D value).
