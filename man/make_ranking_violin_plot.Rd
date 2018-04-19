@@ -4,13 +4,10 @@
 \alias{make_ranking_violin_plot}
 \title{make_ranking_violin_plot}
 \usage{
-make_ranking_violin_plot(de_table.marked, median_rank_threshold = 0.25,
-  log10trans = FALSE)
+make_ranking_violin_plot(de_table.marked, log10trans = FALSE)
 }
 \arguments{
 \item{de_table.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
-
-\item{median_rank_threshold}{Where to draw horizontal threshold line as a rough indicator of similarity. Number betweeen 0 (top-rank) and 1. Default 0.25.}
 
 \item{log10trans}{Plot on a log scale? Useful for distinishing multiple similar, yet distinct cell type that bunch at top of plot. Default=FALSE.}
 }

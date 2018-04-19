@@ -25,6 +25,10 @@ library(tidyverse)
 
 ```
 
+
+** DOCO BEING UPDATED: no more ks tests and median threshold - replaced with wilcox.test to label cell groups (now with stats!) **
+
+
 # Overview {#overview}
 
 
@@ -185,7 +189,7 @@ It is a tiny simulated dataset of 100 genes included in the package that can be 
 
 
 
-```{r toy_example, message=FALSE, eval=TRUE, cache=TRUE}
+```{r toy_example, message=FALSE, eval=TRUE, cache=FALSE}
 
 library(celaref)
 
@@ -204,8 +208,8 @@ toy_ref_se     <- trim_small_groups_and_low_expression_genes(toy_ref_se)
 toy_query_se   <- trim_small_groups_and_low_expression_genes(toy_query_se)
 
 # Setup within-experiment differential expression
-de_table.toy_ref   <- contrast_each_group_to_the_rest(toy_ref_se,    dataset_name="ref", num_cores = 2)
-de_table.toy_query <- contrast_each_group_to_the_rest(toy_query_se,  dataset_name="query", num_cores = 2)
+de_table.toy_ref   <- contrast_each_group_to_the_rest(toy_ref_se,    dataset_name="ref")
+de_table.toy_query <- contrast_each_group_to_the_rest(toy_query_se,  dataset_name="query")
 
 # Cross-experiment comparison
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
@@ -216,12 +220,12 @@ de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
 # Plot
 make_ranking_violin_plot(de_table.marked.query_vs_ref)
 ```
-```{r toy_example2, message=FALSE, eval=FALSE, cache=TRUE}
+```{r toy_example2, message=FALSE, warnings=FALSE, eval=FALSE}
 # And get group labels
-make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "ref")
+make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "ref")
 ```
-```{r toy_example3, message=FALSE, eval=TRUE, echo=FALSE, cache=TRUE}
-kable(make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "ref"))
+```{r toy_example3, message=FALSE, warnings=FALSE,  eval=TRUE, echo=FALSE}
+kable(make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "ref"))
 ```
 
 
@@ -520,16 +524,16 @@ statistical power (from a p-value ranking).
 This is done with the *contrast_each_group_to_the_rest* function 
 after [filtering](#filtering):
 
-```{r eval=TRUE, cache=TRUE}
+```{r eval=TRUE, cache=FALSE}
 demo_query_se.filtered <- trim_small_groups_and_low_expression_genes(demo_query_se)
 
-de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se.filtered, "a_demo_query",      num_cores = 2)
+de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se.filtered, "a_demo_query")
 ```
 
 Reference datasets are prepared with the same command, there's no difference in the result.
-```{r eval=TRUE, cache=TRUE}
+```{r eval=TRUE, cache=FALSE}
 demo_ref_se.filtered <- trim_small_groups_and_low_expression_genes(demo_ref_se)
-de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se.filtered,   "a_demo_reference",  num_cores = 2)
+de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se.filtered,   "a_demo_reference")
 ```
 
 This object can be now passed to subsequent comparison functions - see section [Compare groups to reference](#Making-comparisons-to-reference-data). 
@@ -560,7 +564,7 @@ This function is parallelised. Due to the differential expression calculations, 
 time-consuming step (e.g. a few hours, depending on data size). 
 But the result can and should be saved and reused for any comparisons to other datasets. 
 If *num_cores* is specified, up to that many groups will be processed in 
-parallel. This is highly recommended, and defaults to 4. For best 
+parallel. This is highly recommended. For best 
 results *num_cores* should be set to the number of groups in the query so long
 as system resources permit.
 
@@ -569,7 +573,7 @@ as system resources permit.
 Microarray reference data is treated differently, with function _contrast_each_group_to_the_rest_for_norm_ma_with_limma()_ that both loads data
 and does within sample differential expression in one step. Its output is much the same. See 
 [section on microarray input](#reading-microarray-data) for details.
-```{r eval=FALSE, cache=TRUE}
+```{r eval=FALSE, cache=FALSE}
 de_table.microarray <- contrast_each_group_to_the_rest_for_norm_ma_with_limma(
     norm_expression_table=demo_microarray_expr, 
     sample_sheet_table=demo_microarray_sample_sheet,
@@ -599,7 +603,7 @@ See section [Interpreting output](#interpreting-output) and the [overview diagra
 To make that output, run function *make_ranking_violin_plot* on the output 
 of *get_the_up_genes_for_all_possible_groups*:
 
-```{r eval=TRUE, cache=TRUE}
+```{r eval=TRUE, cache=FALSE}
 
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.demo_query ,
@@ -644,7 +648,7 @@ Group2 are genuinely different, but Group2 might be difficult to characterise
 due to its (demo!) size.
 
 
-```{r eval=TRUE, cache=TRUE} 
+```{r eval=TRUE, cache=FALSE} 
 
 de_table.marked.query_vs_self <- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.demo_query ,
@@ -664,9 +668,9 @@ query groups. The method used is described in section
 [Assigning labels to clusters](#assigning-labels-to-clusters). These names might
 make a good starting point for downstream characterisation.
 
-```{r eval=TRUE, cache=TRUE} 
+```{r eval=TRUE, cache=FALSE} 
 # And get group labels
-group_names_table <- make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "a_demo_reference")
+group_names_table <- make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "a_demo_reference")
 ```
 ```{r eval=TRUE, echo=FALSE} 
 kable(group_names_table)
@@ -761,7 +765,7 @@ Note that for this to work, the arrays should be from the same experiment/study.
 The variation would probably be too much between samples pulled from different studies.
 
 
-```{r eval=FALSE, cache=TRUE}
+```{r eval=FALSE, cache=FALSE}
 this_dataset_dir     <- file.path(datasets_dir,     'haemosphere_datasets','watkins')
 norm_expression_file <- file.path(this_dataset_dir, "watkins_expression.txt")
 samples_file         <- file.path(this_dataset_dir, "watkins_samples.txt")
@@ -884,8 +888,6 @@ Hmm, there's a few clusters where different the top genes are bunched near the
 top for a couple of different reference cell types. 
 
 Logging the plot will be more informative at the top end for this dataset. 
-The median rank threshold (dotted line) is still at 0.25, but the different 
-degrees of match are more obvious. 
 
 ```{r, eval=TRUE}
 make_ranking_violin_plot(de_table.pbmc4k_k7_vs_Watkins2009PBMCs, log10trans = TRUE)
@@ -901,32 +903,28 @@ unless a clear (significantly different) frontrunner can be flagged.
 
 
 
-```{r eval=TRUE}
-label_table.pbmc4k_k7_vs_Watkins2009PBMCs <- make_ref_similarity_names_for_groups_ks(de_table.pbmc4k_k7_vs_Watkins2009PBMCs, 
+```{r eval=TRUE, warning=FALSE}
+label_table.pbmc4k_k7_vs_Watkins2009PBMCs <- make_ref_similarity_names_for_groups(de_table.pbmc4k_k7_vs_Watkins2009PBMCs, 
                                         the_test_dataset = "pbmc4k_k7", 
                                         the_ref_dataset  = "Watkins2009PBMCs")
 ```
 ```{r eval=TRUE, echo=FALSE}
-kable(label_table.pbmc4k_k7_vs_Watkins2009PBMCs[,1:2] %>% arrange(test_group) ) 
+kable(label_table.pbmc4k_k7_vs_Watkins2009PBMCs %>% arrange(test_group) ) 
 ```
 
 
-NB: only displaying 'shortlab'. That's the most interesting column, and the 
-rest of the table may change in future versions.
 
 
-
-They may not be perfect but they're a good start. Tc and Th lymphocytes can be similar, 
-so groups 1 and 3 have multiple similarities to be considered. 
-Its worth remembering the clustering process itself isn't perfect, there may 
-be mixed or over-split populations and this parallels the cluster's relationship
-in the t-SNE plot.
-
-On the other hand monocytes and B lymphocytes were uniquely
-labelled. Clusters 4 and 5 are quite distinct in the t-SNE but both are labelled 
+Monocytes and B lymphocytes were uniquely labelled. 
+Clusters 4 and 5 are quite distinct in the t-SNE but both are labelled 
 as B-lymphocytes. From the violin plot its obvious that the similarity is 
 stronger for the much larger cluster 4. The 37-gene cluster 5 could correspond 
 to a B-cell similar subtype not covered in the microarray reference.
+
+Tc and Th lymphocytes can be similar, 
+and group 3 reports similarity to both for consideration. Group 1 is large, and
+while adjacent to group 3 in the tSNE plot, does not have a clear 'front runner' 
+for similarity. Looking at smaller clusters within this group could be justified.
 
 Clusters 5, 6 and 7 are much smaller groups and have 
 less prominent signals in the violin plots. This is partly from lesser power to 
@@ -988,7 +986,7 @@ objects by tissue (its a SummarizedExperiment object).
 Then separately filter both for low-expression genes and groups with too few 
 cells to analyse.
 
-```{r eval=FALSE, cache=TRUE }
+```{r eval=FALSE, cache=FALSE }
 # Subset the summarizedExperiment object into two tissue-specific objects
 dataset_se.cortex <- dataset_se.zeisel[,dataset_se.zeisel$tissue == "sscortex"]
 dataset_se.hippo  <- dataset_se.zeisel[,dataset_se.zeisel$tissue == "ca1hippocampus"]
@@ -1011,7 +1009,7 @@ de_table.zeisel.hippo  <- contrast_each_group_to_the_rest(dataset_se.hippo,  dat
 
 Now compare the two: 
 
-```{r eval=TRUE, cache=TRUE}
+```{r eval=TRUE, cache=FALSE}
 # Cross-experimet comparison
 de_table.marked.cortex_vs_hippo <- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.zeisel.cortex  ,
@@ -1025,6 +1023,15 @@ make_ranking_violin_plot(de_table.marked.cortex_vs_hippo)
 
 Perhaps unsurprisingly given they're from the same experiment, the cell-type
 annotations do almost perfectly correlate one-to-one.
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE}
+kable(make_ref_similarity_names_for_groups( de_table.marked.cortex_vs_hippo , 
+                the_test_dataset = "zeisel_sscortex", 
+               the_ref_dataset  = "zeisel_ca1hippocampus") %>% arrange(test_group) )
+
+```
+
+
 
 
 ### Load lacrimal gland dataset
@@ -1127,7 +1134,7 @@ de_table.Farmer2017lacrimalP4  <- contrast_each_group_to_the_rest(dataset_se.P4,
 Now compare the mouse cortex samples to the lacrimal gland. 
 Being completely different tissues there shouldn't be many cell types in common.
 
-```{r eval=TRUE, cache=TRUE}
+```{r eval=TRUE, cache=FALSE}
 # Cross-experimet comparison
 de_table.marked.cortex_vs_lacrimal<- get_the_up_genes_for_all_possible_groups(
    de_table.test = de_table.zeisel.cortex  ,
@@ -1141,22 +1148,19 @@ make_ranking_violin_plot(de_table.marked.cortex_vs_lacrimal)
 
 ```{r eval=TRUE}
 label_table.cortex_vs_lacrimal <- 
-   make_ref_similarity_names_for_groups_ks( de_table.marked.cortex_vs_lacrimal, 
+   make_ref_similarity_names_for_groups( de_table.marked.cortex_vs_lacrimal, 
                                             the_test_dataset = "zeisel_sscortex", 
                                             the_ref_dataset  = "Farmer2017lacrimalP4")
 ```
 
 ```{r eval=TRUE, echo=FALSE}
-kable(label_table.cortex_vs_lacrimal[,1:2] %>% arrange(test_group) ) 
+kable(label_table.cortex_vs_lacrimal %>% arrange(test_group) ) 
 ```
 
 This cross-tissue comparison looks very different to the brain-brain contrast
 - as expected, most clusters have 'no similarity'.
 
-Not all though. The 'endothelial-mural' cluster from the mouse cortex is most 
-similar to the 'Endothelial' and 'Mes 3'(Mesenchymal) groups in the 
-lacrimal gland sample. Though inspection of the plots shows that the 'Mes 3' 
-similarity is marginal. The cortex 'microglia' have their similarity with 
+Not all though. The cortex 'microglia' have their similarity with 
 the 'Macrophage/Monocyte' group highlighted. This makes sense - as they are 
 biological similar cell types.
 

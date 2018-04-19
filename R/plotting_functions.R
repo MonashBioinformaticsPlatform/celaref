@@ -24,7 +24,6 @@
 #' 
 #'
 #' @param de_table.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
-#' @param median_rank_threshold Where to draw horizontal threshold line as a rough indicator of similarity. Number betweeen 0 (top-rank) and 1. Default 0.25.
 #' @param log10trans  Plot on a log scale? Useful for distinishing multiple similar, yet distinct cell type that bunch at top of plot. Default=FALSE.
 #' 
 #' @return  A ggplot object.
@@ -47,17 +46,15 @@
 #'
 #' 
 #'@export
-make_ranking_violin_plot <- function(de_table.marked, median_rank_threshold=0.25, log10trans=FALSE) {
+make_ranking_violin_plot <- function(de_table.marked, log10trans=FALSE) {
    
    if (log10trans) { 
       de_table.marked$rescaled_rank <- log10(de_table.marked$rescaled_rank) #happily, it'll never be 0
-      median_rank_threshold <- log10(median_rank_threshold)
    }
    
    p <- ggplot2::ggplot(de_table.marked, ggplot2::aes_string(y='rescaled_rank', x='group', fill='group')) +
       ggplot2::geom_violin(ggplot2::aes_string(colour='group')) +
       ggplot2::geom_point(alpha=0.5, size=3, pch='-', show.legend = FALSE) +
-      ggplot2::geom_hline(yintercept = median_rank_threshold, lty=2) + 
       ggplot2::scale_y_reverse() +
       ggplot2::ylab("Test geneset rank in reference cluster") + ggplot2::xlab("") +  
       ggplot2::stat_summary(fun.y = stats::median, fun.ymin = stats::median, fun.ymax = stats::median, geom = "crossbar", col="black", show.legend = FALSE) +
@@ -66,5 +63,8 @@ make_ranking_violin_plot <- function(de_table.marked, median_rank_threshold=0.25
       ggplot2::facet_wrap(~test_group)
    return (p)
 }
+
+
+
 
 
