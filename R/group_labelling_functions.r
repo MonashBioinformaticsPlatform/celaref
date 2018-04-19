@@ -1,8 +1,7 @@
 
 
 
-
-#' make_ref_similarity_names_for_groups_ks
+#' make_ref_similarity_names_for_groups
 #'
 #' Given the comparison between the two dataset, construct some sensible labels 
 #' for the groups in the query group.
@@ -11,22 +10,17 @@
 #' there's a clear frontrunner, b) A list of multiple similar groups if they 
 #' have similar similarity, or c) 'No similarity', if there is none.
 #' 
-#' Each group is named according to the following rules:
+#' Each group is named according to the following rules. Testing for significant 
+#' (smaller) differences with a one-directional Mann-Whitney U test on their rescaled ranks:
 #' \enumerate{
-#'   \item There is \emph{one} reference group under the \bold{median_rank_threshold}: Use that one.
-#'   \item There are \emph{multiple} reference group under the
-#'   \bold{median_rank_threshold}: Run a Kolmogorov-Smirnov test on the 
-#'   \bold{rescaled_rank} distribution of query 'top' genes in the 2 most similar reference groups.
-#'   \itemize{
-#'      \item If there is a signifiant (<= \bold{ks_pval}) \emph{difference between 
-#'      the two distributions} - report the first only. Because they're similar,
-#'      but different enough to tell apart.
-#'      \item If the distributions are \emph{not different}, report both. If there are 
-#'      more groups under the \bold{median_rank_threshold} start stepping down 
-#'      group by group to see if there's a difference somewhere (e.g. 3 groups 
-#'      under threshold, but its possible to return only the top 2.).
-#'   }
-#'   \item There is nothing under the \bold{median_rank_threshold} : No simiarity. 
+#'   \item The first (as ranked by median rescaled rank) reference group is 
+#'   significantly more similar than the next: Report \emph{first only}.
+#'   \item When comparing differences betwen groups stepwise ranked by 
+#'   median rescaled rank - no group is significantly different to its 
+#'   neighbour: Report \emph{no similarity}
+#'   \item There's no significant differences in the stepwise comparisons 
+#'   of the first N reference groups - but there is a significant 
+#'   difference later on : Report \emph{multiple group similarity}
 #' }
 #' 
 #' The similarity is formatted into a group label. Where there are 
@@ -48,21 +42,12 @@
 #' @param de_table.ref.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
 #' @param the_test_dataset A short meaningful name for the experiment. (Should match \emph{test_dataset} column in \bold{de_table.marked})
 #' @param the_ref_dataset A short meaningful name for the experiment. (Should match \emph{dataset} column in \bold{de_table.marked})
-#' @param ks_pval When multiple reference groups pass the median rank threshold, 
-#' the difference between them is testes with a Kolmogorov-Smirnov test - if 
+#' @param pval Differences between the rescaled ranking distribution of 'top'
+#' genes on different reference groups are tested with a Mann-Whitney U test. If 
 #' they are \emph{significantly different}, only the top group(s) are reported. 
-#' ie. A more stringent \bold{ks_pval} is more likely to report multiple 
+#' ie. A more stringent \bold{pval} is more likely to report multiple 
 #' reference groups. 
-#' Note that comparisons with small numbers of 'top' genes will never be 
-#' 'significantly' different - these should be taken with a grain of salt 
-#' anyway. This parameter unlikely to need change. Default = 0.01.
-#' @param median_rank_threshold A threshold for similarity. Number betweeen 0 
-#' (top-rank) and 1.  If the median ranking of the 'top' query genes is 
-#' below this, consider possible similarity. 
-#' Consider reducing for very similar cell clusters. Note that 0.5 is 
-#' theoretically random (but do occur, see detail), so values larger than that
-#' are pointless. Default 0.25.
-#'  
+#' This parameter unlikely to need change. Default = 0.01. 
 #'
 #' @return A table of automagically-generated labels for each query group, given 
 #' their similarity to reference groups. Short_lab and long_lab are just 
@@ -76,46 +61,56 @@
 #' de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
 #'      de_table.demo_query, de_table.demo_ref, 'demo_query')
 #'
-# make_ref_similarity_names_for_groups_ks(de_table.marked.query_vs_ref,
+# make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref,
 #                               the_test_dataset="demo_query",
 #                               the_ref_dataset="demo_ref")
 #'
 #' @seealso \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} To prepare the \bold{de_table.ref.marked} input.
 #' 
 #' @importFrom magrittr %>%
-#'@export
-make_ref_similarity_names_for_groups_ks <- function(de_table.ref.marked, the_test_dataset, the_ref_dataset,
-                                                         ks_pval=0.01, median_rank_threshold=0.25){
+#' @export
+make_ref_similarity_names_for_groups <- function(de_table.ref.marked, the_test_dataset, 
+                                                 the_ref_dataset,  pval=0.01){
    
    test_groups <- base::unique(de_table.ref.marked$test_group)
    
-   #rankstat_table <- get_rankstat_table(de_table.ref.marked, the_test_group)
-   #NB: ks_res table won't include anything that doesn't have any similarity
-   ks_res_table <- dplyr::bind_rows(lapply(FUN=get_ranking_and_ks_test_results, X=test_groups, 
-                                    de_table.ref.marked=de_table.ref.marked, 
-                                    the_test_dataset=the_test_dataset, the_ref_dataset = the_ref_dataset,
-                                    ks_pval=ks_pval, median_rank_threshold=median_rank_threshold))
    
-   
+   #NB: mwtest table won't include anything that doesn't have any similarity
+   mwtest_res_table <- dplyr::bind_rows(lapply(FUN=get_ranking_and_test_results, X=test_groups, 
+                                               de_table.ref.marked=de_table.ref.marked, 
+                                               the_test_dataset=the_test_dataset, 
+                                               the_ref_dataset = the_ref_dataset,
+                                               pval=pval))
    
    # Just for when there are labells to be made
-   labels_by_similarity_table <- ks_res_table %>% 
+   labels_by_similarity_table <- mwtest_res_table %>% 
       dplyr::filter(.data$in_name==TRUE) %>%
       dplyr::arrange(.data$test_group, .data$grouprank ) %>%
       dplyr::group_by(.data$test_group) %>%
-      dplyr::mutate(shortlab  = paste0(.data$test_group, ":", paste0(.data$group, collapse = "|")), 
-                    longlab  = paste0(.data$test_group, ":", paste0(.data$group, collapse = "|"),":",.data$ref_dataset,"_similarity")  ) %>%
-      dplyr::select(.data$test_group, .data$shortlab, .data$longlab) %>% base::unique()
-   
+      dplyr::mutate(shortlab             = paste0(.data$test_group, ":", paste0(.data$group, collapse = "|")), 
+                    pval                 = S4Vectors::tail(.data$pval_to_next, n=1),
+                    pval_sim_to_all_rest = .data$pval_sig_sim_to_rest[1],
+                    pval_top_to_rest     = .data$pval_top_to_rest[1],
+                    longlab              = paste0(.data$test_group, ":", paste0(.data$group, collapse = "|"),":",.data$ref_dataset,"_similarity")  ) %>%
+      dplyr::select(.data$test_group, .data$shortlab,  
+                    .data$pval, .data$pval_sim_to_all_rest, .data$pval_top_to_rest, .data$longlab) %>% base::unique()
    
    # Add no-similarity groups back in.
    if (any ( ! test_groups %in% labels_by_similarity_table$test_group)) {
-      test_groups.nomatch <- test_groups[! test_groups %in% labels_by_similarity_table$test_group]
+      # Add no-similarity groups back in
+      # Pval2next will only be top to second 
+      labels_by_similarity_table.nomatch <- mwtest_res_table %>% 
+         dplyr::filter( ! .data$test_group %in% labels_by_similarity_table$test_group)  %>%
+         dplyr::arrange(.data$test_group, .data$grouprank ) %>%
+         dplyr::group_by(.data$test_group) %>%
+         dplyr::mutate(shortlab  = paste0(.data$test_group, ":no_similarity"), 
+                       pval                  = .data$pval_to_next[1],
+                       pval_sim_to_all_rest  = .data$pval_sig_sim_to_rest[1],
+                       pval_top_to_rest      = .data$pval_top_to_rest[1],
+                       longlab=paste0(.data$test_group, ":",the_ref_dataset,"_no_similarity")) %>%
+         dplyr::select(.data$test_group, .data$shortlab, 
+                       .data$pval, .data$pval_sim_to_all_rest,  .data$pval_top_to_rest, .data$longlab) %>% base::unique()
       
-      labels_by_similarity_table.nomatch <- 
-         dplyr::bind_cols("test_group"=test_groups.nomatch, 
-                      shortlab=paste0(test_groups.nomatch, ":no_similarity"),
-                      longlab=paste0(test_groups.nomatch, ":",the_ref_dataset,"_no_similarity"))
       labels_by_similarity_table <- dplyr::bind_rows(labels_by_similarity_table, labels_by_similarity_table.nomatch)
    }
    
@@ -127,137 +122,125 @@ make_ref_similarity_names_for_groups_ks <- function(de_table.ref.marked, the_tes
 
 
 
-#' get_ranking_and_ks_test_results
+#' get_ranking_and_test_results
 #'
 #' Internal function to get reference group similarity contrasts for an individual query qroup. 
 #' 
-#' For use by \bold{make_ref_similarity_names_for_groups_ks}, see that function for parameter details.
+#' For use by \bold{make_ref_similarity_names_for_groups}, see that function for parameter details.
 #' This function just runs this for a single query group \bold{the_test_group}
 #'
-#' @param de_table.ref.marked see \link[celaref]{make_ref_similarity_names_for_groups_ks}
-#' @param the_test_group The group to calculate the ks stats on.
-#' @param the_test_dataset see \link[celaref]{make_ref_similarity_names_for_groups_ks}
-#' @param the_ref_dataset see \link[celaref]{make_ref_similarity_names_for_groups_ks}
-#' @param ks_pval see \link[celaref]{make_ref_similarity_names_for_groups_ks}
-#' @param median_rank_threshold see \link[celaref]{make_ref_similarity_names_for_groups_ks}
+#' @param de_table.ref.marked see \link[celaref]{make_ref_similarity_names_for_groups}
+#' @param the_test_group The group to calculate the stats on.
+#' @param the_test_dataset see \link[celaref]{make_ref_similarity_names_for_groups}
+#' @param the_ref_dataset see \link[celaref]{make_ref_similarity_names_for_groups}
+#' @param pval see \link[celaref]{make_ref_similarity_names_for_groups}
+#' @param median_rank_threshold see \link[celaref]{make_ref_similarity_names_for_groups}
 #'  
-#' @seealso \code{\link[celaref]{make_ref_similarity_names_for_groups_ks}} which calls this. 
+#' @seealso \code{\link[celaref]{make_ref_similarity_names_for_groups}} which calls this. 
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
-get_ranking_and_ks_test_results <- function (de_table.ref.marked, the_test_group, the_test_dataset, the_ref_dataset, ks_pval=0.01,  median_rank_threshold=0.25) {
-   
-   # Anything that each stepwise ks test is NOT significant (with top contrast over threshold) :
-   # Second might not be.
-   # AAAA |  
-   #  BBBB|B
-   #    CC|C
-   # <- top(0)
-   # A+B+C
-   
-   # AAAAA|AA
-   #     B|BBB
-   # A+B    
-   
-   # Or anything that is ks test NOT sig with Top hit
-   # (does this happen? AN easy test anyway.)
-   # AAAAAAAA |
-   #    BB    |
-   #      CC  | 
+get_ranking_and_test_results <- function (de_table.ref.marked, the_test_group, the_test_dataset, the_ref_dataset, pval=0.01) {
    
    # Should only be one test datast, and one reference dataset in de_table.ref_marked. Not needed, but forced here for paranoia reasons.
-   de_table.ref.marked <- de_table.ref.marked %>% dplyr::filter(.data$test_dataset==the_test_dataset, .data$dataset==the_ref_dataset )
+   de_table.ref.marked <- de_table.ref.marked %>% 
+      dplyr::filter(.data$test_dataset==the_test_dataset, .data$dataset==the_ref_dataset )
    
    
    # Get the average rankings in order.
    # For this test_group
    rankstat_table <- get_rankstat_table(de_table.ref.marked, the_test_group)
-   #                             group  median_rank     n grouprank
-   #                        <fctr>        <dbl> <int>     <chr>
-   #1                      c3-Tcells60 0.0002933584     9         1
-   #2                     c7-NKcells10 0.0266956114     9         2
-   #3 c6-Monocytes20_Tcells10_Bcells10 0.0543299695     9         3
-   
-   ## Which reference groups are above threshold?
-   if (rankstat_table$median_rank[1] > median_rank_threshold) {
-      return(NULL)     # If top under the theshold, can't say anything,
-   }
-   last_above_median_rank <- max(which(rankstat_table$median_rank <= median_rank_threshold))
+   #group                median_rank mean_rank     n grouprank
+   #<fct>                      <dbl>     <dbl> <int>     <int>
+   #1 microglia                0.00314    0.0574    60         1
+   #2 interneurons             0.354      0.519     60         2
+   #3 oligodendrocytes         0.757      0.616     60         3
+   last_rank <- base::nrow(rankstat_table)
    
    # Sanity checks    
-   if (nrow(rankstat_table) ==1) { rlang::warn("Only 1 reference group. Something odd is happening.") }
-   if (last_above_median_rank == nrow(rankstat_table)) { 
-      stop("All references above median rank?? Something odd is happening. Can't handle.") 
-   }
+   if (base::nrow(rankstat_table) ==1) { rlang::warn("Only 1 reference group. Something odd is happening.") }
    
    
    ## Run 'stepped' contrasts.
    # from this ranking, Pair first with second, secont to third, e.t.c.
-   # But only go down to groupA meeting meadian rank thresohold (and compare to first not meeting threshold)
-   pairset.step <- dplyr::bind_cols(groupA=as.character(rankstat_table$group[c(1:last_above_median_rank)]),
-                                    groupB=as.character(rankstat_table$group[c(2:(last_above_median_rank+1))])) 
-   #pairset.step$contrast_rank <- 1:last_above_median_rank
-   #pairset.step$contrast_run <- "step"
+   # But last entry is the second last to last ranks.
+   pairset.step <- dplyr::bind_cols(groupA=as.character(rankstat_table$group[c(1:(last_rank-1))]),
+                                    groupB=as.character(rankstat_table$group[c(2:(last_rank))])) 
    
-   ks_res_table.step <- pairset.step %>% dplyr::rowwise() %>% 
-      dplyr::do (run_pair_ks_stats(de_table.ref.marked=de_table.ref.marked, the_test_group, .data$groupA, .data$groupB)) #, .$groupA, .$groupB))
-   
-   
-   
-   
-   ## Run 'first' contrasts
-   # everything (even ns) vs top ranked group
-   num_groups    <- base::nrow(rankstat_table)
-   pairset.first <- dplyr::bind_cols(groupA=rep(as.character(rankstat_table$group[1]), num_groups-1),
-                                     groupB=as.character(rankstat_table$group[c(2:(num_groups))])) 
-   ks_res_table.first <- pairset.first %>% dplyr::rowwise() %>% 
-      dplyr::do (run_pair_ks_stats(de_table.ref.marked=de_table.ref.marked, the_test_group, .data$groupA, .data$groupB)) #, .$groupA, .$groupB))
-   
-   
+   mwtest_res_table.step <- pairset.step %>% dplyr::rowwise() %>% 
+      dplyr::do (run_pair_test_stats(de_table.ref.marked=de_table.ref.marked, the_test_group, .data$groupA, .data$groupB))
    
    # Run checks
    rankstat_table$group <- as.character(rankstat_table$group)
-   ranking_and_ks_results <- merge(x=rankstat_table,y=ks_res_table.first, 
-                                   by.x="group", by.y="groupB", all.x=TRUE)
-   ranking_and_ks_results <- merge(x=ranking_and_ks_results, y=ks_res_table.step, 
-                                   by.x="group", by.y="groupB",suffixes=c("_first","_step"), all.x=TRUE)                        
-   ranking_and_ks_results <- ranking_and_ks_results %>% dplyr::arrange(.data$grouprank) %>%
-      dplyr::rename(top_contrast_group_first=.data$groupA_first) %>%  dplyr::rename(up_contrast_group_step=.data$groupA_step) %>% 
-      tibble::add_column( test_group=the_test_group, test_dataset=the_test_dataset, ref_dataset=the_ref_dataset,
-                  .before=1)
+   ranking_and_mwtest_results <- base::merge(x=rankstat_table, y=mwtest_res_table.step, 
+                                             by.x="group", by.y="groupB", all.x=TRUE)                        
+   ranking_and_mwtest_results <- ranking_and_mwtest_results %>% 
+      dplyr::arrange(.data$grouprank) %>%
+      dplyr::rename(up_contrast_group_step=.data$groupA) %>% 
+      tibble::add_column( test_group=the_test_group, 
+                          test_dataset=the_test_dataset, 
+                          ref_dataset=the_ref_dataset, .before=1)
+   
+   # SHuffly the pval to be a pval-to-next not p-val-from-previous 
+   # (want for included names - last becomes NA instead of first)
+   ranking_and_mwtest_results$pval_to_next <- c(ranking_and_mwtest_results$pval[2:last_rank], NA)
    
    
-   #                             group  median_rank n grouprank top_contrast_group_first   D_first   pval_first
-   #1                      c3-Tcells60 0.0002933584 9         1                     <NA>        NA           NA
-   #2                     c7-NKcells10 0.0266956114 9         2              c3-Tcells60 1.0000000 0.0001234098
-   #            up_contrast_group_step    D_step    pval_step
-   #1                             <NA>        NA           NA
-   #2                      c3-Tcells60 1.0000000 0.0001234098
+   # Where's the first jump that is sigificantly different? If any.
+   # Note that first pval is NA because test is vs higher ranked group.
+   # I.e min will be 2. 
+   ranking_and_mwtest_results$in_name <- FALSE
+   if (any(ranking_and_mwtest_results$pval[-1] < pval) ) {
+      first_sig_different_grouprank <- min(which(ranking_and_mwtest_results$pval <= pval))
+      ranking_and_mwtest_results[1:(first_sig_different_grouprank-1), 'in_name'] <- TRUE
+   }
    
    
    
-   # assume a non-sig differnece is similar (ie maybe drown from same distribution)
-   ranking_and_ks_results$similar_to_first <- ifelse (!is.na(ranking_and_ks_results$pval_first), ! ranking_and_ks_results$pval_first <= ks_pval, FALSE)
    
-   # Step by step where is a~b, b~c, c~d ... stop being *potentially* from same ditribution
-   # NB: upper part of each conrast meets threshold already, there are NAs thereafter because we can ignore those.
-   similar_to_one_step_up <- c(TRUE, !(ranking_and_ks_results$pval_step[-1] <= ks_pval)) #top doesn't get contrast :. T
-   # Where is the last step that is similar to the one above it? Usually 1.
-   last_step_not_na <- max(which(! is.na(similar_to_one_step_up)))  # Last that isn't NA.
-   step_dropoff <- last_step_not_na 
-   if (any(!similar_to_one_step_up[1:last_step_not_na]) )  { # Any false/not similar
-      step_dropoff <- min(which(!similar_to_one_step_up[1:last_step_not_na]))-1
-   } 
-   ranking_and_ks_results$similar_via_steps <- FALSE
-   ranking_and_ks_results$similar_via_steps[1:step_dropoff] <- TRUE
+   # Compare top group (sig or not) to all else
+   # Probably remove this test.
+   top_group <- ranking_and_mwtest_results$group[1]
+   ranks.top_group <- de_table.ref.marked %>% 
+      dplyr::filter( test_group == the_test_group, group==top_group ) %>% 
+      dplyr::pull(rescaled_rank)
+   ranks.not_top_group <- de_table.ref.marked %>% 
+      dplyr::filter( test_group == the_test_group, group!=top_group ) %>% 
+      dplyr::pull(rescaled_rank)
+   pval.top2rest <- suppressMessages(suppressWarnings(stats::wilcox.test( alternative = "less",  
+                                        x = ranks.top_group,
+                                        y = ranks.not_top_group )$p.value))
    
-   # Either of those criteria, or just being the top hit - want to include in a label
-   ranking_and_ks_results$in_name     <- ranking_and_ks_results$similar_to_first | ranking_and_ks_results$similar_via_steps 
-   ranking_and_ks_results$in_name[1] <- TRUE # Sorted and, already know first was above threshold
    
-   # median threshold now a hard limit. 
-   ranking_and_ks_results$in_name[ranking_and_ks_results$median_rank > median_rank_threshold] <- FALSE
    
-   return(ranking_and_ks_results)
+   # And, what's the difference of first (or up to first sig diff) to the 
+   # rest of the groups compbind?
+   # For 6 groups at 60 gehes thats: 60 vs 60*5, or 60*2 vs 60*4.
+   # If there are no significant differences to draw the line at - report NA.
+   pval.sigsimilar2test <- NA
+   if (any(ranking_and_mwtest_results$in_name)) {
+      
+      sigsim_groups <- ranking_and_mwtest_results$group[ranking_and_mwtest_results$in_name]
+      
+      ranks.sigsim_groups <- de_table.ref.marked %>% 
+         dplyr::filter( test_group == the_test_group, group %in% sigsim_groups ) %>% 
+         dplyr::pull(rescaled_rank)
+      
+      ranks.not_sigsim_group <- de_table.ref.marked %>% 
+         dplyr::filter( test_group == the_test_group, ! (group %in% top_group) ) %>% 
+         dplyr::pull(rescaled_rank)
+      
+      pval.sigsimilar2test <- suppressMessages(suppressWarnings(stats::wilcox.test( alternative = "less",
+                                                  x = ranks.sigsim_groups,
+                                                  y = ranks.not_sigsim_group)$p.value))
+      
+   }
+   
+   # query group level results, so repeat over whole table.
+   ranking_and_mwtest_results$pval_top_to_rest     <- pval.top2rest
+   ranking_and_mwtest_results$pval_sig_sim_to_rest <- pval.sigsimilar2test
+   
+   
+   return(ranking_and_mwtest_results)
 }
 
 
@@ -300,7 +283,7 @@ get_rankstat_table <- function(de_table.ref.marked, the_test_group){
       dplyr::group_by(.data$group) %>%
       dplyr::filter(.data$test_group == the_test_group) %>% #only test group
       dplyr::summarise(median_rank=stats::median(.data$rescaled_rank),
-                n=n() ) %>%
+                       n=n() ) %>%
       dplyr::arrange(.data$median_rank)
    rankstat_table$grouprank <- base::as.integer(base::rownames(rankstat_table))
    return(rankstat_table)
@@ -309,30 +292,31 @@ get_rankstat_table <- function(de_table.ref.marked, the_test_group){
    #n() is part of dplyr, but yeilds error if specified as 
    #dplyr::n 'Evaluation error: This function 
    #should not be called directly.'
-
+   
 }
 
 
 
 
-#' run_pair_ks_stats
+#' run_pair_test_stats
 #'
 #' Internal function to compare the distribution of a query datasets 'top' 
-#' genes between two different reference datasete groups with a KS test.
-#'
-#' For use by make_ref_similarity_names_for_groups_ks
+#' genes between two different reference datasete groups with a 
+#' Mann–Whitney U test. One directional test if groupA median < group B.
+#' 
+#' For use by make_ref_similarity_names_for_groups
 #'
 #' @param de_table.ref.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
 #' @param the_test_group Name of the test group in query dataset.
 #' @param groupA One of the reference group names
 #' @param groupB Another of the reference group names
 #'
-#' @return A tibble of KS test results for this contrast (pval, D value).
+#' @return A tibble of wilcox / man-whitneyU test results for this contrast.
 #'
-#' @seealso  \code{\link[celaref]{make_ref_similarity_names_for_groups_ks}} 
+#' @seealso  \code{\link[celaref]{make_ref_similarity_names_for_groups}} 
 #'
 #' @importFrom magrittr %>%
-run_pair_ks_stats <- function(de_table.ref.marked, the_test_group, groupA, groupB) {
+run_pair_test_stats <- function(de_table.ref.marked, the_test_group, groupA, groupB) {
    
    groupA_ranks <- de_table.ref.marked %>% 
       dplyr::filter(.data$test_group == the_test_group, .data$group==groupA ) %>%
@@ -342,14 +326,23 @@ run_pair_ks_stats <- function(de_table.ref.marked, the_test_group, groupA, group
       dplyr::filter(.data$test_group == the_test_group, .data$group==groupB ) %>%
       dplyr::pull(.data$rescaled_rank)
    
-   # even specificed exact==FALSE, I still get warning about presence of ties.
-   suppressMessages(suppressWarnings( ks.res <- stats::ks.test(groupA_ranks,groupB_ranks, alternative = "greater", exact=FALSE)))
    
-   return( dplyr::bind_cols("groupA"=groupA,"groupB"=groupB,
-                     "D"=as.numeric(ks.res$statistic),  "pval"=as.numeric(ks.res$p.value)))
+   if (stats::median(groupA_ranks) > stats::median(groupB_ranks)) {
+      stop("Running test comparision in wrong direction (B < A) this shouldn't happen")
+   }
+   
+   suppressMessages(suppressWarnings(
+      mwtest_res <- stats::wilcox.test(groupA_ranks,groupB_ranks, alternative = "less",  
+                                       exact=FALSE, conf.int=FALSE) ))
+   
+   return( dplyr::bind_cols("groupA"     = groupA,
+                            "groupB"     = groupB,
+                            "meandiff"   = base::mean(groupA_ranks)    - base::mean(groupB_ranks),
+                            "mediandiff" = stats::median(groupA_ranks) - stats::median(groupB_ranks),
+                            #"CI95"      = as.numeric(mwtest_res$conf.int[2]),  # Mabye useful later, but don't bother now.
+                            "pval"       = base::as.numeric(mwtest_res$p.value)))
+   
 }
-
-
 
 
 

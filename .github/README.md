@@ -32,16 +32,19 @@ To look for cluster similarities celaref needs:
 
 
 
-![](vignettes/images/violin_plot_example.png) 
+![](../vignettes/images/violin_plot_example.png) 
 
-Query Group   | Short Label
---------------|-----------       
-cluster_1     | cluster_1:astrocytes_ependymal
-cluster_2     | cluster_2:endothelial-mural
-cluster_3     | cluster_3:no_similarity
-cluster_4     | cluster_4:microglia
-cluster_5     | cluster_5:pyramidal SS\|interneurons
-cluster_6     | cluster_6:oligodendrocytes
+
+Query Group | Short Label                        | pval    | pval_sim_to_all_rest
+------------|------------------------------------|---------|----------------------
+cluster_1   |cluster_1:astrocytes_ependymal      |2.98e-23 |            1.68e-39
+cluster_2   |cluster_2:endothelial-mural         |8.44e-10 |            2.07e-34
+cluster_3   |cluster_3:no_similarity             |4.10e- 1 |           NA       
+cluster_4   |cluster_4:microglia                 |2.71e-19 |            1.15e-32
+cluster_5   |cluster_5:pyramidal SS\|interneurons|3.49e-10 |            4.56e-25
+cluster_6   |cluster_6:oligodendrocytes          |2.15e-28 |            5.02e-47
+
+
 
 
 This is a comparison of brain scRNAseq data from :

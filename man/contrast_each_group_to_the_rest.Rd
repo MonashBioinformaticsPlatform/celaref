@@ -5,7 +5,7 @@
 \title{contrast_each_group_to_the_rest}
 \usage{
 contrast_each_group_to_the_rest(dataset_se, dataset_name, groups2test = NA,
-  num_cores = 4)
+  num_cores = 2)
 }
 \arguments{
 \item{dataset_se}{Summarised experiment object containing count data. Also
@@ -19,7 +19,7 @@ By default (set to NA), all groups will be tested.}
 
 \item{num_cores}{Number of cores to use to run MAST jobs in parallel.
 Ignored if parallel package not available. Set to 1 to avoid parallelisation.
-Default = 4}
+Default = 2}
 }
 \value{
 A tibble the within-experiment de_table (differential expression table).
@@ -62,7 +62,7 @@ in the model.
 }
 \examples{
 de_table.demo_query  <- contrast_each_group_to_the_rest(
-     demo_query_se, "a_demo_query", num_cores=2)
+     demo_query_se, "a_demo_query")
 de_table.demo_ref    <- contrast_each_group_to_the_rest(
      demo_ref_se, "a_demo_ref", num_cores=2)
 
