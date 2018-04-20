@@ -26,8 +26,6 @@ library(tidyverse)
 ```
 
 
-** DOCO BEING UPDATED: no more ks tests and median threshold - replaced with wilcox.test to label cell groups (now with stats!) **
-
 
 # Overview {#overview}
 
@@ -121,7 +119,7 @@ Output plots are described [here](#output).
 
 ### Interpreting output {#interpreting-output}
 
-Typically, every cell cluster in the query data (each box) is plotted against everything in the reference data (X-axis). Each of the ‘up’ genes is represented by a tick mark, and the median generank is shown as a thick bar. A biased distribution near the top (i.e.. rescaled rank of 0) indicates similarity of the groups – essentially the same genes are representative of the clusters within their respective samples. The dotted line at 0.25 is an arbitrary threshold of the top quarter of genes. 
+Typically, every cell cluster in the query data (each box) is plotted against everything in the reference data (X-axis). Each of the ‘up’ genes is represented by a tick mark, and the median generank is shown as a thick bar. A biased distribution near the top (i.e.. rescaled rank of 0) indicates similarity of the groups – essentially the same genes are representative of the clusters within their respective samples. 
 
 ![ \label{fig:workflow_diagram}](images/violin_plot_example.png)
 
@@ -129,8 +127,7 @@ Typically, every cell cluster in the query data (each box) is plotted against ev
 The reciprocal nature of the within-dataset differential expression can cause this - what's up in 
 one cluster is down in another.
 * A small or heterogeneous cell group will not have much statistical power to select many 'top' genes.
-And with a low number of 'top' genes, the test won't be reliable. 
-They're still plotted though - judge the utility of these cases by eye.
+And with a low number of 'top' genes.
 See 'Group 2' in the the [quickstart example](#quickstart) on test data for an example. 
 * Because 'top' genes are compared to total reference rankings - the comparison 
 between two datasets is not symmetrical. In ambiguous cases, it might helpful 
@@ -147,27 +144,51 @@ Lastly, there is a function to suggest some semi-sensible query cluster labels.
 
 e.g.
 
-Query Group   | Short Label
---------------|-----------       
-cluster_1     | cluster_1:astrocytes_ependymal
-cluster_2     | cluster_2:endothelial-mural
-cluster_3     | cluster_3:no_similarity
-cluster_4     | cluster_4:microglia
-cluster_5     | cluster_5:pyramidal SS\|interneurons
-cluster_6     | cluster_6:oligodendrocytes
+Query Group | Short Label                        | pval    | stepped_pvals 
+------------|------------------------------------|---------|---------------------
+cluster_1   |cluster_1:astrocytes_ependymal      |2.98e-23 | astrocytes_ependymal:2.98e-23,microglia:0.208,interneurons:0.1,pyramidal SS:0.455,endothelial-mural:0.0444,oligodendrocytes:NA
+cluster_2   |cluster_2:endothelial-mural         |8.44e-10 | endothelial-mural:8.44e-10,microglia:2.37e-06,astrocytes_ependymal:0.000818,interneurons:0.435,oligodendrocytes:0.245,pyramidal SS:NA
+cluster_3   |cluster_3:no_similarity             |4.10e- 1 | astrocytes_ependymal:0.41,microglia:0.634,oligodendrocytes:0.305,endothelial-mural:0.512,interneurons:0.204,pyramidal SS:NA
+cluster_4   |cluster_4:microglia                 |2.71e-19 | microglia:2.71e-19,interneurons:0.435,pyramidal SS:0.11,endothelial-mural:0.221,astrocytes_ependymal:0.627,oligodendrocytes:NA
+cluster_5   |cluster_5:pyramidal SS\|interneurons|3.49e-10 | pyramidal SS:0.362,interneurons:3.49e-10,endothelial-mural:0.09,astrocytes_ependymal:0.0449,microglia:7.68e-19,oligodendrocytes:NA
+cluster_6   |cluster_6:oligodendrocytes          |2.15e-28 | oligodendrocytes:2.15e-28,interneurons:0.624,astrocytes_ependymal:0.207,endothelial-mural:0.755,microglia:0.0432,pyramidal SS:NA
 
-While a rough indication of similarity can be taken from the reference group 
-with the highest median rank, often multiple reference groups will meet the 
-arbitrary threshold of similarity at 0.25 (dotted line). This is 
-expected when there are similar cell sub-populations in the reference data.
 
-In these cases some further logic is applied to decide which reference groups should be in the group label. See example distributions below :
-(a)	If only one reference group is above the threshold, use that group name.
-(b)	If nothing meets the threshold, report a lack of similarity.
-(c)	If two (or more) reference groups are above the threshold, run a Kolmogorov–Smirnov test on the rescaled rank distributions. If they are significantly (p <= 0.01) different assume they are similar but distinct cell types and report only the first. 
-(d)	Or if they are not, report both. If there are more than two groups above the threshold, keep testing the first to the second, second to third e.t.c, until a significant difference is found, or there are no more above-threshold groups. Report every reference group seen up to that point.
+There can be none, one or multiple reference group similarities for the query group. 
+This is expected when there are similar cell sub-populations in the reference data.
+This can be visualised throught the relative shapes of the top gene distribution 
+for the reference group, and reference group similarity labels are calculated as follows:
 
-![\label{fig:cluster_labelling}](images/clustering_labelling.png )
+1. The median gene rank for the 'top' genes in each reference group is calculated.
+
+2. Reference groups are ordered from most to least similar (ascending median rank).
+
+3. Mann-Whitney U tests are calculated between the adjacent reference groups - 
+ie. 1st-2nd most similar, 2nd-3rd, 3rd-4th e.t.c. 
+These are the 'stepped_pvals' reported above - the last value will always be undefined NA.
+Essentially this is testing if the 'top' genes representative of the query group are
+significantly lower ranked (more similar) in one reference group vs the next 
+most similar reference group. A genuine similarity of cell types should result in 
+an abrupt change in these gene rank distributions. 
+
+4. Calls are made on which reference groups to include in the group label.
+     - (a) If there is a significant difference (p < 0.01)  between the first and second most similar groups - report on the top ranked reference group. The pval in this case
+     will be the first stepped pvalue (which is significant).
+     - (b) If there are no significant differences between any steps, report a lack of similarity.
+      The pval in this case will be again be the first stepped pvalue - but it isn't significant. 
+     - (c) Otherwise, start at the most similar reference group, and report everything up to the 
+     first signifcantly different ranking. Effectively, this reports multiple 
+     reference group similarities when a call can't be made between them 
+     e.g. subtypes, or a mixed query group. 
+     Here the reported pvalue describes the 'jump' between the bottom ranked
+     similar reference group, and the first of the other groups. e.g. the 2nd or
+     3rd stepped pvalue.
+
+
+
+
+
+<!--![\label{fig:cluster_labelling}](images/clustering_labelling.png ) -->
 
 
 # Using the package
@@ -675,8 +696,6 @@ group_names_table <- make_ref_similarity_names_for_groups(de_table.marked.query_
 ```{r eval=TRUE, echo=FALSE} 
 kable(group_names_table)
 ```
-
-NB: The format of this table may change in future versions.
 
 # Example Analyses
 
