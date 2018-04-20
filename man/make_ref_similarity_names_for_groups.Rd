@@ -17,9 +17,10 @@ make_ref_similarity_names_for_groups(de_table.ref.marked, the_test_dataset,
 \item{pval}{Differences between the rescaled ranking distribution of 'top'
 genes on different reference groups are tested with a Mann-Whitney U test. If 
 they are \emph{significantly different}, only the top group(s) are reported. 
-ie. A more stringent \bold{pval} is more likely to report multiple 
-reference groups. 
-This parameter unlikely to need change. Default = 0.01.}
+It isn't a simple cutoff threshold as it can change the number of similar groups reported. 
+ie. A more stringent \bold{pval} is more likely to decide that groups are similar -
+which would result in multiple group reporting, or no similarity at all.
+Unlikely that this parameter will need to change. Default = 0.01.}
 }
 \value{
 A table of automagically-generated labels for each query group, given 
