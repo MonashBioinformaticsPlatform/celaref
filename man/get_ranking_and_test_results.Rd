@@ -5,7 +5,7 @@
 \title{get_ranking_and_test_results}
 \usage{
 get_ranking_and_test_results(de_table.ref.marked, the_test_group,
-  the_test_dataset, the_ref_dataset, pval = 0.01)
+  the_test_dataset, the_ref_dataset, num_steps, pval = 0.01)
 }
 \arguments{
 \item{de_table.ref.marked}{see \link[celaref]{make_ref_similarity_names_for_groups}}
@@ -16,9 +16,9 @@ get_ranking_and_test_results(de_table.ref.marked, the_test_group,
 
 \item{the_ref_dataset}{see \link[celaref]{make_ref_similarity_names_for_groups}}
 
-\item{pval}{see \link[celaref]{make_ref_similarity_names_for_groups}}
+\item{num_steps}{see \link[celaref]{make_ref_similarity_names_for_groups}}
 
-\item{median_rank_threshold}{see \link[celaref]{make_ref_similarity_names_for_groups}}
+\item{pval}{see \link[celaref]{make_ref_similarity_names_for_groups}}
 }
 \description{
 Internal function to get reference group similarity contrasts for an individual query qroup.

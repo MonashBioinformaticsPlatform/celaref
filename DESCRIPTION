@@ -19,7 +19,11 @@ Imports:
    magrittr,
    stats,
    utils,
-   rlang
+   rlang,
+   BiocGenerics,
+   S4Vectors,
+   readr,
+   tibble
 Suggests:
    limma,
    parallel,

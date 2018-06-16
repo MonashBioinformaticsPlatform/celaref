@@ -246,7 +246,7 @@ make_ranking_violin_plot(de_table.marked.query_vs_ref)
 make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "ref")
 ```
 ```{r toy_example3, message=FALSE, warnings=FALSE,  eval=TRUE, echo=FALSE}
-kable(make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "ref"))
+kable(make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "ref"), digits=50)
 ```
 
 
@@ -1029,7 +1029,7 @@ de_table.zeisel.hippo  <- contrast_each_group_to_the_rest(dataset_se.hippo,  dat
 Now compare the two: 
 
 ```{r eval=TRUE, cache=FALSE}
-# Cross-experimet comparison
+# Cross-experimet comparison 
 de_table.marked.cortex_vs_hippo <- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.zeisel.cortex  ,
    de_table.ref=de_table.zeisel.hippo ,
@@ -1044,9 +1044,11 @@ Perhaps unsurprisingly given they're from the same experiment, the cell-type
 annotations do almost perfectly correlate one-to-one.
 
 ```{r eval=TRUE, echo=FALSE, warning=FALSE}
+
 kable(make_ref_similarity_names_for_groups( de_table.marked.cortex_vs_hippo , 
                 the_test_dataset = "zeisel_sscortex", 
-               the_ref_dataset  = "zeisel_ca1hippocampus") %>% arrange(test_group) )
+               the_ref_dataset  = "zeisel_ca1hippocampus") %>% arrange(test_group), 
+      digits=50) #kable display hack
 
 ```
 
@@ -1173,7 +1175,7 @@ label_table.cortex_vs_lacrimal <-
 ```
 
 ```{r eval=TRUE, echo=FALSE}
-kable(label_table.cortex_vs_lacrimal %>% arrange(test_group) ) 
+kable(label_table.cortex_vs_lacrimal %>% arrange(test_group) , digits=50 ) 
 ```
 
 This cross-tissue comparison looks very different to the brain-brain contrast
