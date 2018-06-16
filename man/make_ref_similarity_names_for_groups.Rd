@@ -5,7 +5,7 @@
 \title{make_ref_similarity_names_for_groups}
 \usage{
 make_ref_similarity_names_for_groups(de_table.ref.marked, the_test_dataset,
-  the_ref_dataset, pval = 0.01)
+  the_ref_dataset, pval = 0.01, num_steps = 5)
 }
 \arguments{
 \item{de_table.ref.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
@@ -21,11 +21,19 @@ It isn't a simple cutoff threshold as it can change the number of similar groups
 ie. A more stringent \bold{pval} is more likely to decide that groups are similar -
 which would result in multiple group reporting, or no similarity at all.
 Unlikely that this parameter will need to change. Default = 0.01.}
+
+\item{num_steps}{After ranking reference groups according to median 'top' gene
+ranking, how many adjacent pairs to test for differences. 
+Set to 1 to only compare each group to the next, or NA to perform an 
+all-vs-all comparison. 
+Setting too low may means it is possible to miss groups with some similarity to 
+the reported matches (\emph{similar_non_match} column)).
+Too high (or NA) with a large number of reference groups could be slow. 
+Default = 5.}
 }
 \value{
 A table of automagically-generated labels for each query group, given 
-their similarity to reference groups. Short_lab and long_lab are just 
-different versions of the name.
+their similarity to reference groups. ADD OUTPUT DESCRIPTION HERE XXXX.
 }
 \description{
 Given the comparison between the two dataset, construct some sensible labels 
