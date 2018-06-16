@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sarah Williams" />
 
-<meta name="date" content="2018-04-20" />
+<meta name="date" content="2018-06-16" />
 
 <title>Celaref Manual</title>
 
@@ -121,7 +121,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Celaref Manual</h1>
 <h4 class="author"><em>Sarah Williams</em></h4>
-<h4 class="date"><em>2018-04-20</em></h4>
+<h4 class="date"><em>2018-06-16</em></h4>
 
 </div>
 
@@ -423,26 +423,38 @@ make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref, the_test_data
 <th align="left">shortlab</th>
 <th align="right">pval</th>
 <th align="left">stepped_pvals</th>
+<th align="left">similar_non_match</th>
+<th align="left">similar_non_match_detail</th>
+<th align="left">differences_within</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left">Group2</td>
-<td align="left">Group2:no_similarity</td>
-<td align="right">0.0404278</td>
+<td align="left">Group2:No similarily</td>
+<td align="right">NA</td>
 <td align="left">Exciting:0.0404,dunno:0.191,Weird subtype:0.0404,Mystery cell type:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">Group3</td>
 <td align="left">Group3:dunno</td>
-<td align="right">0.0002638</td>
+<td align="right">0.000264</td>
 <td align="left">dunno:0.000264,Weird subtype:0.226,Exciting:0.00705,Mystery cell type:NA</td>
+<td align="left">Exciting</td>
+<td align="left">dunno &gt; Exciting (p=0.0104,n.s)</td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">Group4</td>
 <td align="left">Group4:Mystery cell type</td>
-<td align="right">0.0060929</td>
+<td align="right">0.006090</td>
 <td align="left">Mystery cell type:0.00609,Weird subtype:0.00609,Exciting:0.376,dunno:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 </tbody>
 </table>
@@ -872,26 +884,38 @@ group_names_table &lt;- make_ref_similarity_names_for_groups(de_table.marked.que
 <th align="left">shortlab</th>
 <th align="right">pval</th>
 <th align="left">stepped_pvals</th>
+<th align="left">similar_non_match</th>
+<th align="left">similar_non_match_detail</th>
+<th align="left">differences_within</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left">Group2</td>
-<td align="left">Group2:no_similarity</td>
-<td align="right">0.0404278</td>
+<td align="left">Group2:No similarily</td>
+<td align="right">NA</td>
 <td align="left">Exciting:0.0404,dunno:0.191,Weird subtype:0.0404,Mystery cell type:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">Group3</td>
 <td align="left">Group3:dunno</td>
-<td align="right">0.0002638</td>
+<td align="right">0.000264</td>
 <td align="left">dunno:0.000264,Weird subtype:0.226,Exciting:0.00705,Mystery cell type:NA</td>
+<td align="left">Exciting</td>
+<td align="left">dunno &gt; Exciting (p=0.0104,n.s)</td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">Group4</td>
 <td align="left">Group4:Mystery cell type</td>
-<td align="right">0.0060929</td>
+<td align="right">0.006090</td>
 <td align="left">Mystery cell type:0.00609,Weird subtype:0.00609,Exciting:0.376,dunno:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 </tbody>
 </table>
@@ -1097,50 +1121,74 @@ de_table.Watkins2009PBMCs &lt;- contrast_each_group_to_the_rest_for_norm_ma_with
 <th align="left">shortlab</th>
 <th align="right">pval</th>
 <th align="left">stepped_pvals</th>
+<th align="left">similar_non_match</th>
+<th align="left">similar_non_match_detail</th>
+<th align="left">differences_within</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left">1</td>
-<td align="left">1:no_similarity</td>
-<td align="right">0.4361188</td>
+<td align="left">1:No similarily</td>
+<td align="right">NA</td>
 <td align="left">Tc lymphocyte:0.436,Th lymphocyte:0.13,natural killer cell:0.268,B lymphocyte:0.0468,monocyte:0.0183,granulocyte:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">2</td>
 <td align="left">2:monocyte</td>
-<td align="right">0.0000019</td>
+<td align="right">1.90e-06</td>
 <td align="left">monocyte:1.89e-06,granulocyte:5.61e-07,natural killer cell:0.216,B lymphocyte:0.0466,Tc lymphocyte:0.000111,Th lymphocyte:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">3</td>
 <td align="left">3:natural killer cell|Tc lymphocyte</td>
-<td align="right">0.0003961</td>
+<td align="right">3.96e-04</td>
 <td align="left">natural killer cell:0.482,Tc lymphocyte:0.000396,Th lymphocyte:0.00134,granulocyte:0.00856,monocyte:0.213,B lymphocyte:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">&gt; (p=)</td>
 </tr>
 <tr class="even">
 <td align="left">4</td>
 <td align="left">4:B lymphocyte</td>
-<td align="right">0.0001655</td>
+<td align="right">1.66e-04</td>
 <td align="left">B lymphocyte:0.000166,monocyte:0.00916,natural killer cell:0.304,Tc lymphocyte:0.165,granulocyte:0.0999,Th lymphocyte:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">5</td>
 <td align="left">5:B lymphocyte</td>
-<td align="right">0.0072999</td>
+<td align="right">7.30e-03</td>
 <td align="left">B lymphocyte:0.0073,monocyte:0.18,granulocyte:0.369,natural killer cell:0.0169,Th lymphocyte:0.841,Tc lymphocyte:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">6</td>
-<td align="left">6:no_similarity</td>
-<td align="right">0.3809142</td>
+<td align="left">6:No similarily</td>
+<td align="right">NA</td>
 <td align="left">natural killer cell:0.381,Tc lymphocyte:0.404,Th lymphocyte:0.63,B lymphocyte:0.3,granulocyte:0.315,monocyte:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">7</td>
 <td align="left">7:natural killer cell</td>
-<td align="right">0.0000000</td>
+<td align="right">0.00e+00</td>
 <td align="left">natural killer cell:6.21e-09,Tc lymphocyte:0.895,B lymphocyte:0.562,granulocyte:0.0563,monocyte:6.93e-09,Th lymphocyte:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 </tbody>
 </table>
@@ -1237,7 +1285,7 @@ dataset_se.hippo   &lt;- trim_small_groups_and_low_expression_genes(dataset_se.h
 <pre class="r"><code>de_table.zeisel.cortex &lt;- contrast_each_group_to_the_rest(dataset_se.cortex, dataset_name=&quot;zeisel_sscortex&quot;,       num_cores=6) 
 de_table.zeisel.hippo  &lt;- contrast_each_group_to_the_rest(dataset_se.hippo,  dataset_name=&quot;zeisel_ca1hippocampus&quot;, num_cores=6) </code></pre>
 <p>Now compare the two:</p>
-<pre class="r"><code># Cross-experimet comparison
+<pre class="r"><code># Cross-experimet comparison 
 de_table.marked.cortex_vs_hippo &lt;- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.zeisel.cortex  ,
    de_table.ref=de_table.zeisel.hippo ,
@@ -1254,44 +1302,65 @@ make_ranking_violin_plot(de_table.marked.cortex_vs_hippo)</code></pre>
 <th align="left">shortlab</th>
 <th align="right">pval</th>
 <th align="left">stepped_pvals</th>
+<th align="left">similar_non_match</th>
+<th align="left">similar_non_match_detail</th>
+<th align="left">differences_within</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left">astrocytes_ependymal</td>
 <td align="left">astrocytes_ependymal:astrocytes_ependymal</td>
-<td align="right">0</td>
+<td align="right">8.35e-22</td>
 <td align="left">astrocytes_ependymal:8.35e-22,microglia:0.00447,interneurons:0.155,endothelial-mural:0.0164,oligodendrocytes:0.00229,pyramidal CA1:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">endothelial-mural</td>
 <td align="left">endothelial-mural:endothelial-mural</td>
-<td align="right">0</td>
+<td align="right">6.31e-18</td>
 <td align="left">endothelial-mural:6.31e-18,astrocytes_ependymal:0.0673,microglia:0.000932,interneurons:0.0606,oligodendrocytes:0.264,pyramidal CA1:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">interneurons</td>
 <td align="left">interneurons:interneurons</td>
-<td align="right">0</td>
+<td align="right">1.64e-18</td>
 <td align="left">interneurons:1.64e-18,microglia:0.033,endothelial-mural:0.0705,astrocytes_ependymal:0.00614,oligodendrocytes:0.0231,pyramidal CA1:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">microglia</td>
 <td align="left">microglia:microglia</td>
-<td align="right">0</td>
+<td align="right">2.72e-28</td>
 <td align="left">microglia:2.72e-28,interneurons:0.136,astrocytes_ependymal:0.26,endothelial-mural:0.00148,pyramidal CA1:0.752,oligodendrocytes:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">oligodendrocytes</td>
 <td align="left">oligodendrocytes:oligodendrocytes</td>
-<td align="right">0</td>
+<td align="right">8.53e-34</td>
 <td align="left">oligodendrocytes:8.53e-34,microglia:0.00016,interneurons:8.29e-06,endothelial-mural:0.934,astrocytes_ependymal:1.26e-07,pyramidal CA1:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">pyramidal SS</td>
 <td align="left">pyramidal SS:pyramidal CA1</td>
-<td align="right">0</td>
+<td align="right">1.54e-25</td>
 <td align="left">pyramidal CA1:1.54e-25,microglia:0.000598,endothelial-mural:0.0868,interneurons:0.00391,astrocytes_ependymal:0.00468,oligodendrocytes:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 </tbody>
 </table>
@@ -1474,44 +1543,65 @@ make_ranking_violin_plot(de_table.marked.cortex_vs_lacrimal)</code></pre>
 <th align="left">shortlab</th>
 <th align="right">pval</th>
 <th align="left">stepped_pvals</th>
+<th align="left">similar_non_match</th>
+<th align="left">similar_non_match_detail</th>
+<th align="left">differences_within</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left">astrocytes_ependymal</td>
-<td align="left">astrocytes_ependymal:no_similarity</td>
-<td align="right">0.1995115</td>
+<td align="left">astrocytes_ependymal:No similarily</td>
+<td align="right">NA</td>
 <td align="left">Mast/Lymphocyte:0.2,Mes 1:0.594,Mes 3:0.286,Endothelial:0.439,Mes 4:0.591,Mes 2:0.257,Myoepithelial:0.43,Macrophage/Monocyte:0.245,Epithelial:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">endothelial-mural</td>
-<td align="left">endothelial-mural:no_similarity</td>
-<td align="right">0.2257455</td>
+<td align="left">endothelial-mural:No similarily</td>
+<td align="right">NA</td>
 <td align="left">Endothelial:0.226,Mes 3:0.0741,Mes 4:0.595,Myoepithelial:0.708,Mes 1:0.0331,Mast/Lymphocyte:0.69,Mes 2:0.022,Macrophage/Monocyte:0.344,Epithelial:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">interneurons</td>
-<td align="left">interneurons:no_similarity</td>
-<td align="right">0.5062165</td>
+<td align="left">interneurons:No similarily</td>
+<td align="right">NA</td>
 <td align="left">Mes 4:0.506,Mes 3:0.519,Mast/Lymphocyte:0.0835,Macrophage/Monocyte:0.7,Myoepithelial:0.469,Mes 1:0.602,Mes 2:0.179,Endothelial:0.193,Epithelial:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">microglia</td>
 <td align="left">microglia:Macrophage/Monocyte</td>
-<td align="right">0.0000000</td>
+<td align="right">2.83e-14</td>
 <td align="left">Macrophage/Monocyte:2.83e-14,Mes 4:5.82e-05,Endothelial:1.25e-08,Myoepithelial:0.844,Mast/Lymphocyte:0.146,Mes 2:0.439,Mes 1:0.415,Mes 3:0.022,Epithelial:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">oligodendrocytes</td>
-<td align="left">oligodendrocytes:no_similarity</td>
-<td align="right">0.5951148</td>
+<td align="left">oligodendrocytes:No similarily</td>
+<td align="right">NA</td>
 <td align="left">Mast/Lymphocyte:0.595,Mes 4:0.332,Epithelial:0.45,Mes 3:0.355,Mes 2:0.613,Mes 1:0.574,Endothelial:0.0884,Macrophage/Monocyte:0.635,Myoepithelial:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">pyramidal SS</td>
-<td align="left">pyramidal SS:no_similarity</td>
-<td align="right">0.3597769</td>
+<td align="left">pyramidal SS:No similarily</td>
+<td align="right">NA</td>
 <td align="left">Mes 4:0.36,Endothelial:0.177,Macrophage/Monocyte:0.586,Mes 2:0.679,Epithelial:0.175,Mast/Lymphocyte:0.674,Mes 3:0.392,Myoepithelial:0.0842,Mes 1:NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
 </tr>
 </tbody>
 </table>

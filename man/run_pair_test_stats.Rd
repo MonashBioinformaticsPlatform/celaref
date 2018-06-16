@@ -4,7 +4,8 @@
 \alias{run_pair_test_stats}
 \title{run_pair_test_stats}
 \usage{
-run_pair_test_stats(de_table.ref.marked, the_test_group, groupA, groupB)
+run_pair_test_stats(de_table.ref.marked, the_test_group, groupA, groupB,
+  enforceAgtB = TRUE)
 }
 \arguments{
 \item{de_table.ref.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
@@ -14,6 +15,8 @@ run_pair_test_stats(de_table.ref.marked, the_test_group, groupA, groupB)
 \item{groupA}{One of the reference group names}
 
 \item{groupB}{Another of the reference group names}
+
+\item{enforceAgtB}{Do a one tailed test of A 'less' B (more similar)? Or two-tailed. Default = TRUE.}
 }
 \value{
 A tibble of wilcox / man-whitneyU test results for this contrast.
