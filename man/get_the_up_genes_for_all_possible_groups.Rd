@@ -2,7 +2,7 @@
 % Please edit documentation in R/contrasting_functions.r
 \name{get_the_up_genes_for_all_possible_groups}
 \alias{get_the_up_genes_for_all_possible_groups}
-\title{get_the_up_genes_for_group}
+\title{get_the_up_genes_for_all_possible_groups}
 \usage{
 get_the_up_genes_for_all_possible_groups(de_table.test, de_table.ref,
   test_dataset_name, rankmetric = "TOP100_LOWER_CI_GTE1")

@@ -301,7 +301,14 @@ get_the_up_genes_for_group <- function(the_group, de_table.test, de_table.ref, r
    the_up_genes <- c()
    if (rankmetric=='TOP100_LOWER_CI_GTE1') {
       the_up_genes <- de_table.test$ID[de_table.test$group == the_group & de_table.test$rank <= 100 & de_table.test$ci_inner >= 1]
+   } else if (rankmetric=='BOTTOM100_LOWER_CI_LTE1') {
+      max_rank <- max(de_table.test$rank)
+      the_up_genes <- de_table.test$ID[de_table.test$group == the_group & de_table.test$rank >= (max_rank - 100 + 1) & de_table.test$ci_inner <= -1]
    } else {stop("Unknown rank metric")}
+   
+   
+   
+   
    
    # Nothing selected. Or nothing selected thats in ref data. NA gets rbinded harmlesslessy
    if (length(the_up_genes) == 0 ) {
@@ -323,7 +330,7 @@ get_the_up_genes_for_group <- function(the_group, de_table.test, de_table.ref, r
 
 
 
-#' get_the_up_genes_for_group 
+#' get_the_up_genes_for_all_possible_groups
 #'
 #' For the most overrepresented genes of each group in the test 
 #' dataset, get their rankings in all the groups of the reference dataset. 
