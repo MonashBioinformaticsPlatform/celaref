@@ -185,11 +185,14 @@ make_ref_similarity_names_for_group <- function(the_test_group, mwtest_res_table
             num_steps=NA,
             pval=the_pval)
          
+         differences_within_col = ""
          diffs_in_match <- mwtest_res_table.inmatches %>% dplyr::filter(.data$pval <= the_pval)
-         
-         differences_within_col = paste0(diffs_in_match$group, " > ",diffs_in_match$next_group, 
-                                         " (p=",base::signif(diffs_in_match$pval,3),")", 
-                                         collapse="|")
+         if (base::nrow(diffs_in_match) > 0 ) {
+            differences_within_col = paste0(diffs_in_match$group, " > ",diffs_in_match$next_group, 
+                                            " (p=",base::signif(diffs_in_match$pval,3),")", 
+                                            collapse="|")
+         }
+
          
       }
       
