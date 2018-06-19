@@ -140,17 +140,19 @@ For an example of this, see the plot in section
 
 ### Assigning labels to clusters {#assigning-labels-to-clusters}
 
-Lastly, there is a function to suggest some semi-sensible query cluster labels.
+Lastly, there is a function to suggest some semi-sensible query cluster labels. 
 
+The first 4 columns of output (below) are the most interesting, the last 3 are described at 
+bottom of section. The suggested cluster label is in the 'shortlab' column.
 e.g.
 
-Query Group | Short Label                        | pval    | stepped_pvals 
+test_group  | shortlab                        | pval    | stepped_pvals  
 ------------|------------------------------------|---------|---------------------
-cluster_1   |cluster_1:astrocytes_ependymal      |2.98e-23 | astrocytes_ependymal:2.98e-23,microglia:0.208,interneurons:0.1,pyramidal SS:0.455,endothelial-mural:0.0444,oligodendrocytes:NA
+cluster_1   |cluster_1:astrocytes_ependymal      |2.98e-23 | astrocytes_ependymal:2.98e-23,microglia:0.208,interneurons:0.1,pyramidal SS:0.455,endothelial-mural:0.0444,oligodendrocytes:NA   
 cluster_2   |cluster_2:endothelial-mural         |8.44e-10 | endothelial-mural:8.44e-10,microglia:2.37e-06,astrocytes_ependymal:0.000818,interneurons:0.435,oligodendrocytes:0.245,pyramidal SS:NA
-cluster_3   |cluster_3:no_similarity             |4.10e- 1 | astrocytes_ependymal:0.41,microglia:0.634,oligodendrocytes:0.305,endothelial-mural:0.512,interneurons:0.204,pyramidal SS:NA
-cluster_4   |cluster_4:microglia                 |2.71e-19 | microglia:2.71e-19,interneurons:0.435,pyramidal SS:0.11,endothelial-mural:0.221,astrocytes_ependymal:0.627,oligodendrocytes:NA
-cluster_5   |cluster_5:pyramidal SS\|interneurons|3.49e-10 | pyramidal SS:0.362,interneurons:3.49e-10,endothelial-mural:0.09,astrocytes_ependymal:0.0449,microglia:7.68e-19,oligodendrocytes:NA
+cluster_3   |cluster_3:no_similarity             | NA      | astrocytes_ependymal:0.41,microglia:0.634,oligodendrocytes:0.305,endothelial-mural:0.512,interneurons:0.204,pyramidal SS:NA 
+cluster_4   |cluster_4:microglia                 |2.71e-19 | microglia:2.71e-19,interneurons:0.435,pyramidal SS:0.11,endothelial-mural:0.221,astrocytes_ependymal:0.627,oligodendrocytes:NA 
+cluster_5   |cluster_5:pyramidal SS\|interneurons|3.49e-10 | pyramidal SS:0.362,interneurons:3.49e-10,endothelial-mural:0.09,astrocytes_ependymal:0.0449,microglia:7.68e-19,oligodendrocytes:NA 
 cluster_6   |cluster_6:oligodendrocytes          |2.15e-28 | oligodendrocytes:2.15e-28,interneurons:0.624,astrocytes_ependymal:0.207,endothelial-mural:0.755,microglia:0.0432,pyramidal SS:NA
 
 
@@ -165,7 +167,7 @@ for the reference group, and reference group similarity labels are calculated as
 
 3. Mann-Whitney U tests are calculated between the adjacent reference groups - 
 ie. 1st-2nd most similar, 2nd-3rd, 3rd-4th e.t.c. 
-These are the 'stepped_pvals' reported above - the last value will always be undefined NA.
+These are the **stepped_pvals** reported above - the last value will always be undefined NA.
 Essentially this is testing if the 'top' genes representative of the query group are
 significantly lower ranked (more similar) in one reference group vs the next 
 most similar reference group. A genuine similarity of cell types should result in 
@@ -175,7 +177,8 @@ an abrupt change in these gene rank distributions.
      - (a) If there is a significant difference (p < 0.01)  between the first and second most similar groups - report on the top ranked reference group. The pval in this case
      will be the first stepped pvalue (which is significant).
      - (b) If there are no significant differences between any steps, report a lack of similarity.
-      The pval in this case will be again be the first stepped pvalue - but it isn't significant. 
+     No p-value is reported - because no call could be made on what group(s) are more similar.
+     Check the stepped_pvals to look at borderline cases.
      - (c) Otherwise, start at the most similar reference group, and report everything up to the 
      first signifcantly different ranking. Effectively, this reports multiple 
      reference group similarities when a call can't be made between them 
@@ -184,11 +187,40 @@ an abrupt change in these gene rank distributions.
      similar reference group, and the first of the other groups. e.g. the 2nd or
      3rd stepped pvalue.
 
-
-
-
-
 <!--![\label{fig:cluster_labelling}](images/clustering_labelling.png ) -->
+
+-------------------------
+
+The last 3 columns of the output are usually empty (as they were in this example). 
+When defined they may indicate borderline labelling or edge cases - checking the 
+violin plots is advised! Tests are again Mann-Whitney U, but on non-adjacently ranked groups.
+
+* **similar_non_match** : This column lists any reference groups outside of the 
+reported label match that are not signifcantly different to a reported match group. 
+E.g If a query matches group A (because A is significantly different to the 
+second-ranked B); if A is then not significantly different to the third -ranked C, then C will be reported here. 
+This is more likely with smaller sets of 'top genes', for instance in Group3 of the quickstart example. 
+Examples:
+    * NA [Nothing]
+    * C
+    * microglia|interneurons
+
+* **similar_non_match_detail**: P-values for any details about similar_non_match results. 
+These p-values will always be non-significant (but again may be borderline).
+Examples:
+    * NA [Nothing]
+    * A > C (p=0.0214,n.s)
+    * dunno > Exciting (p=0.0104,n.s)
+
+* **differences_within**: This feild lists any pairs of matched groups (in
+shortlab) that are significantly different. This could happen if there are many 
+matched groups listed in shortlab, that are all slightly different. Examples
+    * NA [Nothing]
+    * B > E (p=0.004)|C > E (p=0.009)
+
+
+
+
 
 
 # Using the package
@@ -650,8 +682,8 @@ NB: 'Group 1' is missing entirely because the reference dataset (*toy_ref_se* fr
 NB: Because there are only 24 cells in 'Group 2' of this toy 100-gene dataset - it has low statistical power and only produced 3 'top' genes. They're still plotted - but you can see by eye that 3 genes will not give a reliable indication of similarity. 
 
 NB: There is scope for the ranking criteria to be changed, but currently only 
-the inner log2FC 95% confidence interval is implemented. Use of 'topconfects' 
-is planned [@topconfect], as this is expected to be a better ranking metric.
+the inner log2FC 95% confidence interval is implemented. Future work: Use of 'topconfects' 
+is planned [@Harrison2018], as this is expected to be a better ranking metric.
 
 
 ### Compare groups within a single dataset{#compare-groups-within-a-single-dataset}
@@ -686,8 +718,8 @@ make_ranking_violin_plot(de_table.marked.query_vs_self)
 
 Lastly, celaref can parse these comparisons and suggest group names for the 
 query groups. The method used is described in section
-[Assigning labels to clusters](#assigning-labels-to-clusters). These names might
-make a good starting point for downstream characterisation.
+[Assigning labels to clusters](#assigning-labels-to-clusters). The name in 
+'shortlab' might make a good starting point for downstream characterisation.
 
 ```{r eval=TRUE, cache=FALSE} 
 # And get group labels
@@ -696,6 +728,25 @@ group_names_table <- make_ref_similarity_names_for_groups(de_table.marked.query_
 ```{r eval=TRUE, echo=FALSE} 
 kable(group_names_table)
 ```
+
+
+NB: Its unusual to have anything in the 'similar_non_match' column - it happens 
+here due to small size of this toy dataset. Explained in section 
+[Assigning labels to clusters](#assigning-labels-to-clusters). 
+
+
+--------------------------------
+
+A note on the 'num_steps' parameter.
+
+Function *make_ref_similarity_names_for_groups* accepts an optional parameter 'num_steps'.
+It doesn't affect the construction of the suggested labels in 'shortlab', only the 
+extra 'similar_non_match' columns. Only pairs of reference groups *num_steps*  
+away from each other when ranked by median generank are tested for difference - 
+the nearer they are the more likely they're similar. 
+
+It if is set too small though (e.g. 1), similar non-matched groups might be missed. Set to 'NA' for an exhastive test, but with many reference groups, this could be slow.
+
 
 # Example Analyses
 
