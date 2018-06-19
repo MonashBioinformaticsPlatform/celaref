@@ -33,7 +33,33 @@ Default = 5.}
 }
 \value{
 A table of automagically-generated labels for each query group, given 
-their similarity to reference groups. ADD OUTPUT DESCRIPTION HERE XXXX.
+their similarity to reference groups. 
+
+The columns in this table:
+\itemize{
+  \item \bold{test_group} : Query group e.g. "c1"
+  \item \bold{shortlab} : The cluster label described above e.g. "c1:macrophage"
+  \item \bold{pval} : If there is a similarity flagged, this is the P-value from 
+  a Mann-Whitney U test from the last 'matched' group to the adjacent  
+  'non-matched' group. Ie. If only one label in shortlab, this will be the first 
+  of the stepped_pvals, if there are 2, it will be the second. If there is 'no_similarity'
+  this will be NA (Because there is no confidence in what is the most appropriate 
+  of the all non-significant stepped pvalues.).
+  \item \bold{stepped_pvals} : P-values from Mann-Whitney U tests across adjacent
+  pairs of reference groups ordered from most to least similar (ascending median rank).
+  ie. 1st-2nd most similar first, 2nd-3rd, 3rd-4th e.t.c. The last value will always 
+  be NA (no more reference group).
+  e.g. refA:8.44e-10,refB:2.37e-06,refC:0.000818,refD:0.435,refE:0.245,refF:NA
+  \item \bold{similar_non_match}: This column lists any reference groups outside 
+  of shortlab that are not signifcantly different to a reported match group. 
+  Limited by \emph{num_steps}, and will never find anything if num_steps==1.
+  "|" delimited. Usually NA.
+  \item \bold{similar_non_match_detail} : P-values for any details about 
+  similar_non_match results. These p-values will always be non-significant.
+  E.g. "A > C (p=0.0214,n.s)". "|" delimited. Usually NA.
+  \item \bold{differences_within} :  This feild lists any pairs of reference 
+  groups in shortlab that are significantly different. "|" delimited. Usually NA.
+}
 }
 \description{
 Given the comparison between the two dataset, construct some sensible labels 
