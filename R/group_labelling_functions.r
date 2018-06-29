@@ -173,28 +173,31 @@ make_ref_similarity_names_for_group <- function(the_test_group, mwtest_res_table
    mwtest_res_table.this.stepped <- mwtest_res_table.this %>% 
       dplyr::filter(.data$step == 1) %>% 
       dplyr::arrange(.data$grouprank) 
+   
    stepped_pvals_col=paste0(mwtest_res_table.this.stepped$group, ":", base::signif(mwtest_res_table.this.stepped$pval, 3),
                             collapse=",")
    stepped_pvals_col=paste0(stepped_pvals_col, ",",
                             utils::tail(mwtest_res_table.this.stepped$next_group, 1),":NA")
    
    
-   # Any sig in adjacent?
-   # Still how a match is defined - will warn when assumptions are violated.
-   mwtest_res_table.last_of_top <- mwtest_res_table.this.stepped  %>% 
-      dplyr::filter(.data$pval <= the_pval) %>%  #siginifcant
-      dplyr::slice(1) #top, is already sorted
-   last_of_match <- ifelse(base::nrow(mwtest_res_table.last_of_top) == 0, NA, dplyr::pull(mwtest_res_table.last_of_top, .data$grouprank)[1])
+   # Any sig in adjacent? Still using stepps to define the matches.
+   # Want to find the first significant difference. Usually 1.
+   # The last of match is the first group with a sig difference to the next.
+   mwtest_res_table.this.stepped.sig <- mwtest_res_table.this.stepped %>% dplyr::filter( .data$pval <= the_pval) 
+   last_of_match <- ifelse(base::nrow(mwtest_res_table.this.stepped.sig) == 0, 
+                           NA, 
+                           mwtest_res_table.this.stepped.sig$grouprank[1])
    
    if (!is.na(last_of_match)) {
+      matches <-mwtest_res_table.this.stepped$group[1:last_of_match] # This table is ordered by grouprank
       
       mwtest_res_table.this$inmatch     <- mwtest_res_table.this$grouprank <= last_of_match
       mwtest_res_table.this$nextinmatch <- mwtest_res_table.this$grouprank + mwtest_res_table.this$step <= last_of_match
-      matches <- mwtest_res_table.this %>% dplyr::filter(.data$inmatch==TRUE) %>% dplyr::pull(.data$group) %>% base::unique()
+      
       
       # define the shortname
       matches_col = paste0(the_test_group,":",paste(matches, collapse="|"))
-      pval_col    = base::signif(dplyr::pull(mwtest_res_table.last_of_top, .data$pval), 3)
+      pval_col    = base::signif(dplyr::pull(mwtest_res_table.this.stepped.sig, .data$pval), 3)[1] #the First sig diff 
       
       
       # Any significant differences within match (from higher to lower)
@@ -220,7 +223,6 @@ make_ref_similarity_names_for_group <- function(the_test_group, mwtest_res_table
                                             " (p=",base::signif(diffs_in_match$pval,3),")", 
                                             collapse="|")
          }
-
          
       }
       
@@ -440,7 +442,7 @@ run_pair_test_stats <- function(de_table.ref.marked, the_test_group, groupA, gro
          stop("Running test comparision in wrong direction (B < A) this shouldn't happen")
       }
    }
-   
+
    suppressMessages(suppressWarnings(
       mwtest_res <- stats::wilcox.test(groupA_ranks,groupB_ranks, alternative = "less",  
                                        exact=FALSE, conf.int=FALSE) ))
