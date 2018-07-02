@@ -28,7 +28,7 @@ de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se,
 de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   
                            "demo_ref", num_cores=2)
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
-    de_table.demo_query, de_table.demo_ref, 'demo_query')
+    de_table.demo_query, de_table.demo_ref)
 
 get_rankstat_table(de_table.marked.query_vs_ref, "Group3")
 

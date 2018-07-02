@@ -344,12 +344,10 @@ get_the_up_genes_for_group <- function(the_group, de_table.test, de_table.ref, r
 #' \code{\link[celaref]{get_the_up_genes_for_group}} that merges output for 
 #' each group in the query into one table.
 #' 
-#'
 #' @param de_table.test A differential expression table of the query experiment,
 #'  as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
 #' @param de_table.ref A differential expression table of the reference dataset,
 #'  as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
-#' @param test_dataset_name A short meaningful name for the query experiment.   
 #' @param rankmetric Placeholder for support of different ranking methods, but only the default supported. Omit. 
 #' 
 #' @return \emph{de_table.marked} This will alsmost be a subset of \bold{de_table.ref}, 
@@ -362,7 +360,6 @@ get_the_up_genes_for_group <- function(the_group, de_table.test, de_table.ref, r
 #'
 #' @examples
 #'de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
-#'    test_dataset_name="query",
 #'    de_table.test=de_table.demo_query ,
 #'    de_table.ref=de_table.demo_ref )
 #'
@@ -370,7 +367,14 @@ get_the_up_genes_for_group <- function(the_group, de_table.test, de_table.ref, r
 #'
 #'
 #' @export
-get_the_up_genes_for_all_possible_groups <- function(de_table.test, de_table.ref, test_dataset_name, rankmetric='TOP100_LOWER_CI_GTE1'){
+get_the_up_genes_for_all_possible_groups <- function(de_table.test, de_table.ref, rankmetric='TOP100_LOWER_CI_GTE1'){
+   
+   # Sanity check: there should be only one test_dataset present in de_table.test, 
+   # that will be propagated.
+   test_dataset_name <- unique(de_table.test$dataset) 
+   if (length(test_dataset_name) !=1 ) { stop("Detected more than one 'dataset' within test dataset. Need one at a time.")}
+   
+   
    
    # Run get_the_up_genes foreach group, 
    # But remove NAs before contsructing table

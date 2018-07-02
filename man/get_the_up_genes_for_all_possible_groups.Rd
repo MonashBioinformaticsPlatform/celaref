@@ -5,7 +5,7 @@
 \title{get_the_up_genes_for_all_possible_groups}
 \usage{
 get_the_up_genes_for_all_possible_groups(de_table.test, de_table.ref,
-  test_dataset_name, rankmetric = "TOP100_LOWER_CI_GTE1")
+  rankmetric = "TOP100_LOWER_CI_GTE1")
 }
 \arguments{
 \item{de_table.test}{A differential expression table of the query experiment,
@@ -13,8 +13,6 @@ as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
 
 \item{de_table.ref}{A differential expression table of the reference dataset,
 as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
-
-\item{test_dataset_name}{A short meaningful name for the query experiment.}
 
 \item{rankmetric}{Placeholder for support of different ranking methods, but only the default supported. Omit.}
 }
@@ -43,7 +41,6 @@ each group in the query into one table.
 }
 \examples{
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
-   test_dataset_name="query",
    de_table.test=de_table.demo_query ,
    de_table.ref=de_table.demo_ref )
 
