@@ -4,15 +4,20 @@
 \alias{make_ref_similarity_names_for_groups}
 \title{make_ref_similarity_names_for_groups}
 \usage{
-make_ref_similarity_names_for_groups(de_table.ref.marked, the_test_dataset,
-  the_ref_dataset, pval = 0.01, num_steps = 5)
+make_ref_similarity_names_for_groups(de_table.ref.marked,
+  the_test_dataset = NA, the_ref_dataset = NA, pval = 0.01,
+  num_steps = 5)
 }
 \arguments{
 \item{de_table.ref.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
 
-\item{the_test_dataset}{A short meaningful name for the experiment. (Should match \emph{test_dataset} column in \bold{de_table.marked})}
+\item{the_test_dataset}{Optional. A short meaningful name for the experiment. 
+(Should match \emph{test_dataset} column in \bold{de_table.marked}). 
+Only needed in a table of more than one dataset. Default = NA.}
 
-\item{the_ref_dataset}{A short meaningful name for the experiment. (Should match \emph{dataset} column in \bold{de_table.marked})}
+\item{the_ref_dataset}{Optional. A short meaningful name for the experiment. 
+(Should match \emph{dataset} column in \bold{de_table.marked}). 
+Only needed in a table of more than one dataset. Default = NA.}
 
 \item{pval}{Differences between the rescaled ranking distribution of 'top'
 genes on different reference groups are tested with a Mann-Whitney U test. If 
@@ -101,8 +106,9 @@ E.g.
 de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query", num_cores=2)
 de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref", num_cores=2)
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
-     de_table.demo_query, de_table.demo_ref, 'demo_query')
+     de_table.demo_query, de_table.demo_ref)
 
+make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref)
 
 }
 \seealso{

@@ -267,18 +267,17 @@ de_table.toy_query <- contrast_each_group_to_the_rest(toy_query_se,  dataset_nam
 # Cross-experiment comparison
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.toy_query ,
-   de_table.ref=de_table.toy_ref ,
-   test_dataset_name='query')
+   de_table.ref=de_table.toy_ref)
 
 # Plot
 make_ranking_violin_plot(de_table.marked.query_vs_ref)
 ```
 ```{r toy_example2, message=FALSE, warnings=FALSE, eval=FALSE}
 # And get group labels
-make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "ref")
+make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref)
 ```
 ```{r toy_example3, message=FALSE, warnings=FALSE,  eval=TRUE, echo=FALSE}
-kable(make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "ref"), digits=50)
+kable(make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref), digits=50)
 ```
 
 
@@ -660,8 +659,7 @@ of *get_the_up_genes_for_all_possible_groups*:
 
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.demo_query ,
-   de_table.ref=de_table.demo_ref ,
-   test_dataset_name='query')
+   de_table.ref=de_table.demo_ref)
 
 # Plot
 make_ranking_violin_plot(de_table.marked.query_vs_ref)
@@ -705,8 +703,7 @@ due to its (demo!) size.
 
 de_table.marked.query_vs_self <- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.demo_query ,
-   de_table.ref=de_table.demo_query ,
-   test_dataset_name='query')
+   de_table.ref=de_table.demo_query)
 
 # Plot
 make_ranking_violin_plot(de_table.marked.query_vs_self)
@@ -723,7 +720,7 @@ query groups. The method used is described in section
 
 ```{r eval=TRUE, cache=FALSE} 
 # And get group labels
-group_names_table <- make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref, the_test_dataset='query', the_ref_dataset = "a_demo_reference")
+group_names_table <- make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref)
 ```
 ```{r eval=TRUE, echo=FALSE} 
 kable(group_names_table)
@@ -945,8 +942,7 @@ Finally! Compare the single cell data to the purified PBMCs:
 ```{r eval=TRUE}
 de_table.pbmc4k_k7_vs_Watkins2009PBMCs <- get_the_up_genes_for_all_possible_groups(
     de_table.test=de_table.10X_pbmc4k_k7 , 
-    de_table.ref=de_table.Watkins2009PBMCs, 
-    test_dataset_name='pbmc4k_k7')
+    de_table.ref=de_table.Watkins2009PBMCs)
 ```
 
 Plot it!
@@ -974,9 +970,7 @@ unless a clear (significantly different) frontrunner can be flagged.
 
 
 ```{r eval=TRUE, warning=FALSE}
-label_table.pbmc4k_k7_vs_Watkins2009PBMCs <- make_ref_similarity_names_for_groups(de_table.pbmc4k_k7_vs_Watkins2009PBMCs, 
-                                        the_test_dataset = "pbmc4k_k7", 
-                                        the_ref_dataset  = "Watkins2009PBMCs")
+label_table.pbmc4k_k7_vs_Watkins2009PBMCs <- make_ref_similarity_names_for_groups(de_table.pbmc4k_k7_vs_Watkins2009PBMCs)
 ```
 ```{r eval=TRUE, echo=FALSE}
 kable(label_table.pbmc4k_k7_vs_Watkins2009PBMCs %>% arrange(test_group) ) 
@@ -1083,8 +1077,7 @@ Now compare the two:
 # Cross-experimet comparison 
 de_table.marked.cortex_vs_hippo <- get_the_up_genes_for_all_possible_groups(
    de_table.test=de_table.zeisel.cortex  ,
-   de_table.ref=de_table.zeisel.hippo ,
-   test_dataset_name='zeisel_sscortex')
+   de_table.ref=de_table.zeisel.hippo)
 
 # Plot
 make_ranking_violin_plot(de_table.marked.cortex_vs_hippo)
@@ -1096,9 +1089,7 @@ annotations do almost perfectly correlate one-to-one.
 
 ```{r eval=TRUE, echo=FALSE, warning=FALSE}
 
-kable(make_ref_similarity_names_for_groups( de_table.marked.cortex_vs_hippo , 
-                the_test_dataset = "zeisel_sscortex", 
-               the_ref_dataset  = "zeisel_ca1hippocampus") %>% arrange(test_group), 
+kable(make_ref_similarity_names_for_groups( de_table.marked.cortex_vs_hippo) %>% arrange(test_group), 
       digits=50) #kable display hack
 
 ```
@@ -1210,8 +1201,7 @@ Being completely different tissues there shouldn't be many cell types in common.
 # Cross-experimet comparison
 de_table.marked.cortex_vs_lacrimal<- get_the_up_genes_for_all_possible_groups(
    de_table.test = de_table.zeisel.cortex  ,
-   de_table.ref  = de_table.Farmer2017lacrimalP4 ,
-   test_dataset_name = 'zeisel_sscortex')
+   de_table.ref  = de_table.Farmer2017lacrimalP4)
 
 # Plot
 make_ranking_violin_plot(de_table.marked.cortex_vs_lacrimal)
@@ -1220,9 +1210,7 @@ make_ranking_violin_plot(de_table.marked.cortex_vs_lacrimal)
 
 ```{r eval=TRUE}
 label_table.cortex_vs_lacrimal <- 
-   make_ref_similarity_names_for_groups( de_table.marked.cortex_vs_lacrimal, 
-                                            the_test_dataset = "zeisel_sscortex", 
-                                            the_ref_dataset  = "Farmer2017lacrimalP4")
+   make_ref_similarity_names_for_groups(de_table.marked.cortex_vs_lacrimal)
 ```
 
 ```{r eval=TRUE, echo=FALSE}
