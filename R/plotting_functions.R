@@ -22,8 +22,15 @@
 #' be relatively 'underrepresented' in the other groups. Taken to an extreme, 
 #' if there are only two reference groups, they'll be complete opposites.
 #' 
-#'
+#' Input can be either the precomputed \emph{de_table.marked} object for the 
+#' comparison, OR both \emph{de_table.test} and \emph{de_table.ref} differential
+#' expression results to compare from \code{\link[celaref]{contrast_each_group_to_the_rest}} 
+#' 
 #' @param de_table.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
+#' @param de_table.test A differential expression table of the query experiment,
+#'  as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' @param de_table.ref A differential expression table of the reference dataset,
+#'  as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
 #' @param log10trans  Plot on a log scale? Useful for distinishing multiple similar, yet distinct cell type that bunch at top of plot. Default=FALSE.
 #' 
 #' @return  A ggplot object.
@@ -31,22 +38,35 @@
 #' @examples
 #'
 #' de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,    
-#'                                                        dataset_name="demo_ref",
-#'                                                        num_cores=2)
+#'                                                        dataset_name="demo_ref")
 #' de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se,  
-#'                                                        dataset_name="demo_query",
-#'                                                        num_cores=2)
+#'                                                        dataset_name="demo_query")
+#'                                                        
+#' # This:                                                  
+#' make_ranking_violin_plot(de_table.test=de_table.demo_query, de_table.ref=de_table.demo_ref )           
+#'                                                                                                                                              
+#' # Is equivalent to this:
 #' de_table.marked.query_vs_ref <- 
 #'      get_the_up_genes_for_all_possible_groups( de_table.test=de_table.demo_query, 
-#'                                                de_table.ref=de_table.demo_ref, 
-#'                                                'demo_query')
+#'                                                de_table.ref=de_table.demo_ref)
 #' make_ranking_violin_plot(de_table.marked.query_vs_ref)
+#'
 #'
 #' @seealso  \code{\link{get_the_up_genes_for_all_possible_groups}} To make the input data.
 #'
 #' 
 #'@export
-make_ranking_violin_plot <- function(de_table.marked, log10trans=FALSE) {
+make_ranking_violin_plot<- function(de_table.marked=NA, de_table.test=NA, de_table.ref=NA, log10trans=FALSE) {
+   
+   defined_de_table.marked <- any(! is.na(de_table.marked))
+   defined_de_table.test   <- any(! is.na(de_table.test))
+   defined_de_table.ref    <- any(! is.na(de_table.ref) ) 
+   if ( !defined_de_table.marked & defined_de_table.test & defined_de_table.ref ){
+      de_table.marked   <- get_the_up_genes_for_all_possible_groups(de_table.test, de_table.ref)
+   } else if (!( defined_de_table.marked & !defined_de_table.test  & !defined_de_table.ref )) {
+      stop("Specify either 'de_table.marked' or both de_table.test AND de_table.ref (naming parameters)")
+   } #Else, de_table.marked provided, continue
+   
    
    if (log10trans) { 
       de_table.marked$rescaled_rank <- log10(de_table.marked$rescaled_rank) #happily, it'll never be 0
@@ -63,7 +83,6 @@ make_ranking_violin_plot <- function(de_table.marked, log10trans=FALSE) {
       ggplot2::facet_wrap(~test_group)
    return (p)
 }
-
 
 
 
