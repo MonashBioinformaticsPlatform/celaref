@@ -264,20 +264,15 @@ toy_query_se   <- trim_small_groups_and_low_expression_genes(toy_query_se)
 de_table.toy_ref   <- contrast_each_group_to_the_rest(toy_ref_se,    dataset_name="ref")
 de_table.toy_query <- contrast_each_group_to_the_rest(toy_query_se,  dataset_name="query")
 
-# Cross-experiment comparison
-de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
-   de_table.test=de_table.toy_query ,
-   de_table.ref=de_table.toy_ref)
-
 # Plot
-make_ranking_violin_plot(de_table.marked.query_vs_ref)
+make_ranking_violin_plot(de_table.test=de_table.toy_query, de_table.ref=de_table.toy_ref)
 ```
 ```{r toy_example2, message=FALSE, warnings=FALSE, eval=FALSE}
 # And get group labels
-make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref)
+make_ref_similarity_names(de_table.toy_query, de_table.toy_ref)
 ```
 ```{r toy_example3, message=FALSE, warnings=FALSE,  eval=TRUE, echo=FALSE}
-kable(make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref), digits=50)
+kable(make_ref_similarity_names(de_table.toy_query, de_table.toy_ref), digits=50)
 ```
 
 
@@ -654,16 +649,17 @@ See section [Interpreting output](#interpreting-output) and the [overview diagra
 
 To make that output, run function *make_ranking_violin_plot* on the output 
 of *get_the_up_genes_for_all_possible_groups*:
-
 ```{r eval=TRUE, cache=FALSE}
+make_ranking_violin_plot(de_table.test=de_table.demo_query, de_table.ref=de_table.demo_ref)
 
-de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
-   de_table.test=de_table.demo_query ,
-   de_table.ref=de_table.demo_ref)
-
-# Plot
-make_ranking_violin_plot(de_table.marked.query_vs_ref)
+# Equivalent to 
+#de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
+#   de_table.test=de_table.demo_query ,
+#   de_table.ref=de_table.demo_ref)
+#make_ranking_violin_plot(de_table.marked.query_vs_ref)
 ```
+
+
 
 The *get_the_up_genes_for_all_possible_groups* function will do two things
 
@@ -700,13 +696,7 @@ due to its (demo!) size.
 
 
 ```{r eval=TRUE, cache=FALSE} 
-
-de_table.marked.query_vs_self <- get_the_up_genes_for_all_possible_groups(
-   de_table.test=de_table.demo_query ,
-   de_table.ref=de_table.demo_query)
-
-# Plot
-make_ranking_violin_plot(de_table.marked.query_vs_self)
+make_ranking_violin_plot(de_table.test=de_table.demo_query, de_table.ref=de_table.demo_query)
 ```
 
 
@@ -719,8 +709,9 @@ query groups. The method used is described in section
 'shortlab' might make a good starting point for downstream characterisation.
 
 ```{r eval=TRUE, cache=FALSE} 
-# And get group labels
-group_names_table <- make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref)
+group_names_table <- make_ref_similarity_names(de_table.demo_query, de_table.demo_ref)
+# Equivalent to:
+#group_names_table <- make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref)
 ```
 ```{r eval=TRUE, echo=FALSE} 
 kable(group_names_table)
@@ -939,15 +930,8 @@ de_table.Watkins2009PBMCs <- contrast_each_group_to_the_rest_for_norm_ma_with_li
 ### Compare 10X query PBMCs to to reference 
 
 Finally! Compare the single cell data to the purified PBMCs:
-```{r eval=TRUE}
-de_table.pbmc4k_k7_vs_Watkins2009PBMCs <- get_the_up_genes_for_all_possible_groups(
-    de_table.test=de_table.10X_pbmc4k_k7 , 
-    de_table.ref=de_table.Watkins2009PBMCs)
-```
-
-Plot it!
 ```{r, eval=TRUE}
-make_ranking_violin_plot(de_table.pbmc4k_k7_vs_Watkins2009PBMCs)
+make_ranking_violin_plot(de_table.test=de_table.10X_pbmc4k_k7, de_table.ref=de_table.Watkins2009PBMCs)
 ```
 
 Hmm, there's a few clusters where different the top genes are bunched near the 
@@ -956,7 +940,7 @@ top for a couple of different reference cell types.
 Logging the plot will be more informative at the top end for this dataset. 
 
 ```{r, eval=TRUE}
-make_ranking_violin_plot(de_table.pbmc4k_k7_vs_Watkins2009PBMCs, log10trans = TRUE)
+make_ranking_violin_plot(de_table.test=de_table.10X_pbmc4k_k7, de_table.ref=de_table.Watkins2009PBMCs, log10trans = TRUE)
 ```
 
 
@@ -970,7 +954,7 @@ unless a clear (significantly different) frontrunner can be flagged.
 
 
 ```{r eval=TRUE, warning=FALSE}
-label_table.pbmc4k_k7_vs_Watkins2009PBMCs <- make_ref_similarity_names_for_groups(de_table.pbmc4k_k7_vs_Watkins2009PBMCs)
+label_table.pbmc4k_k7_vs_Watkins2009PBMCs <- make_ref_similarity_names(de_table.10X_pbmc4k_k7, de_table.Watkins2009PBMCs)
 ```
 ```{r eval=TRUE, echo=FALSE}
 kable(label_table.pbmc4k_k7_vs_Watkins2009PBMCs %>% arrange(test_group) ) 
@@ -1074,13 +1058,7 @@ de_table.zeisel.hippo  <- contrast_each_group_to_the_rest(dataset_se.hippo,  dat
 Now compare the two: 
 
 ```{r eval=TRUE, cache=FALSE}
-# Cross-experimet comparison 
-de_table.marked.cortex_vs_hippo <- get_the_up_genes_for_all_possible_groups(
-   de_table.test=de_table.zeisel.cortex  ,
-   de_table.ref=de_table.zeisel.hippo)
-
-# Plot
-make_ranking_violin_plot(de_table.marked.cortex_vs_hippo)
+make_ranking_violin_plot(de_table.test=de_table.zeisel.cortex, de_table.ref=de_table.zeisel.hippo)
 ```
 
 
@@ -1089,7 +1067,7 @@ annotations do almost perfectly correlate one-to-one.
 
 ```{r eval=TRUE, echo=FALSE, warning=FALSE}
 
-kable(make_ref_similarity_names_for_groups( de_table.marked.cortex_vs_hippo) %>% arrange(test_group), 
+kable(make_ref_similarity_names(de_table.zeisel.cortex, de_table.zeisel.hippo) %>% arrange(test_group), 
       digits=50) #kable display hack
 
 ```
@@ -1198,19 +1176,13 @@ Now compare the mouse cortex samples to the lacrimal gland.
 Being completely different tissues there shouldn't be many cell types in common.
 
 ```{r eval=TRUE, cache=FALSE}
-# Cross-experimet comparison
-de_table.marked.cortex_vs_lacrimal<- get_the_up_genes_for_all_possible_groups(
-   de_table.test = de_table.zeisel.cortex  ,
-   de_table.ref  = de_table.Farmer2017lacrimalP4)
-
-# Plot
-make_ranking_violin_plot(de_table.marked.cortex_vs_lacrimal)
+make_ranking_violin_plot(de_table.test=de_table.zeisel.cortex, de_table.ref=de_table.Farmer2017lacrimalP4)
 ```
 
 
 ```{r eval=TRUE}
 label_table.cortex_vs_lacrimal <- 
-   make_ref_similarity_names_for_groups(de_table.marked.cortex_vs_lacrimal)
+   make_ref_similarity_names(de_table.zeisel.cortex, de_table.Farmer2017lacrimalP4)
 ```
 
 ```{r eval=TRUE, echo=FALSE}

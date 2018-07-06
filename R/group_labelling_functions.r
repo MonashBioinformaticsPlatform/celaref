@@ -1,14 +1,15 @@
 
 
 
-#' make_ref_similarity_names_for_groups
+#' make_ref_similarity_names
 #'
-#' Given the comparison between the two dataset, construct some sensible labels 
-#' for the groups in the query group.
+#' Construct some sensible labels or the groups/clusters in the query dataset, 
+#' based on similarity the reference dataset.
 #' 
 #' This function aims to report a) the top most similar reference group, if 
 #' there's a clear frontrunner, b) A list of multiple similar groups if they 
 #' have similar similarity, or c) 'No similarity', if there is none.
+#' 
 #' 
 #' Each group is named according to the following rules. Testing for significant 
 #' (smaller) differences with a one-directional Mann-Whitney U test on their rescaled ranks:
@@ -23,26 +24,50 @@
 #'   difference later on : Report \emph{multiple group similarity}
 #' }
 #' 
+#' There are some further heuristic caveats:
+#' \enumerate{
+#'   \item The distribution of top genes in the last (or only) match group is tested 
+#'   versus a theroetical random distribution around 0.5 (as reported in 
+#'   \emph{pval_vs_random} column). If the distribution is not significantly above
+#'   random  (It is possible in edge cases where there is a skewed dataset and no/few matches),
+#'   \emph{no similarity} is reported. The significnat \emph{pval} column is left intact.
+#'   \item The comparison is repeated reciprocally - reference groups vs the 
+#'   query groups. This helps sensitivity of heterogenous query groups - and investigating 
+#'   the reciprocal matches can be informative in these cases.
+#'   If a query group doens't 'match' a reference group, but the reference 
+#'   group does match that query group - it is reported in the group label in brackets.
+#'   e.g. \emph{c1:th_lymphocytes(tc_lympocytes)}. 
+#'   Its even possible if there was no match (and pval = NA) e.g. emph{c2:(tc_lymphocytes)}
+#' }
+#' 
+#' 
+#' 
 #' The similarity is formatted into a group label. Where there are 
 #' multiple similar groups, they're listed from most to least similar by their 
 #' median ranks.
 #'  
-#' For instance, a query dataset of clusters c1, c2 and c3 againsts a cell-type
+#' For instance, a query dataset of clusters c1, c2, c3 and c4 againsts a cell-type
 #' labelled reference datatset might get names like:
 #' E.g.
 #' \itemize{
 #'   \item c1:macrophage
 #'   \item c2:endotheial|mesodermal
 #'   \item c3:no_similarity
+#'   \item c4:mesodermal(endothelial)
 #' }
 #'
-#' @param de_table.ref.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
-#' @param the_test_dataset Optional. A short meaningful name for the experiment. 
-#' (Should match \emph{test_dataset} column in \bold{de_table.marked}). 
-#' Only needed in a table of more than one dataset. Default = NA.
-#' @param the_ref_dataset Optional. A short meaningful name for the experiment. 
-#' (Should match \emph{dataset} column in \bold{de_table.marked}). 
-#' Only needed in a table of more than one dataset. Default = NA.
+#' Function \code{make_ref_similarity_names} is a convenience wrapper function for 
+#' \code{make_ref_similarity_names_from_marked}. It accepts two SummarisedExpression
+#' objects to compare and handles running
+#' \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}}. 
+#' Sister function \code{make_ref_similarity_names_from_marked} may (rarely) be of use 
+#' if the \bold{de_table.marked} object has already been created, 
+#' or if reciprocal tests are not wanted. 
+#' 
+#' @param de_table.test A differential expression table of the query experiment,
+#' as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' @param de_table.ref A differential expression table of the reference dataset,
+#' as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
 #' @param pval Differences between the rescaled ranking distribution of 'top'
 #' genes on different reference groups are tested with a Mann-Whitney U test. If 
 #' they are \emph{significantly different}, only the top group(s) are reported. 
@@ -77,6 +102,14 @@
 #'   ie. 1st-2nd most similar first, 2nd-3rd, 3rd-4th e.t.c. The last value will always 
 #'   be NA (no more reference group).
 #'   e.g. refA:8.44e-10,refB:2.37e-06,refC:0.000818,refD:0.435,refE:0.245,refF:NA
+#'   \item \bold{pval_to_random} : P-value of test of median rank (of last 
+#'   matched reference group) < random, from binomial test on top gene ranks (<0.5). 
+#'   \item \bold{matches} : List of all reference groups that 'match', 
+#'   as described, except it also includes (rare) examples where pval_to_random is not significant.
+#'   "|" delimited.
+#'   \item \bold{reciprocal_matches} : List of all reference groups that flagged 
+#'   test group as a match when directon of comparison is reversed.
+#'   (significant pval and pval_to_random). "|" delimited.
 #'   \item \bold{similar_non_match}: This column lists any reference groups outside 
 #'   of shortlab that are not signifcantly different to a reported match group. 
 #'   Limited by \emph{num_steps}, and will never find anything if num_steps==1.
@@ -92,35 +125,103 @@
 #'
 #' @examples
 #' 
-#' de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query", num_cores=2)
-#' de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref", num_cores=2)
-#' de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
-#'      de_table.demo_query, de_table.demo_ref)
+#' de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query")
+#' de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
+#' 
+#' make_ref_similarity_names(de_table.demo_query, de_table.demo_ref)
+#' make_ref_similarity_names(de_table.demo_query, de_table.demo_ref, num_steps=3)
+#' make_ref_similarity_names(de_table.demo_query, de_table.demo_ref, num_steps=NA)
 #'
-#' make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref)
-#'
-#' @seealso \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} To prepare the \bold{de_table.ref.marked} input.
+#' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest}} For preparing de_table input
+#' 
 #' 
 #' @importFrom magrittr %>%
 #' @export
-make_ref_similarity_names_for_groups <- function(de_table.ref.marked, the_test_dataset=NA, 
-                                                 the_ref_dataset=NA,  pval=0.01, num_steps=5){
+make_ref_similarity_names <- function(de_table.test, de_table.ref, pval=0.01, num_steps=5) {
+   
+   # Read one dataset name from test and query. 
+   test_dataset <- unique(de_table.test$dataset)
+   ref_dataset  <- unique(de_table.ref$dataset)   
+   if (length(test_dataset) >1  || length(ref_dataset) > 1) {stop("Either test or reference includes more than one dataset in dataset column. Trim down or use make_ref_similarity_names_using_marked")}
+   
+   # Prepare the marked and reciprocal marked tables
+   de_table.ref.marked   <- get_the_up_genes_for_all_possible_groups(de_table.test, de_table.ref)
+   de_table.recip.marked <- get_the_up_genes_for_all_possible_groups(de_table.ref, de_table.test)
+   
+   return(make_ref_similarity_names_using_marked(de_table.ref.marked, de_table.recip.marked,
+                                                 pval=pval, num_steps=num_steps))
+   
+}
+
+
+
+#' make_ref_similarity_names_using_marked 
+#'
+#' This is a more low level/customisable version of \code{\link{make_ref_similarity_names}},
+#' (usually be all that is needed).  
+#' Suitable for rare cases to reuse an existing \bold{de_table.ref.marked} object.
+#' Or use a \bold{de_table.ref.marked} table with more than one dataset present 
+#' (discoraged). Or to skip the reciprocal comparison step. 
+#' 
+#' @param de_table.ref.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
+#' @param de_table.recip.marked Optional. The (reciprocal) output of \code{\link{get_the_up_genes_for_all_possible_groups}}
+#' with the test and reference datasets swapped. 
+#' If omitted a reciprocal test will not be done. Default = NA.
+#' @param the_test_dataset Optional. A short meaningful name for the experiment. 
+#' (Should match \emph{test_dataset} column in \bold{de_table.marked}). 
+#' Only needed in a table of more than one dataset. Default = NA.
+#' @param the_ref_dataset Optional. A short meaningful name for the experiment. 
+#' (Should match \emph{dataset} column in \bold{de_table.marked}). 
+#' Only needed in a table of more than one dataset. Default = NA.
+#' 
+#' @examples
+#'
+#' de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query")
+#' de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
+#' 
+#' de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
+#'      de_table.demo_query, de_table.demo_ref) 
+#' de_table.marked.reiprocal <- get_the_up_genes_for_all_possible_groups(
+#'      de_table.demo_ref, de_table.demo_query)
+#'      
+#'
+#' make_ref_similarity_names_using_marked(de_table.marked.query_vs_ref, de_table.marked.reiprocal)
+#' make_ref_similarity_names_using_marked(de_table.marked.query_vs_ref)
+#' 
+#'
+#' @seealso \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} To prepare the \bold{de_table.ref.marked} input.
+#' 
+#' @describeIn make_ref_similarity_names Construct some sensible cluster labels, but using a premade marked table.  
+#'
+#' @export
+make_ref_similarity_names_using_marked <- function(de_table.ref.marked, de_table.recip.marked=NA,
+                                                   the_test_dataset=NA,the_ref_dataset=NA, 
+                                                   pval=0.01, num_steps=5){
    
    # Sanity checks with nicer errors
    # datatset designations may be omoitted, IF only one dataset in the table (normal)
    ref_datasets_present  <- unique(de_table.ref.marked$dataset)
    test_datasets_present <- unique(de_table.ref.marked$test_dataset)   
    if (is.na(the_ref_dataset)) {
-      if (length(ref_datasets_present) != 1 ) {stop("More than one reference datatset in de_table.ref.marked, specify with the_ref_dataset")}
+      if (base::length(ref_datasets_present) != 1 ) {stop("More than one reference datatset in de_table.ref.marked, specify with the_ref_dataset")}
       the_ref_dataset=ref_datasets_present[1]
    } 
    if (is.na(the_test_dataset)) {
-      if (length(test_datasets_present) != 1 ) {stop("More than one reference datatset in de_table.ref.marked, specify with the_ref_dataset")}
+      if (base::length(test_datasets_present) != 1 ) {stop("More than one reference datatset in de_table.ref.marked, specify with the_test_dataset")}
       the_test_dataset=test_datasets_present[1]
    } 
+   
    # Also it has to be present if defined!
    if ( ! the_ref_dataset  %in% ref_datasets_present) {stop("Cannot find specified ref dataset in de_table.ref.marked")}
    if ( ! the_test_dataset %in% test_datasets_present) {stop("Cannot find specified ref dataset in de_table.ref.marked")}
+   
+   # Likewise, the reciprocal tests.
+   have_recip <- typeof(de_table.recip.marked) == "list" #NA is logical
+   if (have_recip) {
+      if ( ! the_ref_dataset  %in% unique(de_table.recip.marked$test_dataset)) {stop("Cannot find specified ref dataset as query dataset in de_table.recip.marked")}
+      if ( ! the_test_dataset %in% unique(de_table.recip.marked$dataset)) {stop("Cannot find specified test dataset as ref dataset in de_table.recip.marked")}
+   }
+   
    
    
    # Run the contrasts, as many as requested.
@@ -131,15 +232,37 @@ make_ref_similarity_names_for_groups <- function(de_table.ref.marked, the_test_d
                                                      the_ref_dataset = the_ref_dataset,
                                                      num_steps=num_steps,
                                                      pval=pval))
-   # make labels
+   
+   
+   reciprocal_matches <- NA
+   if (have_recip) {
+      recip_test_groups <- base::unique(de_table.recip.marked$test_group) 
+      mwtest_res_table.recip <- dplyr::bind_rows(base::lapply(FUN=get_ranking_and_test_results, X= recip_test_groups, 
+                                                              de_table.ref.marked=de_table.recip.marked, 
+                                                              the_test_dataset= the_ref_dataset, 
+                                                              the_ref_dataset = the_test_dataset,
+                                                              num_steps=1, # Simplistic check.
+                                                              pval=pval))
+      
+      # Reciprocal matches
+      reciprocal_matches <- get_reciprocal_matches(mwtest_res_table.recip, de_table.recip.marked, the_pval=pval) 
+   }
+   
+   ## Make labels
    labels_by_similarity_table <- dplyr::bind_rows(
       base::lapply(FUN=make_ref_similarity_names_for_group, test_groups,
                    mwtest_res_table=mwtest_res_table, de_table.ref.marked=de_table.ref.marked,
+                   reciprocal_matches,
                    the_test_dataset=the_test_dataset, the_ref_dataset=the_ref_dataset,
                    the_pval=pval))
    
    return(labels_by_similarity_table)
 }
+
+
+
+
+
 
 
 
@@ -154,6 +277,8 @@ make_ref_similarity_names_for_groups <- function(de_table.ref.marked, the_test_d
 #' @param mwtest_res_table Mann-whitney test results as constructed 
 #' in \code{\link[celaref]{make_ref_similarity_names_for_groups}}
 #' @param de_table.ref.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
+#' @param reciprocal_matches Simplified table of reciprocal matches prepared by \code{\link{make_ref_similarity_names_using_matches}}. 
+#' If omitted no reciprocal matching done. Default = NA.
 #' @param the_test_dataset A short meaningful name for the experiment. (Should match \emph{test_dataset} column in \bold{de_table.marked})
 #' @param the_ref_dataset A short meaningful name for the experiment. (Should match \emph{dataset} column in \bold{de_table.marked})
 #' @param the_pval pval as per \code{\link[celaref]{make_ref_similarity_names_for_groups}}
@@ -163,88 +288,54 @@ make_ref_similarity_names_for_groups <- function(de_table.ref.marked, the_test_d
 #'
 #' @seealso \code{\link[celaref]{make_ref_similarity_names_for_groups}} Only place that uses this function, details there.
 #'
-make_ref_similarity_names_for_group <- function(the_test_group, mwtest_res_table, de_table.ref.marked, the_test_dataset, 
-                                                the_ref_dataset, the_pval){
+make_ref_similarity_names_for_group<- function(the_test_group, 
+                                                    mwtest_res_table, de_table.ref.marked, 
+                                                    reciprocal_matches = NA,
+                                                    the_test_dataset, the_ref_dataset, the_pval){
    
+   short_lab_col          = NA
    matches_col            = NA
    pval_col               = NA
+   not_random_pval_col    = NA
    sim_outside_col        = NA
    sim_outside_detail_col = NA
    differences_within_col = NA
    stepped_pvals_col      = NA
+   reciprocal_matches_col = NA
+   
+   matches               <- NULL
+   reciprocal_match_list <- NULL
    
    # Just this group
    mwtest_res_table.this <- mwtest_res_table %>% dplyr::filter(.data$test_group == the_test_group)
    
-   #test_group test_dataset      ref_dataset             group median_rank n grouprank        next_group meandiff mediandiff       pval
-   #1     Group1 a_demo_query a_demo_reference     Weird subtype        0.03 5         1          Exciting   -0.722      -0.93 0.01078587
-   #2     Group1 a_demo_query a_demo_reference     Weird subtype        0.03 5         1             dunno   -0.340      -0.25 0.12457632
-   #3     Group1 a_demo_query a_demo_reference     Weird subtype        0.03 5         1 Mystery cell type   -0.172      -0.16 0.08660856
-   #4     Group1 a_demo_query a_demo_reference Mystery cell type        0.19 5         2     Weird subtype    0.172       0.16 0.94196303
-   #5     Group1 a_demo_query a_demo_reference Mystery cell type        0.19 5         2          Exciting   -0.550      -0.77 0.03745645
+   # Get a bunch of matches (stepped), or NA
+   mwtest_res_table.matches <- get_matched_stepped_mwtest_res_table(mwtest_res_table.this, the_pval)
    
    
-   # First, get the stepped pvals 
-   # Irrespective of any similarities/significance - this is information 
-   # for when theres 'no similarity'.
-   #dunno:0.000264,Weird subtype:0.226,Exciting:0.00705,Mystery cell type:NA
-   mwtest_res_table.this.stepped <- mwtest_res_table.this %>% 
-      dplyr::filter(.data$step == 1) %>% 
-      dplyr::arrange(.data$grouprank) 
-   
-   stepped_pvals_col=paste0(mwtest_res_table.this.stepped$group, ":", base::signif(mwtest_res_table.this.stepped$pval, 3),
-                            collapse=",")
-   stepped_pvals_col=paste0(stepped_pvals_col, ",",
-                            utils::tail(mwtest_res_table.this.stepped$next_group, 1),":NA")
+   # Reciprocal matches (simple)
+   if (any(! is.na(reciprocal_matches))) {
+      reciprocal_match_list <- reciprocal_matches$ref_group[reciprocal_matches$test_group == the_test_group]
+   }
    
    
-   # Any sig in adjacent? Still using stepps to define the matches.
-   # Want to find the first significant difference. Usually 1.
-   # The last of match is the first group with a sig difference to the next.
-   mwtest_res_table.this.stepped.sig <- mwtest_res_table.this.stepped %>% dplyr::filter( .data$pval <= the_pval) 
-   last_of_match <- ifelse(base::nrow(mwtest_res_table.this.stepped.sig) == 0, 
-                           NA, 
-                           mwtest_res_table.this.stepped.sig$grouprank[1])
-   
-   if (!is.na(last_of_match)) {
-      matches <-mwtest_res_table.this.stepped$group[1:last_of_match] # This table is ordered by grouprank
+   # Much of the other checks only apply when a match is defined. 
+   if (any(!is.na(mwtest_res_table.matches))) { 
       
+      # This table is ordered by grouprank, starting at 1
+      last_of_match <- nrow(mwtest_res_table.matches)
+      matches       <- mwtest_res_table.matches$group 
       mwtest_res_table.this$inmatch     <- mwtest_res_table.this$grouprank <= last_of_match
       mwtest_res_table.this$nextinmatch <- mwtest_res_table.this$grouprank + mwtest_res_table.this$step <= last_of_match
       
+      ## Pval from last of match group to first of non-match. 
+      pval_col              <- base::signif(mwtest_res_table.matches$pval[last_of_match], 3) #the First sig diff 
       
-      # define the shortname
-      matches_col = paste0(the_test_group,":",paste(matches, collapse="|"))
-      pval_col    = base::signif(dplyr::pull(mwtest_res_table.this.stepped.sig, .data$pval), 3)[1] #the First sig diff 
+      ## Pval to a random distribution of ranks.
+      not_random_pval_col   <- get_vs_random_pval(de_table.ref.marked, the_group=mwtest_res_table.matches$group[last_of_match], the_test_group)
       
       
-      # Any significant differences within match (from higher to lower)
-      if (length(matches) > 1) {
-         
-         de_table.ref.marked.thismatch <- de_table.ref.marked %>%
-            dplyr::filter(.data$test_group==the_test_group, .data$group %in% matches) 
-         
-         # Do an all vs all test, just within the matches.
-         # Care if sig in either direction
-         mwtest_res_table.inmatches <- get_ranking_and_test_results(
-            the_test_group = the_test_group,
-            de_table.ref.marked = de_table.ref.marked.thismatch , 
-            the_test_dataset = the_test_dataset, 
-            the_ref_dataset = the_ref_dataset,
-            num_steps=NA,
-            pval=the_pval)
-         
-         differences_within_col = NA
-         diffs_in_match <- mwtest_res_table.inmatches %>% dplyr::filter(.data$pval <= the_pval)
-         if (base::nrow(diffs_in_match) > 0 ) {
-            differences_within_col = paste0(diffs_in_match$group, " > ",diffs_in_match$next_group, 
-                                            " (p=",base::signif(diffs_in_match$pval,3),")", 
-                                            collapse="|")
-         }
-         
-      }
-      
-      # Any non-signifiant difference between match and outside of it.
+      ## Any non-signifiant difference between match and outside of it?
       # These are borderline maybe matches that aren't reported as matches 
       # because there's a significant difference above them.
       sim_outside_match <- mwtest_res_table.this %>% 
@@ -258,17 +349,50 @@ make_ref_similarity_names_for_group <- function(the_test_group, mwtest_res_table
                                          collapse="|")
       }
       
-   } else {
-      # No similarity
-      matches_col = paste0(the_test_group,":No similarily")
+      ## If there are multiple matches, are they different to each other?
+      if (length(matches) > 1) {
+         differences_within_col <- find_within_match_differences( de_table.ref.marked, matches, the_test_group, the_test_dataset, the_ref_dataset, the_pval)
+      }
+      
+   } 
+   
+   # Defaine the short name now.
+   # <query cluster>: match1|match2
+   # <query cluster>: match1(reciprocalmatchfrommatch2) 
+   # <query cluster>: No similarity
+   extra_recip_matches = base::setdiff(reciprocal_match_list, matches)
+   shortlab_col=paste0(the_test_group,":")
+   if (length(matches) > 0 ) {
+      if (not_random_pval_col <= the_pval) {
+         # Shortlab col won't' include matches unless the last is above random. (even if sig to next)
+         shortlab_col = paste0(shortlab_col,paste(matches, collapse="|"))
+      }
+   }
+   if (length(extra_recip_matches) > 0 ) {
+      shortlab_col = paste0(shortlab_col,"(", paste(extra_recip_matches, collapse="|"), ")")
+   }
+   if ( (length(matches) == 0 | (length(matches) > 0 & not_random_pval_col > the_pval) ) 
+        & length(extra_recip_matches) == 0 ){
+      shortlab_col = paste0(shortlab_col,"No similarily")
    }
    
+   
+   
+   # Other cols
+   matches_col            <- paste(matches, collapse="|")
+   reciprocal_matches_col <- paste0(reciprocal_match_list, collapse="|")
+   stepped_pvals_col      <- get_stepped_pvals_str(mwtest_res_table.this)
+   
+   
    labels_by_similarity_table <- tibble::tibble(
-      test_group        = the_test_group,
-      shortlab          = matches_col,
-      pval              = pval_col,
-      stepped_pvals     = stepped_pvals_col,
-      similar_non_match = sim_outside_col,
+      test_group               = the_test_group,
+      shortlab                 = shortlab_col,
+      pval                     = pval_col,
+      stepped_pvals            = stepped_pvals_col,
+      pval_to_random           = not_random_pval_col,
+      matches                  = matches_col,
+      reciprocal_matches       = reciprocal_matches_col,
+      similar_non_match        = sim_outside_col,
       similar_non_match_detail = sim_outside_detail_col,
       differences_within       = differences_within_col ) 
    
@@ -278,6 +402,8 @@ make_ref_similarity_names_for_group <- function(the_test_group, mwtest_res_table
 }
 
 
+
+   
 #' get_ranking_and_test_results
 #'
 #' Internal function to get reference group similarity contrasts for an individual query qroup. 
@@ -473,6 +599,203 @@ run_pair_test_stats <- function(de_table.ref.marked, the_test_group, groupA, gro
    
 }
 
+
+
+
+
+
+#' get_stepped_pvals_str
+#'
+#' Internal function to construct the string of stepped pvalues reported by 
+#' make_ref_similarity_names_for_groups
+#' 
+#' For use by make_ref_similarity_names_for_group
+#'
+#' @param mwtest_res_table.this Combined output of \code{\link{get_ranking_and_test_results}}
+#'
+#' @return Stepped pvalues string
+#'
+#' @seealso  \code{\link[celaref]{make_ref_similarity_names_for_group}} 
+#'
+#' @importFrom magrittr %>%
+get_stepped_pvals_str  <- function(mwtest_res_table.this) {
+   
+   # dunno:0.000264,Weird subtype:0.226,Exciting:0.00705,Mystery cell type:NA
+   mwtest_res_table.this.stepped <- mwtest_res_table.this %>% 
+      dplyr::filter(.data$step == 1) %>% 
+      dplyr::arrange(.data$grouprank) 
+   
+   stepped_pvals_str=paste0(mwtest_res_table.this.stepped$group, ":", base::signif(mwtest_res_table.this.stepped$pval, 3),
+                            collapse=",")
+   stepped_pvals_str=paste0(stepped_pvals_str, ",",
+                            utils::tail(mwtest_res_table.this.stepped$next_group, 1),":NA")
+   return(stepped_pvals_str)
+}
+
+
+
+
+#' get_matched_stepped_mwtest_res_table
+#'
+#' Internal function to grab a table of the matched group(s).
+#' 
+#' For use by make_ref_similarity_names_for_group
+#'
+#' @param mwtest_res_table.this Combined output of \code{\link{get_ranking_and_test_results}}
+#' @param the_pval Pvalue threshold
+#'
+#' @return Stepped pvalues string
+#'
+#' @seealso \code{\link[celaref]{make_ref_similarity_names_for_group}} 
+#'
+#' @importFrom magrittr %>%
+get_matched_stepped_mwtest_res_table <- function(mwtest_res_table.this, the_pval) {
+   mwtest_res_table.this.stepped <- mwtest_res_table.this %>% 
+      dplyr::filter(.data$step == 1) %>% 
+      dplyr::arrange(.data$grouprank)
+   
+   mwtest_res_table.this.stepped.sig <- mwtest_res_table.this.stepped %>% dplyr::filter( .data$pval <= the_pval) 
+   
+   # Significance in adjacest steps defines matches
+   # last in match is the last reference group that matches (usually 1)
+   if (base::nrow(mwtest_res_table.this.stepped.sig) >  0) {
+      last_of_match <- mwtest_res_table.this.stepped.sig$grouprank[1]
+      return(mwtest_res_table.this.stepped[1:last_of_match,])
+   } else {
+      # Or NA for no match.
+      return(NA)
+   }
+}
+
+
+
+#' find_within_match_differences
+#'
+#' Internal function to find if there are significant difference between the
+#' distribitions, when there are multiple match groups. 
+#' 
+#' For use by make_ref_similarity_names_for_group
+#'
+#' @param de_table.ref.marked see make_ref_similarity_names_for_group
+#' @param matches see make_ref_similarity_names_for_group
+#' @param the_test_group  see make_ref_similarity_names_for_group
+#' @param the_test_dataset see make_ref_similarity_names_for_group
+#' @param the_ref_dataset  see make_ref_similarity_names_for_group
+#' @param the_pval  see make_ref_similarity_names_for_group
+#' 
+#' @return String of within match differences
+#'
+#' @seealso  \code{\link[celaref]{make_ref_similarity_names_for_group}} 
+#'
+#' @importFrom magrittr %>%
+find_within_match_differences <- function(de_table.ref.marked, matches, the_test_group, the_test_dataset, the_ref_dataset, the_pval) {
+   # Any significant (non-stepped) differences within match (from higher to lower)
+   de_table.ref.marked.thismatch <- de_table.ref.marked %>%
+      dplyr::filter(.data$test_group==the_test_group, .data$group %in% matches) 
+   
+   # Do an all vs all test, just within the matches.
+   # Care if sig in either direction
+   mwtest_res_table.inmatches <- celaref:::get_ranking_and_test_results(
+      the_test_group      = the_test_group,
+      de_table.ref.marked = de_table.ref.marked.thismatch , 
+      the_test_dataset    = the_test_dataset, 
+      the_ref_dataset     = the_ref_dataset,
+      num_steps=NA,
+      pval=the_pval)
+   
+   diffs_in_match <- mwtest_res_table.inmatches %>% dplyr::filter(.data$pval <= the_pval)
+   if (base::nrow(diffs_in_match) > 0 ) {
+      return(paste0(diffs_in_match$group, " > ",diffs_in_match$next_group, 
+                    " (p=",base::signif(diffs_in_match$pval,3),")", collapse="|"))
+   } else { 
+      return(NA)
+   }
+}
+
+
+
+
+#' get_vs_random_pval
+#'
+#' Internal function to run a bionomial test of median test rank > 0.5 (random).
+#' 
+#' For use by make_ref_similarity_names_for_group
+#'
+#' @param de_table.ref.marked see make_ref_similarity_names_for_group
+#' @param the_group Reference group name
+#' @param the_test_group Test group name
+#' #'
+#' @return Pvalue result of a binomial test of each 'top gene' being greater than
+#' the theoretical random median rank of 0.5 (halfway).
+#'
+#' @seealso \code{\link[celaref]{make_ref_similarity_names_for_group}} 
+#'
+#' @importFrom magrittr %>%
+get_vs_random_pval <- function(de_table.ref.marked, the_group, the_test_group){
+   # Also - last of match should be above (well, below) 0.5 - theoritical random
+   # NB: power-wise there must be 6 or more genes (all true) for this to be sig.
+   last_of_match_rank_dist <- de_table.ref.marked %>% 
+      dplyr::filter( group == the_group & test_group == the_test_group) %>%  
+      dplyr::pull(rescaled_rank)
+   not_random_pval_binom <- stats::binom.test(base::sum(last_of_match_rank_dist < 0.5), 
+                                              n=base::length(last_of_match_rank_dist), 
+                                              alternative = "greater")
+   return(signif(not_random_pval_binom$p.value, 3))
+   
+}
+
+
+
+
+#' get_reciprocal_matches 
+#'
+#' Internal function to run a bionomial test of median test rank > 0.5 (random).
+#' 
+#' For use by make_ref_similarity_names_for_groups
+#'
+#' @param mwtest_res_table.recip Combined output of \code{\link{get_ranking_and_test_results}}
+#' for reciprocal test - ref vs query.
+#' @param de_table.recip.marked Recriprocal ref vs query de_table.ref.marked
+#' @param the_pval See make_ref_similarity_names_for_groups
+#' 
+#' @return List of table of reciprocal matches tested from reference to query.  
+#'
+#' @seealso \code{\link[celaref]{make_ref_similarity_names_for_groups}} 
+#'
+#' @importFrom magrittr %>%
+get_reciprocal_matches <- function(mwtest_res_table.recip, de_table.recip.marked, the_pval) {
+   
+   the_test_groups <- unique(mwtest_res_table.recip$test_group) # test here being ref
+   
+   
+   get_reciprocal_matches_group <- function(the_test_group, mwtest_res_table.recip, de_table.recip.marked,  the_pval) {
+      # Just this group
+      mwtest_res_table.recip.this <- mwtest_res_table.recip %>% dplyr::filter(.data$test_group == the_test_group)
+      
+      # Get a bunch of matches (stepped), or NA
+      mwtest_res_table.matches <- get_matched_stepped_mwtest_res_table(mwtest_res_table.recip.this, the_pval)
+      
+      if (! all(is.na(mwtest_res_table.matches))) {
+         # Pval to a random distribution of ranks.
+         not_random_pval <- get_vs_random_pval(de_table.recip.marked, the_group=mwtest_res_table.matches$group[nrow(mwtest_res_table.matches)], the_test_group)
+         
+         if (not_random_pval <= the_pval) {
+            # Ref + test relative to original query this is the reciprocal of
+            return( dplyr::bind_cols( test_group=mwtest_res_table.matches$group,
+                                      ref_group =mwtest_res_table.matches$test_group ))
+         }
+      }
+      
+      return(NULL)
+   }  
+   
+   
+   reciprocal_matches <- dplyr::bind_rows(lapply(FUN=get_reciprocal_matches_group, X=the_test_groups, 
+                                          mwtest_res_table.recip=mwtest_res_table.recip, de_table.recip.marked=de_table.recip.marked, the_pval=the_pval))
+   
+   if(is.null(reciprocal_matches)) {reciprocal_matches <- NA}
+   return(reciprocal_matches)
+}
 
 
 
