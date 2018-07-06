@@ -5,7 +5,8 @@
 \title{make_ref_similarity_names_for_group}
 \usage{
 make_ref_similarity_names_for_group(the_test_group, mwtest_res_table,
-  de_table.ref.marked, the_test_dataset, the_ref_dataset, the_pval)
+  de_table.ref.marked, reciprocal_matches = NA, the_test_dataset,
+  the_ref_dataset, the_pval)
 }
 \arguments{
 \item{the_test_group}{Query group to make name for}
@@ -14,6 +15,9 @@ make_ref_similarity_names_for_group(the_test_group, mwtest_res_table,
 in \code{\link[celaref]{make_ref_similarity_names_for_groups}}}
 
 \item{de_table.ref.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
+
+\item{reciprocal_matches}{Simplified table of reciprocal matches prepared by \code{\link{make_ref_similarity_names_using_matches}}. 
+If omitted no reciprocal matching done. Default = NA.}
 
 \item{the_test_dataset}{A short meaningful name for the experiment. (Should match \emph{test_dataset} column in \bold{de_table.marked})}
 
