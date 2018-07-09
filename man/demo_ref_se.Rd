@@ -4,7 +4,7 @@
 \name{demo_ref_se}
 \alias{demo_ref_se}
 \title{Demo reference se (summarizedExperiment)}
-\format{An object of class \code{SummarizedExperiment} with 100 rows and 94 columns.}
+\format{An object of class \code{SummarizedExperiment} with 200 rows and 515 columns.}
 \usage{
 demo_ref_se
 }
