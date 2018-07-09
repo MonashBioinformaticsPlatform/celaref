@@ -4,7 +4,7 @@
 \name{demo_microarray_expr}
 \alias{demo_microarray_expr}
 \title{Demo microarray expression table}
-\format{An object of class \code{data.frame} with 100 rows and 20 columns.}
+\format{An object of class \code{matrix} with 200 rows and 20 columns.}
 \usage{
 demo_microarray_expr
 }

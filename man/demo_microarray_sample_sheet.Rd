@@ -4,7 +4,7 @@
 \name{demo_microarray_sample_sheet}
 \alias{demo_microarray_sample_sheet}
 \title{Demo microarray sample sheet table}
-\format{An object of class \code{data.frame} with 20 rows and 2 columns.}
+\format{An object of class \code{grouped_df} (inherits from \code{tbl_df}, \code{tbl}, \code{data.frame}) with 20 rows and 2 columns.}
 \usage{
 demo_microarray_sample_sheet
 }

@@ -4,7 +4,7 @@
 \name{demo_gene_info_table}
 \alias{demo_gene_info_table}
 \title{Demo gene info table}
-\format{An object of class \code{data.frame} with 100 rows and 12 columns.}
+\format{An object of class \code{data.frame} with 200 rows and 2 columns.}
 \usage{
 demo_gene_info_table
 }

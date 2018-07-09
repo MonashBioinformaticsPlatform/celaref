@@ -4,7 +4,7 @@
 \name{demo_query_se}
 \alias{demo_query_se}
 \title{Demo query se (summarizedExperiment)}
-\format{An object of class \code{SummarizedExperiment} with 100 rows and 106 columns.}
+\format{An object of class \code{SummarizedExperiment} with 200 rows and 485 columns.}
 \usage{
 demo_query_se
 }

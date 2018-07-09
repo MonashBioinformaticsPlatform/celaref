@@ -39,7 +39,7 @@ Query Group | Short Label                        | pval    |
 ------------|------------------------------------|---------|
 cluster_1   |cluster_1:astrocytes_ependymal      |2.98e-23 |
 cluster_2   |cluster_2:endothelial-mural         |8.44e-10 |
-cluster_3   |cluster_3:no_similarity             |4.10e- 1 |
+cluster_3   |cluster_3:no_similarity             |NA       |
 cluster_4   |cluster_4:microglia                 |2.71e-19 |
 cluster_5   |cluster_5:pyramidal SS\|interneurons|3.49e-10 |
 cluster_6   |cluster_6:oligodendrocytes          |2.15e-28 |
