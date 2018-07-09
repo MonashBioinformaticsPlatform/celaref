@@ -27,6 +27,7 @@ library(tidyverse)
 
 
 
+
 # Overview {#overview}
 
 
@@ -58,9 +59,7 @@ previously in the same lab, or from a public dataset from a similar sample.
 
 
 Celaref differs from other cell-type identification tools like scmap 
-[@Kiselev2018] in that it operates at the cluster-level.
-
-
+[@Kiselev2018] or (functions in) [MUDAN](https://github.com/JEFworks/MUDAN) in that it operates at the cluster-level.
 
 
 Celaref requires a table of read counts per cell per gene, and a list of the cells 
@@ -126,15 +125,18 @@ Typically, every cell cluster in the query data (each box) is plotted against ev
 * A median gene rank of 0.5 would indicate a completely random distribution. However, much lower values are common. 
 The reciprocal nature of the within-dataset differential expression can cause this - what's up in 
 one cluster is down in another.
-* A small or heterogeneous cell group will not have much statistical power to select many 'top' genes.
-And with a low number of 'top' genes.
-See 'Group 2' in the the [quickstart example](#quickstart) on test data for an example. 
+
+
+* A small or heterogeneous cell group will not have much statistical power to select many 'top' genes
+(few tick marks) and these distributions will not be particuarly informative.
+If there are no 'top' genes it won't be plotted at all. 
+
 * Because 'top' genes are compared to total reference rankings - the comparison 
 between two datasets is not symmetrical. In ambiguous cases, it might helpful 
-to check the reverse comparison from reference to query. Especially when
-it is the query group that is too small to detect significant 'top' genes. 
-For an example of this, see the plot in section 
-[Compare groups within a single dataset](#compare-groups-within-a-single-dataset).
+to plot the reverse comparison from reference to query. Note that these receiprocal 
+comparisons are considered in [Assigning labels to clusters](#assigning-labels-to-clusters).
+For instance - if a query cluster happens to be a mix of two reference cell groups,
+a reciprocal plot may make this more obvious. 
 
 
 
@@ -142,9 +144,11 @@ For an example of this, see the plot in section
 
 Lastly, there is a function to suggest some semi-sensible query cluster labels. 
 
-The first 4 columns of output (below) are the most interesting, the last 3 are described at 
-bottom of section. The suggested cluster label is in the 'shortlab' column.
+The first 4 columns of output (below) are the most interesting, the rest are described at 
+bottom of section. The suggested cluster label is in the **shortlab** column.
 e.g.
+
+
 
 test_group  | shortlab                        | pval    | stepped_pvals  
 ------------|------------------------------------|---------|---------------------
@@ -156,10 +160,16 @@ cluster_5   |cluster_5:pyramidal SS\|interneurons|3.49e-10 | pyramidal SS:0.362,
 cluster_6   |cluster_6:oligodendrocytes          |2.15e-28 | oligodendrocytes:2.15e-28,interneurons:0.624,astrocytes_ependymal:0.207,endothelial-mural:0.755,microglia:0.0432,pyramidal SS:NA
 
 
+
+
 There can be none, one or multiple reference group similarities for the query group. 
 This is expected when there are similar cell sub-populations in the reference data.
 This can be visualised throught the relative shapes of the top gene distribution 
 for the reference group, and reference group similarity labels are calculated as follows:
+
+These labels are based on the distributions of the ranks of the query cluster's 'top' genes 
+in each of the reference groups (as plotted in the [violin plots](#interpreting-output)), 
+rescaled to be in the 0-1 range.
 
 1. The median gene rank for the 'top' genes in each reference group is calculated.
 
@@ -173,25 +183,86 @@ significantly lower ranked (more similar) in one reference group vs the next
 most similar reference group. A genuine similarity of cell types should result in 
 an abrupt change in these gene rank distributions. 
 
-4. Calls are made on which reference groups to include in the group label.
-     - (a) If there is a significant difference (p < 0.01)  between the first and second most similar groups - report on the top ranked reference group. The pval in this case
-     will be the first stepped pvalue (which is significant).
+
+4. Initial calls are made on which reference groups to include in the group label.
+     - (a) If there is a significant difference (p < 0.01)  between the first and second most similar groups - report on the top ranked reference group. 
+     The **pval** in this case will be the first stepped pvalue (which is significant).
      - (b) If there are no significant differences between any steps, report a lack of similarity.
-     No p-value is reported - because no call could be made on what group(s) are more similar.
-     Check the stepped_pvals to look at borderline cases.
+     No p-value (NA) is reported - because no call could be made on what group(s) are more similar.
+     Check the stepped_pvals to look at borderline cases. 
      - (c) Otherwise, start at the most similar reference group, and report everything up to the 
      first signifcantly different ranking. Effectively, this reports multiple 
      reference group similarities when a call can't be made between them 
      e.g. subtypes, or a mixed query group. 
-     Here the reported pvalue describes the 'jump' between the bottom ranked
+     Here the reported **pval** describes the 'jump' between the bottom ranked
      similar reference group, and the first of the other groups. e.g. the 2nd or
      3rd stepped pvalue.
 
+
+5. The group assignment from step 4 is checked to ensure that the (median of the) gene ranks 
+is significantly above a random distribution. Ie. above the 0.5 halfway point in the 
+violin plots.
+     - The distribution of the 'top' genes in the matched group (or last-ranked 
+     matching group when there are multiple matches) is tested to 
+     see if its median rank is significantly above 0.5 (sign test, using one-tailed
+     binomial test on ranks < 0.5).  If this fails (<0.01), 'No_similarity' 
+     will be reported, even if the p-value is significant. See Group1 and Group2 results
+     in the quickstart example (occurs due to being only a 200 gene test).
+     *B: This means that a significant 'pval' column can sometime occur on a 
+     'No_similarity' label - but the pval_vs_random column (described below) 
+     will be non-significant.
+     - This test exists for cases of significant difference from an 
+     'anti-some-other-celltype' signature with genes distributed at the low end.
+     That can occur when there are uneven gene cluster sizes and no 
+     genuine match for the query.
+
+
+6. Reciprocal-only matches are added to cluster labels in brackets. 
+     - e.g. c1:celltypeA(celltypeB) or c2:(celltypeC)
+     - The cluster groups are reciprocally tested against the query groups. 
+     All reciprocal matches are listed in the *reciprocal_matches* column.
+     If there is a recriprocal match that isn't in the query->ref match list, its
+     added on to the end of the cluster label. 
+     - Reciprocal matches reported in the cluster names might indicate a mixed 
+     query cell type. It woudl be a good idea to look at the reciprocalviolin plot of 
+     the reference dataset vs the query.
+     
+
+
 <!--![\label{fig:cluster_labelling}](images/clustering_labelling.png ) -->
 
--------------------------
+---------
 
-The last 3 columns of the output are usually empty (as they were in this example). 
+The full version of this table is:
+
+
+test_group  | shortlab                        | pval    | stepped_pvals | pval_to_random | matches | reciprocal_matches | similar_non_match| similar_non_match_detail| differences_within 
+------------|---------------------------------|---------|---------------|----------------|---------|--------------------|------------------|-------|-----
+astrocytes|astrocytes:astrocytes_ependymal|2.98e-23|astrocytes_ependymal:2.98e-23,microglia:0.208,interneurons:0.1,pyramidal SS:0.455,endothelial-mural:0.0444,oligodendrocytes:NA|1.00e-21|astrocytes_ependymal|astrocytes_ependymal|||
+endothelial|endothelial:endothelial-mural|8.44e-10|endothelial-mural:8.44e-10,microglia:2.37e-06,astrocytes_ependymal:0.000818,interneurons:0.435,oligodendrocytes:0.245,pyramidal SS:NA|3.55e-21|endothelial-mural|endothelial-mural|||
+hybrid|hybrid:No similarity||astrocytes_ependymal:0.41,microglia:0.634,oligodendrocytes:0.305,endothelial-mural:0.512,interneurons:0.204,pyramidal SS:NA||||||
+microglia|microglia:microglia|2.71e-19|microglia:2.71e-19,interneurons:0.435,pyramidal SS:0.11,endothelial-mural:0.221,astrocytes_ependymal:0.627,oligodendrocytes:NA|3.54e-16|microglia|microglia|||
+neurons|neurons:pyramidal SS\|interneurons|3.49e-10|pyramidal SS:0.362,interneurons:3.49e-10,endothelial-mural:0.09,astrocytes_ependymal:0.0449,microglia:7.68e-19,oligodendrocytes:NA|2.19e-12|pyramidal SS\|interneurons|interneurons\|pyramidal SS|||
+oligodendrocytes|oligodendrocytes:oligodendrocytes|2.15e-28|oligodendrocytes:2.15e-28,interneurons:0.624,astrocytes_ependymal:0.207,endothelial-mural:0.755,microglia:0.0432,pyramidal SS:NA|4.72e-20|oligodendrocytes|oligodendrocytes|||
+
+
+
+
+The next few columns of the ouput describe some of the heuristics used in the cluster labelling.
+
+* **pval_to_random** : P-value of test of median rank (of last matched reference group) < random, from binomial test on top gene ranks (<0.5). 
+If this isn't signiicant, 'No similarity' will be reported. A completely random distribution would have a median rank in the middle of the 
+violin plots, at 0.5.
+
+* **matches** : List of all reference groups that 'match', as described, except it also includes (rare) examples where pval_to_random is not significant. "|" separated, in descending order of match. 
+
+* **reciprocal_matches** : List of all reference groups that flagged test group as a match when directon of comparison is reversed. (significant pval and pval_to_random).  "|" separated, in descending order of match. 
+
+
+------------------
+
+
+The last 3 columns of the output are usually empty. 
 When defined they may indicate borderline labelling or edge cases - checking the 
 violin plots is advised! Tests are again Mann-Whitney U, but on non-adjacently ranked groups.
 
@@ -238,7 +309,7 @@ They very helpfully named them  'Weird subtype', 'Exciting', 'Mystery cell type'
 
 This example uses the reference dataset to flag likely cell types in the new experiment.
 
-It is a tiny simulated dataset of 100 genes included in the package that can be copy-pasted, and will complete very quickly.
+It is a tiny simulated dataset (using splatter [@Zappia2017]) of 200 genes included in the package that can be copy-pasted, and will complete fairly quickly.
 
 
 
@@ -267,15 +338,17 @@ de_table.toy_query <- contrast_each_group_to_the_rest(toy_query_se,  dataset_nam
 # Plot
 make_ranking_violin_plot(de_table.test=de_table.toy_query, de_table.ref=de_table.toy_ref)
 ```
-```{r toy_example2, message=FALSE, warnings=FALSE, eval=FALSE}
+```{r toy_example2, message=FALSE, warnings=FALSE, eval=FALSE} 
 # And get group labels
 make_ref_similarity_names(de_table.toy_query, de_table.toy_ref)
 ```
-```{r toy_example3, message=FALSE, warnings=FALSE,  eval=TRUE, echo=FALSE}
+```{r toy_example3,  echo=FALSE, message=FALSE, warnings=FALSE, }
 kable(make_ref_similarity_names(de_table.toy_query, de_table.toy_ref), digits=50)
 ```
 
-
+NB: Groups1 and Group2 are not labelled due to the non-significant 
+'pval_to_random' (see section [Assigning labels to clusters](#assigning-labels-to-clusters) ). 
+This happens here because its a small 200-gene toy dataset!
 
 
 ## Prepare data {#input}
@@ -647,21 +720,19 @@ its 'top' gene rankings in each reference group.
 See section [Interpreting output](#interpreting-output) and the [overview diagram](#overview) full description of these plots. 
 
 
-To make that output, run function *make_ranking_violin_plot* on the output 
-of *get_the_up_genes_for_all_possible_groups*:
+To make that output, run function *make_ranking_violin_plot*. 
+(Note that _de_table.test_ and _de_table.ref_ parameters must be specified by name, not position.)
 ```{r eval=TRUE, cache=FALSE}
 make_ranking_violin_plot(de_table.test=de_table.demo_query, de_table.ref=de_table.demo_ref)
-
-# Equivalent to 
-#de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
-#   de_table.test=de_table.demo_query ,
-#   de_table.ref=de_table.demo_ref)
-#make_ranking_violin_plot(de_table.marked.query_vs_ref)
 ```
 
 
+To pull together the data for this plot the *get_the_up_genes_for_all_possible_groups* 
+function is called internally. It can also be called by hand, see 
+[Special case: Saving get_the_up_genes_for_all_possible_groups output](#Special-case:-Saving-get_the_up_genes_for_all_possible_groups-output).
 
-The *get_the_up_genes_for_all_possible_groups* function will do two things
+
+That *get_the_up_genes_for_all_possible_groups* function will do two things
 
 1. Identify 'top' genes for each group in the query dataset. i.e what is most 
 distinctively high for this cell-type/group in the context of this 
@@ -670,14 +741,9 @@ as up to the __first 100 genes with an inner log2FC 95% confidence interval >=1_
 2. Lookup the rescaled rankings (again from most to least log2FC inner 95% CI) 
 of 'top' genes in each reference group. 
 
-
-NB: 'Group 1' is missing entirely because the reference dataset (*toy_ref_se* from the [Quickstart example](#quickstart)) only had 3 'Group 1' cells. They were removed in the filtering step.
-
-NB: Because there are only 24 cells in 'Group 2' of this toy 100-gene dataset - it has low statistical power and only produced 3 'top' genes. They're still plotted - but you can see by eye that 3 genes will not give a reliable indication of similarity. 
-
 NB: There is scope for the ranking criteria to be changed, but currently only 
 the inner log2FC 95% confidence interval is implemented. Future work: Use of 'topconfects' 
-is planned [@Harrison2018], as this is expected to be a better ranking metric.
+is planned [@Harrison2018].
 
 
 ### Compare groups within a single dataset{#compare-groups-within-a-single-dataset}
@@ -686,14 +752,6 @@ Its often useful to compare a dataset to itself. Just specify the same dataset
 for *de_table.test* and *de_table.ref*. This will show how similar the groups are.
 Clusters that can't be distinguished from each other might be a sign that too
 many clusters were defined. 
-
-In this example because there are only 24 cells in Group2, it only had the 
-statistical power to detect 3 'Top' genes. And that is too few to 
-distinguish it from Group3. In the reciprocal contrast however the 'top' genes for 
-Group3 do separate the two groups. So in this example - it seems that Group3 and 
-Group2 are genuinely different, but Group2 might be difficult to characterise 
-due to its (demo!) size.
-
 
 ```{r eval=TRUE, cache=FALSE} 
 make_ranking_violin_plot(de_table.test=de_table.demo_query, de_table.ref=de_table.demo_query)
@@ -704,22 +762,22 @@ make_ranking_violin_plot(de_table.test=de_table.demo_query, de_table.ref=de_tabl
 ### Make labels for groups
 
 Lastly, celaref can parse these comparisons and suggest group names for the 
-query groups. The method used is described in section
+query groups. 
+
+The method for labelling used is described in section
 [Assigning labels to clusters](#assigning-labels-to-clusters). The name in 
 'shortlab' might make a good starting point for downstream characterisation.
+These labels should generally be interperented alongside the violin plots.
 
 ```{r eval=TRUE, cache=FALSE} 
 group_names_table <- make_ref_similarity_names(de_table.demo_query, de_table.demo_ref)
-# Equivalent to:
-#group_names_table <- make_ref_similarity_names_for_groups(de_table.marked.query_vs_ref)
 ```
 ```{r eval=TRUE, echo=FALSE} 
 kable(group_names_table)
 ```
 
-
-NB: Its unusual to have anything in the 'similar_non_match' column - it happens 
-here due to small size of this toy dataset. Explained in section 
+Its unusual to have anything other than NA in the 'similar_non_match' column.
+Explained in section 
 [Assigning labels to clusters](#assigning-labels-to-clusters). 
 
 
@@ -727,7 +785,7 @@ here due to small size of this toy dataset. Explained in section
 
 A note on the 'num_steps' parameter.
 
-Function *make_ref_similarity_names_for_groups* accepts an optional parameter 'num_steps'.
+Function *make_ref_similarity_names* accepts an optional parameter 'num_steps'.
 It doesn't affect the construction of the suggested labels in 'shortlab', only the 
 extra 'similar_non_match' columns. Only pairs of reference groups *num_steps*  
 away from each other when ranked by median generank are tested for difference - 
@@ -735,6 +793,38 @@ the nearer they are the more likely they're similar.
 
 It if is set too small though (e.g. 1), similar non-matched groups might be missed. Set to 'NA' for an exhastive test, but with many reference groups, this could be slow.
 
+
+### Special case: Saving get_the_up_genes_for_all_possible_groups output {#Special-case:-Saving-get_the_up_genes_for_all_possible_groups-output}
+
+Making the violin plots and cluster labels both use the 
+*get_the_up_genes_for_all_possible_groups* function internally. 
+
+It is possible to run this manually and pass the result through. 
+For most analysis this is uncessary neccessary, unless you want to look at the 
+top genes rankings directly e.t.c.
+
+```{r}
+de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
+   de_table.test=de_table.demo_query ,
+   de_table.ref=de_table.demo_ref)
+# Have to do do the reciprocal table too for labelling.
+de_table.marked.ref_vs_query<- get_the_up_genes_for_all_possible_groups(
+   de_table.test=de_table.demo_ref ,
+   de_table.ref=de_table.demo_query)
+
+kable(head(de_table.marked.query_vs_ref))
+```
+
+Equivalent plots and labels:
+```{r}
+make_ranking_violin_plot(de_table.marked.query_vs_ref)
+#use make_ref_similarity_names_using_marked instead:
+similarity_label_table <- make_ref_similarity_names_using_marked(de_table.marked.query_vs_ref, de_table.recip.marked=de_table.marked.ref_vs_query)
+```
+
+```{r}
+kable(similarity_label_table)
+```
 
 # Example Analyses
 
@@ -960,25 +1050,21 @@ label_table.pbmc4k_k7_vs_Watkins2009PBMCs <- make_ref_similarity_names(de_table.
 kable(label_table.pbmc4k_k7_vs_Watkins2009PBMCs %>% arrange(test_group) ) 
 ```
 
+<!-- Group 1 is large, and -->
+<!-- while adjacent to group 3 in the tSNE plot, does not have a clear 'front runner'  -->
+<!-- for similarity. With the reciprocal match to Th lymphocytes looking at a reciprocal -->
+<!-- match could be useful (below). -->
 
+<!-- Two groups have been labelled with 'B cells', though cluster 4 more confidently. -->
 
+------
 
-Monocytes and B lymphocytes were uniquely labelled. 
-Clusters 4 and 5 are quite distinct in the t-SNE but both are labelled 
-as B-lymphocytes. From the violin plot its obvious that the similarity is 
-stronger for the much larger cluster 4. The 37-gene cluster 5 could correspond 
-to a B-cell similar subtype not covered in the microarray reference.
+With a couple of (reciprocal-only matches) in the cluster names, it might be worth 
+checking the reciprocal violin plots:
 
-Tc and Th lymphocytes can be similar, 
-and group 3 reports similarity to both for consideration. Group 1 is large, and
-while adjacent to group 3 in the tSNE plot, does not have a clear 'front runner' 
-for similarity. Looking at smaller clusters within this group could be justified.
-
-Clusters 5, 6 and 7 are much smaller groups and have 
-less prominent signals in the violin plots. This is partly from lesser power to 
-reliably detect within-experiment differentially expressed genes. Even so, a 
-natural killer cell like signal has been flagged for the 8 cells of group 7.
-
+```{r, eval=TRUE}
+make_ranking_violin_plot(de_table.test=de_table.Watkins2009PBMCs, de_table.ref=de_table.10X_pbmc4k_k7, log10trans = TRUE)
+```
 
 
 
@@ -1046,8 +1132,8 @@ dataset_se.hippo   <- trim_small_groups_and_low_expression_genes(dataset_se.hipp
 
 
 Next, need to do the within-dataset comparisons. 
-There are 6 groups in each sample. 
-This may take a couple of hours to finish, so be sure to save the result for reuse.
+There are 6 groups in each sample - so use 6 cores to run them all at once.
+This may take some time to finish, so be sure to save the result for reuse.
 
 ```{r eval=FALSE}
 de_table.zeisel.cortex <- contrast_each_group_to_the_rest(dataset_se.cortex, dataset_name="zeisel_sscortex",       num_cores=6) 
@@ -1196,8 +1282,8 @@ Not all though. The cortex 'microglia' have their similarity with
 the 'Macrophage/Monocyte' group highlighted. This makes sense - as they are 
 biological similar cell types.
 
-
-
+Interestingly, there's also a reciprocal match from the Lacrimal gland 
+endothelial cells to endothelial-mural cell in the brain sample.
 
 
 # References

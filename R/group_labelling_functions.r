@@ -373,7 +373,7 @@ make_ref_similarity_names_for_group<- function(the_test_group,
    }
    if ( (length(matches) == 0 | (length(matches) > 0 & not_random_pval_col > the_pval) ) 
         & length(extra_recip_matches) == 0 ){
-      shortlab_col = paste0(shortlab_col,"No similarily")
+      shortlab_col = paste0(shortlab_col,"No similarity")
    }
    
    

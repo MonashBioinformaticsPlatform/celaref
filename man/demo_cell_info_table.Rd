@@ -4,7 +4,7 @@
 \name{demo_cell_info_table}
 \alias{demo_cell_info_table}
 \title{Demo cell info table}
-\format{An object of class \code{data.frame} with 106 rows and 3 columns.}
+\format{An object of class \code{data.frame} with 515 rows and 4 columns.}
 \usage{
 demo_cell_info_table
 }

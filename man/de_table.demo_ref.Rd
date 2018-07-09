@@ -4,7 +4,7 @@
 \name{de_table.demo_ref}
 \alias{de_table.demo_ref}
 \title{Demo ref de table}
-\format{An object of class \code{data.frame} with 400 rows and 13 columns.}
+\format{An object of class \code{data.frame} with 800 rows and 13 columns.}
 \usage{
 de_table.demo_ref
 }
