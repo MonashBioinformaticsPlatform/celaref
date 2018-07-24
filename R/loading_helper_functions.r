@@ -445,8 +445,8 @@ trim_small_groups_and_low_expression_genes <- function(dataset_se,
                                                        ) {
 
     ## Filter by min lib size, num samples detected in
-    dataset_se <- dataset_se[,Matrix::colSums(assay(dataset_se))>=min_lib_size ]
-    dataset_se <- dataset_se[Matrix::rowSums(assay(dataset_se) >= min_reads_in_sample) >=  min_detected_by_min_samples, ]
+    dataset_se <- dataset_se[,BiocGenerics::colSums(assay(dataset_se))>=min_lib_size ]
+    dataset_se <- dataset_se[BiocGenerics::rowSums(assay(dataset_se) >= min_reads_in_sample) >=  min_detected_by_min_samples, ]
 
     ## Less than a certain number of cells in a group, discard the group, and its cells.
     # NB: also removes 'NA' group entries.

@@ -27,8 +27,8 @@ genes between two different reference datasete groups with a
 Mann–Whitney U test. One directional test if groupA median < group B.
 }
 \details{
-For use by make_ref_similarity_names_for_groups
+For use by make_ref_similarity_names_using_marked
 }
 \seealso{
-\code{\link[celaref]{make_ref_similarity_names_for_groups}}
+\code{\link[celaref]{make_ref_similarity_names_using_marked}}
 }

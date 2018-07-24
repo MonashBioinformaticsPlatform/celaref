@@ -12,7 +12,7 @@ make_ref_similarity_names_for_group(the_test_group, mwtest_res_table,
 \item{the_test_group}{Query group to make name for}
 
 \item{mwtest_res_table}{Mann-whitney test results as constructed 
-in \code{\link[celaref]{make_ref_similarity_names_for_groups}}}
+in \code{\link[celaref]{make_ref_similarity_names_using_marked}}}
 
 \item{de_table.ref.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
 
@@ -23,16 +23,16 @@ If omitted no reciprocal matching done. Default = NA.}
 
 \item{the_ref_dataset}{A short meaningful name for the experiment. (Should match \emph{dataset} column in \bold{de_table.marked})}
 
-\item{the_pval}{pval as per \code{\link[celaref]{make_ref_similarity_names_for_groups}}}
+\item{the_pval}{pval as per \code{\link[celaref]{make_ref_similarity_names_using_marked}}}
 }
 \value{
 A tibble with just one group's labelling information, as per 
-\code{\link[celaref]{make_ref_similarity_names_for_groups}}
+\code{\link[celaref]{make_ref_similarity_names_using_marked}}
 }
 \description{
-Internal function, called by make_ref_similarity_names_for_groups 
+Internal function, called by make_ref_similarity_names_using_marked 
 for each group.
 }
 \seealso{
-\code{\link[celaref]{make_ref_similarity_names_for_groups}} Only place that uses this function, details there.
+\code{\link[celaref]{make_ref_similarity_names_using_marked}} Only place that uses this function, details there.
 }

@@ -14,7 +14,7 @@ Stepped pvalues string
 }
 \description{
 Internal function to construct the string of stepped pvalues reported by 
-make_ref_similarity_names_for_groups
+make_ref_similarity_names_using_marked
 }
 \details{
 For use by make_ref_similarity_names_for_group

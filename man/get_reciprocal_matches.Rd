@@ -12,7 +12,7 @@ for reciprocal test - ref vs query.}
 
 \item{de_table.recip.marked}{Recriprocal ref vs query de_table.ref.marked}
 
-\item{the_pval}{See make_ref_similarity_names_for_groups}
+\item{the_pval}{See make_ref_similarity_names_using_marked}
 }
 \value{
 List of table of reciprocal matches tested from reference to query.
@@ -21,8 +21,8 @@ List of table of reciprocal matches tested from reference to query.
 Internal function to run a bionomial test of median test rank > 0.5 (random).
 }
 \details{
-For use by make_ref_similarity_names_for_groups
+For use by make_ref_similarity_names_using_marked
 }
 \seealso{
-\code{\link[celaref]{make_ref_similarity_names_for_groups}}
+\code{\link[celaref]{make_ref_similarity_names_using_marked}}
 }

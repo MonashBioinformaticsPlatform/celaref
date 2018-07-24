@@ -4,7 +4,7 @@
 \name{demo_counts_matrix}
 \alias{demo_counts_matrix}
 \title{Demo count matrix}
-\format{An object of class \code{data.frame} with 200 rows and 486 columns.}
+\format{An object of class \code{matrix} with 200 rows and 514 columns.}
 \usage{
 demo_counts_matrix
 }
