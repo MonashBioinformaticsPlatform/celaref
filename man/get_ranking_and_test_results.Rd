@@ -8,25 +8,25 @@ get_ranking_and_test_results(de_table.ref.marked, the_test_group,
   the_test_dataset, the_ref_dataset, num_steps, pval = 0.01)
 }
 \arguments{
-\item{de_table.ref.marked}{see \link[celaref]{make_ref_similarity_names_for_groups}}
+\item{de_table.ref.marked}{see \link[celaref]{make_ref_similarity_names_using_marked}}
 
 \item{the_test_group}{The group to calculate the stats on.}
 
-\item{the_test_dataset}{see \link[celaref]{make_ref_similarity_names_for_groups}}
+\item{the_test_dataset}{see \link[celaref]{make_ref_similarity_names_using_marked}}
 
-\item{the_ref_dataset}{see \link[celaref]{make_ref_similarity_names_for_groups}}
+\item{the_ref_dataset}{see \link[celaref]{make_ref_similarity_names_using_marked}}
 
-\item{num_steps}{see \link[celaref]{make_ref_similarity_names_for_groups}}
+\item{num_steps}{see \link[celaref]{make_ref_similarity_names_using_marked}}
 
-\item{pval}{see \link[celaref]{make_ref_similarity_names_for_groups}}
+\item{pval}{see \link[celaref]{make_ref_similarity_names_using_marked}}
 }
 \description{
 Internal function to get reference group similarity contrasts for an individual query qroup.
 }
 \details{
-For use by \bold{make_ref_similarity_names_for_groups}, see that function for parameter details.
+For use by \bold{make_ref_similarity_names_using_marked}, see that function for parameter details.
 This function just runs this for a single query group \bold{the_test_group}
 }
 \seealso{
-\code{\link[celaref]{make_ref_similarity_names_for_groups}} which calls this.
+\code{\link[celaref]{make_ref_similarity_names_using_marked}} which calls this.
 }
