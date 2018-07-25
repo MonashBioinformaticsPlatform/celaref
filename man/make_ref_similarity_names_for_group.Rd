@@ -16,7 +16,7 @@ in \code{\link[celaref]{make_ref_similarity_names_using_marked}}}
 
 \item{de_table.ref.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
 
-\item{reciprocal_matches}{Simplified table of reciprocal matches prepared by \code{\link{make_ref_similarity_names_using_matches}}. 
+\item{reciprocal_matches}{Simplified table of reciprocal matches prepared within \code{\link{make_ref_similarity_names_using_marked}}. 
 If omitted no reciprocal matching done. Default = NA.}
 
 \item{the_test_dataset}{A short meaningful name for the experiment. (Should match \emph{test_dataset} column in \bold{de_table.marked})}

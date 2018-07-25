@@ -114,5 +114,3 @@ demo_se <- load_se_from_files(counts_file=counts_filepath, cell_info_file=cell_i
 Other Data loading functions: \code{\link{contrast_each_group_to_the_rest_for_norm_ma_with_limma}},
   \code{\link{load_dataset_10Xdata}}
 }
-\concept{Data loading functions}
-\concept{Data-loading functions}

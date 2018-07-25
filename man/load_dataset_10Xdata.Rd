@@ -77,4 +77,3 @@ dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="
 Other Data loading functions: \code{\link{contrast_each_group_to_the_rest_for_norm_ma_with_limma}},
   \code{\link{load_se_from_tables}}
 }
-\concept{Data loading functions}

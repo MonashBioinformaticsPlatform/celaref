@@ -8,6 +8,9 @@
 \usage{
 demo_cell_info_table
 }
+\value{
+An example cell info table
+}
 \description{
 Sample sheet table listing each cell, its assignd cluster/group, and 
 any other information that might be interesting (replicate, individual e.t.c)

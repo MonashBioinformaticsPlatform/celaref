@@ -54,10 +54,11 @@ de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,
                                                        dataset_name="demo_ref")
 de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se,  
                                                        dataset_name="demo_query")
-                                                       
+   
 # This:                                                  
-make_ranking_violin_plot(de_table.test=de_table.demo_query, de_table.ref=de_table.demo_ref )           
-                                                                                                                                             
+make_ranking_violin_plot(de_table.test=de_table.demo_query, 
+                         de_table.ref=de_table.demo_ref ) 
+                        
 # Is equivalent to this:
 de_table.marked.query_vs_ref <- 
      get_the_up_genes_for_all_possible_groups( de_table.test=de_table.demo_query, 

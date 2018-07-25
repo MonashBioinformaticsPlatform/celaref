@@ -88,4 +88,3 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma(
 Other Data loading functions: \code{\link{load_dataset_10Xdata}},
   \code{\link{load_se_from_tables}}
 }
-\concept{Data loading functions}

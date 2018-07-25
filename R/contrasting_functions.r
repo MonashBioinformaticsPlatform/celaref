@@ -79,7 +79,7 @@ contrast_each_group_to_the_rest <- function(dataset_se, dataset_name, groups2tes
    ## Add the 'proportion of genes covered in this factor' variable.
    # Not really a proprotion, buts in the model (and is proportional)
    # see MAST doco/paper - its used in the model for reasons.
-   colData(dataset_se)$pofgenes <- scale(BiocGenerics::colSums(as.matrix(assay(dataset_se)) > 0 ) )
+   colData(dataset_se)$pofgenes <- scale(Matrix::colSums(as.matrix(assay(dataset_se)) > 0 ) )
    
    ## For each group, test it versus evyerthing else (paralallised, with lapply fallback )
    de_table_list <- NA

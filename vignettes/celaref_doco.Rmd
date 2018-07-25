@@ -21,7 +21,12 @@ knitr::opts_chunk$set(
 )
 library(celaref)
 library(knitr) #kable
-library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(magrittr)
+library(readr)
+library(tibble)
+
 
 ```
 
@@ -313,7 +318,7 @@ It is a tiny simulated dataset (using splatter [@Zappia2017]) of 200 genes inclu
 
 
 
-```{r toy_example, message=FALSE, eval=TRUE, cache=FALSE}
+```{r toy_example, message=FALSE, eval=TRUE}
 
 library(celaref)
 
@@ -334,14 +339,18 @@ toy_query_se   <- trim_small_groups_and_low_expression_genes(toy_query_se)
 # Setup within-experiment differential expression
 de_table.toy_ref   <- contrast_each_group_to_the_rest(toy_ref_se,    dataset_name="ref")
 de_table.toy_query <- contrast_each_group_to_the_rest(toy_query_se,  dataset_name="query")
+```
 
+```{r toy_example1b, message=FALSE, eval=TRUE}
 # Plot
 make_ranking_violin_plot(de_table.test=de_table.toy_query, de_table.ref=de_table.toy_ref)
 ```
+
 ```{r toy_example2, message=FALSE, warnings=FALSE, eval=FALSE} 
 # And get group labels
 make_ref_similarity_names(de_table.toy_query, de_table.toy_ref)
 ```
+
 ```{r toy_example3,  echo=FALSE, message=FALSE, warnings=FALSE, }
 kable(make_ref_similarity_names(de_table.toy_query, de_table.toy_ref), digits=50)
 ```
@@ -568,7 +577,14 @@ It can be helpful to check the number of genes and cells surviving
 *trim_small_groups_and_low_expression_genes* filtering with *dim(dataset_se)*, 
 and the number of cells per group with *table(dataset_se$group)*.
 
-```{r eval=FALSE}
+```{r eval=TRUE, echo=FALSE}
+# Just define a dummy dataset_se from less generically named test data,
+# so it can be run during vignette compilation.
+dataset_se <- demo_query_se
+```
+
+
+```{r eval=TRUE}
 # Default filtering
 dataset_se <- trim_small_groups_and_low_expression_genes(dataset_se)
 
@@ -644,14 +660,14 @@ statistical power (from a p-value ranking).
 This is done with the *contrast_each_group_to_the_rest* function 
 after [filtering](#filtering):
 
-```{r eval=TRUE, cache=FALSE}
+```{r eval=TRUE}
 demo_query_se.filtered <- trim_small_groups_and_low_expression_genes(demo_query_se)
 
 de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se.filtered, "a_demo_query")
 ```
 
 Reference datasets are prepared with the same command, there's no difference in the result.
-```{r eval=TRUE, cache=FALSE}
+```{r eval=TRUE}
 demo_ref_se.filtered <- trim_small_groups_and_low_expression_genes(demo_ref_se)
 de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se.filtered,   "a_demo_reference")
 ```
@@ -693,7 +709,7 @@ as system resources permit.
 Microarray reference data is treated differently, with function _contrast_each_group_to_the_rest_for_norm_ma_with_limma()_ that both loads data
 and does within sample differential expression in one step. Its output is much the same. See 
 [section on microarray input](#reading-microarray-data) for details.
-```{r eval=FALSE, cache=FALSE}
+```{r eval=TRUE}
 de_table.microarray <- contrast_each_group_to_the_rest_for_norm_ma_with_limma(
     norm_expression_table=demo_microarray_expr, 
     sample_sheet_table=demo_microarray_sample_sheet,
@@ -722,7 +738,7 @@ See section [Interpreting output](#interpreting-output) and the [overview diagra
 
 To make that output, run function *make_ranking_violin_plot*. 
 (Note that _de_table.test_ and _de_table.ref_ parameters must be specified by name, not position.)
-```{r eval=TRUE, cache=FALSE}
+```{r eval=TRUE}
 make_ranking_violin_plot(de_table.test=de_table.demo_query, de_table.ref=de_table.demo_ref)
 ```
 
@@ -753,7 +769,7 @@ for *de_table.test* and *de_table.ref*. This will show how similar the groups ar
 Clusters that can't be distinguished from each other might be a sign that too
 many clusters were defined. 
 
-```{r eval=TRUE, cache=FALSE} 
+```{r eval=TRUE} 
 make_ranking_violin_plot(de_table.test=de_table.demo_query, de_table.ref=de_table.demo_query)
 ```
 
@@ -769,7 +785,7 @@ The method for labelling used is described in section
 'shortlab' might make a good starting point for downstream characterisation.
 These labels should generally be interperented alongside the violin plots.
 
-```{r eval=TRUE, cache=FALSE} 
+```{r eval=TRUE} 
 group_names_table <- make_ref_similarity_names(de_table.demo_query, de_table.demo_ref)
 ```
 ```{r eval=TRUE, echo=FALSE} 
@@ -913,7 +929,7 @@ Note that for this to work, the arrays should be from the same experiment/study.
 The variation would probably be too much between samples pulled from different studies.
 
 
-```{r eval=FALSE, cache=FALSE}
+```{r eval=FALSE}
 this_dataset_dir     <- file.path(datasets_dir,     'haemosphere_datasets','watkins')
 norm_expression_file <- file.path(this_dataset_dir, "watkins_expression.txt")
 samples_file         <- file.path(this_dataset_dir, "watkins_samples.txt")
@@ -1120,7 +1136,7 @@ objects by tissue (its a SummarizedExperiment object).
 Then separately filter both for low-expression genes and groups with too few 
 cells to analyse.
 
-```{r eval=FALSE, cache=FALSE }
+```{r eval=FALSE}
 # Subset the summarizedExperiment object into two tissue-specific objects
 dataset_se.cortex <- dataset_se.zeisel[,dataset_se.zeisel$tissue == "sscortex"]
 dataset_se.hippo  <- dataset_se.zeisel[,dataset_se.zeisel$tissue == "ca1hippocampus"]
@@ -1143,7 +1159,7 @@ de_table.zeisel.hippo  <- contrast_each_group_to_the_rest(dataset_se.hippo,  dat
 
 Now compare the two: 
 
-```{r eval=TRUE, cache=FALSE}
+```{r eval=TRUE}
 make_ranking_violin_plot(de_table.test=de_table.zeisel.cortex, de_table.ref=de_table.zeisel.hippo)
 ```
 
@@ -1261,7 +1277,7 @@ de_table.Farmer2017lacrimalP4  <- contrast_each_group_to_the_rest(dataset_se.P4,
 Now compare the mouse cortex samples to the lacrimal gland. 
 Being completely different tissues there shouldn't be many cell types in common.
 
-```{r eval=TRUE, cache=FALSE}
+```{r eval=TRUE}
 make_ranking_violin_plot(de_table.test=de_table.zeisel.cortex, de_table.ref=de_table.Farmer2017lacrimalP4)
 ```
 
