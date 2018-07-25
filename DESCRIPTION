@@ -1,6 +1,6 @@
 Package: celaref
 Title: Single-cell RNAseq cell cluster labelling by reference
-Version: 0.0.0.9000
+Version: 0.99.0
 Authors@R: person("Sarah", "Williams", email = "sarah.williams1@monash.edu", role = c("aut", "cre"))
 Description: After the clustering step of a single-cell RNAseq experiment, this
    package aims to suggest labels/cell types for the clusters, on the basis of 
@@ -12,9 +12,7 @@ Depends: R (>= 3.3.3),
 Imports:
    MAST,
    ggplot2,
-   reshape2,
    Matrix,
-   tidyverse,
    dplyr,
    magrittr,
    stats,
@@ -28,12 +26,10 @@ Suggests:
    limma,
    parallel,
    knitr,
-   rmarkdown,
-   BiocStyle
+   rmarkdown
 biocViews: SingleCell
 VignetteBuilder: knitr
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1.9000
-

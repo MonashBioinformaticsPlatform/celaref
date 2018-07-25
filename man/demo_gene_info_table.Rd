@@ -8,6 +8,9 @@
 \usage{
 demo_gene_info_table
 }
+\value{
+An example table of genes.
+}
 \description{
 Extra table of gene-level information for the demo example dataset.
 Can contain anything as long as theres a unique gene id.

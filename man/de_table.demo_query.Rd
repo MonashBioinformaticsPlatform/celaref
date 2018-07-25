@@ -8,6 +8,10 @@
 \usage{
 de_table.demo_query
 }
+\value{
+An example de_table from 
+\link[celaref]{contrast_each_group_to_the_rest} (for demo query dataset)
+}
 \description{
 Small example dataset that is the output of
 \link[celaref]{contrast_each_group_to_the_rest}. It contains the results

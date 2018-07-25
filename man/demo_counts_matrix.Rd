@@ -8,6 +8,9 @@
 \usage{
 demo_counts_matrix
 }
+\value{
+An example counts matrix.
+}
 \description{
 Counts matrix for a small, demo example datasets. Raw counts of 
 reads per gene (row) per cell (column).

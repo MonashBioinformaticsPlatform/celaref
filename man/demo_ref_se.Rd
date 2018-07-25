@@ -8,6 +8,9 @@
 \usage{
 demo_ref_se
 }
+\value{
+An example summarised experiment (for demo reference dataset)
+}
 \description{
 A summarisedExperiment object loaded from demo info tables, for a reference
 set.

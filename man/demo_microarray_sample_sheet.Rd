@@ -8,6 +8,9 @@
 \usage{
 demo_microarray_sample_sheet
 }
+\value{
+An example microarray sample sheet
+}
 \description{
 Microarray sample sheet table for the demo example dataset. 
 Contains array identifiers, their group and any other information that could

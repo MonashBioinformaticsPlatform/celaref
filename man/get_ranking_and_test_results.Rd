@@ -20,6 +20,10 @@ get_ranking_and_test_results(de_table.ref.marked, the_test_group,
 
 \item{pval}{see \link[celaref]{make_ref_similarity_names_using_marked}}
 }
+\value{
+Table of similarity contrast results/assigned names e.t.c for a single group. 
+Used internally for populating mwtest_res_table tables.
+}
 \description{
 Internal function to get reference group similarity contrasts for an individual query qroup.
 }

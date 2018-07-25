@@ -277,7 +277,7 @@ make_ref_similarity_names_using_marked <- function(de_table.ref.marked, de_table
 #' @param mwtest_res_table Mann-whitney test results as constructed 
 #' in \code{\link[celaref]{make_ref_similarity_names_using_marked}}
 #' @param de_table.ref.marked The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.
-#' @param reciprocal_matches Simplified table of reciprocal matches prepared by \code{\link{make_ref_similarity_names_using_matches}}. 
+#' @param reciprocal_matches Simplified table of reciprocal matches prepared within \code{\link{make_ref_similarity_names_using_marked}}. 
 #' If omitted no reciprocal matching done. Default = NA.
 #' @param the_test_dataset A short meaningful name for the experiment. (Should match \emph{test_dataset} column in \bold{de_table.marked})
 #' @param the_ref_dataset A short meaningful name for the experiment. (Should match \emph{dataset} column in \bold{de_table.marked})
@@ -417,7 +417,10 @@ make_ref_similarity_names_for_group<- function(the_test_group,
 #' @param the_ref_dataset see \link[celaref]{make_ref_similarity_names_using_marked}
 #' @param pval see \link[celaref]{make_ref_similarity_names_using_marked}
 #' @param num_steps see \link[celaref]{make_ref_similarity_names_using_marked}
-#'  
+#' 
+#' @return Table of similarity contrast results/assigned names e.t.c for a single group. 
+#' Used internally for populating mwtest_res_table tables.
+#' 
 #' @seealso \code{\link[celaref]{make_ref_similarity_names_using_marked}} which calls this. 
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
@@ -735,8 +738,8 @@ get_vs_random_pval <- function(de_table.ref.marked, the_group, the_test_group){
    # Also - last of match should be above (well, below) 0.5 - theoritical random
    # NB: power-wise there must be 6 or more genes (all true) for this to be sig.
    last_of_match_rank_dist <- de_table.ref.marked %>% 
-      dplyr::filter( group == the_group & test_group == the_test_group) %>%  
-      dplyr::pull(rescaled_rank)
+      dplyr::filter( .data$group == the_group & .data$test_group == the_test_group) %>%  
+      dplyr::pull(.data$rescaled_rank)
    not_random_pval_binom <- stats::binom.test(base::sum(last_of_match_rank_dist < 0.5), 
                                               n=base::length(last_of_match_rank_dist), 
                                               alternative = "greater")

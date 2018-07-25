@@ -8,6 +8,9 @@
 \usage{
 demo_microarray_expr
 }
+\value{
+An example table of (fake) microarray data.
+}
 \description{
 Microarray-style expression table for the demo example dataset. 
 Rows are genes, columns are samples, as per counts matrix.

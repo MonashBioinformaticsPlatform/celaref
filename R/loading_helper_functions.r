@@ -302,7 +302,7 @@ load_dataset_10Xdata <- function(dataset_path, dataset_genome, clustering_set, g
                                        rowData=genes_table)
    
    # Optionally change id (handles m:1)
-   rowData(dataset_se)$total_count <- rowSums(assay(dataset_se))
+   rowData(dataset_se)$total_count <- Matrix::rowSums(assay(dataset_se))
    if (id_to_use != gene_id_cols_10X[1] ) { 
       dataset_se <- convert_se_gene_ids(dataset_se, new_id=id_to_use, eval_col='total_count')
    }
@@ -445,8 +445,8 @@ trim_small_groups_and_low_expression_genes <- function(dataset_se,
                                                        ) {
 
     ## Filter by min lib size, num samples detected in
-    dataset_se <- dataset_se[,BiocGenerics::colSums(assay(dataset_se))>=min_lib_size ]
-    dataset_se <- dataset_se[BiocGenerics::rowSums(assay(dataset_se) >= min_reads_in_sample) >=  min_detected_by_min_samples, ]
+    dataset_se <- dataset_se[,Matrix::colSums(assay(dataset_se))>=min_lib_size ]
+    dataset_se <- dataset_se[Matrix::rowSums(assay(dataset_se) >= min_reads_in_sample) >=  min_detected_by_min_samples, ]
 
     ## Less than a certain number of cells in a group, discard the group, and its cells.
     # NB: also removes 'NA' group entries.
