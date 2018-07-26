@@ -286,8 +286,8 @@ make_ref_similarity_names_using_marked <- function(de_table.ref.marked, de_table
 #' \code{\link[celaref]{make_ref_similarity_names_using_marked}}
 #' 
 #'
-#' @seealso \code{\link[celaref]{make_ref_similarity_names_using_marked}} Only place that uses this function, details there.
-#'
+#' @seealso \code{\link[celaref]{make_ref_similarity_names_using_marked}} 
+#' Only place that uses this function, details there.
 make_ref_similarity_names_for_group<- function(the_test_group, 
                                                     mwtest_res_table, de_table.ref.marked, 
                                                     reciprocal_matches = NA,
@@ -360,14 +360,20 @@ make_ref_similarity_names_for_group<- function(the_test_group,
    # <query cluster>: match1|match2
    # <query cluster>: match1(reciprocalmatchfrommatch2) 
    # <query cluster>: No similarity
-   extra_recip_matches = base::setdiff(reciprocal_match_list, matches)
+   reportable_matches = matches
    shortlab_col=paste0(the_test_group,":")
    if (length(matches) > 0 ) {
       if (not_random_pval_col <= the_pval) {
-         # Shortlab col won't' include matches unless the last is above random. (even if sig to next)
+         # Shortlab col won't' include matches unless the last is above random. 
+         # (even if sig to next)
          shortlab_col = paste0(shortlab_col,paste(matches, collapse="|"))
+      } else {
+         # there are matches, but we're not putting them in shortlab
+         reportable_matches = character(0) 
       }
    }
+   
+   extra_recip_matches = base::setdiff(reciprocal_match_list, reportable_matches)
    if (length(extra_recip_matches) > 0 ) {
       shortlab_col = paste0(shortlab_col,"(", paste(extra_recip_matches, collapse="|"), ")")
    }
