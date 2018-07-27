@@ -34,5 +34,6 @@ Internal function, called by make_ref_similarity_names_using_marked
 for each group.
 }
 \seealso{
-\code{\link[celaref]{make_ref_similarity_names_using_marked}} Only place that uses this function, details there.
+\code{\link[celaref]{make_ref_similarity_names_using_marked}} 
+Only place that uses this function, details there.
 }
