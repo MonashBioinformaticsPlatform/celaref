@@ -4,8 +4,8 @@
 \alias{contrast_each_group_to_the_rest}
 \title{contrast_each_group_to_the_rest}
 \usage{
-contrast_each_group_to_the_rest(dataset_se, dataset_name, groups2test = NA,
-  num_cores = 2)
+contrast_each_group_to_the_rest(dataset_se, dataset_name,
+  groups2test = NA, num_cores = 2)
 }
 \arguments{
 \item{dataset_se}{Summarised experiment object containing count data. Also
@@ -61,9 +61,13 @@ MAST reccomendataions, the proportion of genes seen in each cell is included
 in the model.
 }
 \examples{
+
 de_table.demo_query  <- contrast_each_group_to_the_rest(
      demo_query_se, "a_demo_query")
+     
+\dontrun{
 de_table.demo_ref    <- contrast_each_group_to_the_rest(
-     demo_ref_se, "a_demo_ref", num_cores=2)
+     demo_ref_se, "a_demo_ref", num_cores=4)
+}
 
 }

@@ -37,10 +37,9 @@
 #'
 #' @examples
 #'
-#' de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,    
-#'                                                        dataset_name="demo_ref")
-#' de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se,  
-#'                                                        dataset_name="demo_query")
+#' # Make input
+#' # de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query")
+#' # de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
 #'    
 #' # This:                                                  
 #' make_ranking_violin_plot(de_table.test=de_table.demo_query, 

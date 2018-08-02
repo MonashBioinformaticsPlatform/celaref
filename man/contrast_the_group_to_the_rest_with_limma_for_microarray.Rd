@@ -4,7 +4,8 @@
 \alias{contrast_the_group_to_the_rest_with_limma_for_microarray}
 \title{contrast_the_group_to_the_rest_with_limma_for_microarray}
 \usage{
-contrast_the_group_to_the_rest_with_limma_for_microarray(norm_expression_table,
+
+  contrast_the_group_to_the_rest_with_limma_for_microarray(norm_expression_table,
   sample_sheet_table, the_group, sample_name, extra_factor_name = NA,
   pval_threshold = 0.01)
 }

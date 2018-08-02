@@ -57,8 +57,9 @@
 #' }
 #'
 #' Function \code{make_ref_similarity_names} is a convenience wrapper function for 
-#' \code{make_ref_similarity_names_from_marked}. It accepts two SummarisedExpression
-#' objects to compare and handles running
+#' \code{make_ref_similarity_names_from_marked}. It accepts two 'de_table' 
+#' outputs of function \code{contrast_each_group_to_the_rest} to compare
+#' and handles running
 #' \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}}. 
 #' Sister function \code{make_ref_similarity_names_from_marked} may (rarely) be of use 
 #' if the \bold{de_table.marked} object has already been created, 
@@ -125,8 +126,9 @@
 #'
 #' @examples
 #' 
-#' de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query")
-#' de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
+#' # Make input
+#' # de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query")
+#' # de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
 #' 
 #' make_ref_similarity_names(de_table.demo_query, de_table.demo_ref)
 #' make_ref_similarity_names(de_table.demo_query, de_table.demo_ref, num_steps=3)
@@ -147,7 +149,7 @@ make_ref_similarity_names <- function(de_table.test, de_table.ref, pval=0.01, nu
    # Prepare the marked and reciprocal marked tables
    de_table.ref.marked   <- get_the_up_genes_for_all_possible_groups(de_table.test, de_table.ref)
    de_table.recip.marked <- get_the_up_genes_for_all_possible_groups(de_table.ref, de_table.test)
-   
+
    return(make_ref_similarity_names_using_marked(de_table.ref.marked, de_table.recip.marked,
                                                  pval=pval, num_steps=num_steps))
    
@@ -176,8 +178,9 @@ make_ref_similarity_names <- function(de_table.test, de_table.ref, pval=0.01, nu
 #' 
 #' @examples
 #'
-#' de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query")
-#' de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
+#' # Make input
+#' # de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query")
+#' # de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
 #' 
 #' de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
 #'      de_table.demo_query, de_table.demo_ref) 
@@ -523,10 +526,10 @@ get_ranking_and_test_results <- function (de_table.ref.marked, the_test_group, t
 #'
 #' @examples
 #'
-#' de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, 
-#'                            "demo_query", num_cores=2)
-#' de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   
-#'                            "demo_ref", num_cores=2)
+#' # Make input
+#' # de_table.demo_query <- contrast_each_group_to_the_rest(demo_query_se, "demo_query")
+#' # de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
+#' 
 #' de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
 #'     de_table.demo_query, de_table.demo_ref)
 #'

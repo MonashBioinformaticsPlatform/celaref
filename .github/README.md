@@ -1,9 +1,6 @@
 # celaref
 
 
-__***DEV VERSION : Method and doco still under active development***__
-
-
 ### Function  
 
 Single cell RNA sequencing (scRNAseq) has made it possible to examine the 

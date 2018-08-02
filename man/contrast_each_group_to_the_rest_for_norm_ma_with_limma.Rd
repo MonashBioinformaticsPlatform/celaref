@@ -4,7 +4,8 @@
 \alias{contrast_each_group_to_the_rest_for_norm_ma_with_limma}
 \title{contrast_each_group_to_the_rest_for_norm_ma_with_limma}
 \usage{
-contrast_each_group_to_the_rest_for_norm_ma_with_limma(norm_expression_table,
+
+  contrast_each_group_to_the_rest_for_norm_ma_with_limma(norm_expression_table,
   sample_sheet_table, dataset_name, sample_name, group_name = "group",
   groups2test = NA, extra_factor_name = NA, pval_threshold = 0.01)
 }
@@ -88,3 +89,4 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma(
 Other Data loading functions: \code{\link{load_dataset_10Xdata}},
   \code{\link{load_se_from_tables}}
 }
+\concept{Data loading functions}
