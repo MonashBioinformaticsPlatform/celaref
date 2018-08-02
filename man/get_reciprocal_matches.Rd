@@ -4,7 +4,8 @@
 \alias{get_reciprocal_matches}
 \title{get_reciprocal_matches}
 \usage{
-get_reciprocal_matches(mwtest_res_table.recip, de_table.recip.marked, the_pval)
+get_reciprocal_matches(mwtest_res_table.recip, de_table.recip.marked,
+  the_pval)
 }
 \arguments{
 \item{mwtest_res_table.recip}{Combined output of \code{\link{get_ranking_and_test_results}}

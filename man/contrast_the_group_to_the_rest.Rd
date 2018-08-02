@@ -4,7 +4,8 @@
 \alias{contrast_the_group_to_the_rest}
 \title{contrast_the_group_to_the_rest}
 \usage{
-contrast_the_group_to_the_rest(dataset_se, the_group, pvalue_threshold = 0.01)
+contrast_the_group_to_the_rest(dataset_se, the_group,
+  pvalue_threshold = 0.01)
 }
 \arguments{
 \item{dataset_se}{Datast summarisedExperiment object.}

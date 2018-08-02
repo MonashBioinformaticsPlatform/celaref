@@ -5,10 +5,11 @@ date: "`r Sys.Date()`"
 output:
    html_document:
      fig_caption: yes
+     dpi: 72
      theme: united
      toc: yes
      toc_depth: 5
-bibliography: /home/sarah.williams/data/mendeley/library.bib
+bibliography: celaref.bib
 vignette: >
   %\VignetteIndexEntry{Manual}
   %\VignetteEncoding{UTF-8}
@@ -234,7 +235,6 @@ violin plots.
      
 
 
-<!--![\label{fig:cluster_labelling}](images/clustering_labelling.png ) -->
 
 ---------
 
@@ -580,7 +580,7 @@ and the number of cells per group with *table(dataset_se$group)*.
 ```{r eval=TRUE, echo=FALSE}
 # Just define a dummy dataset_se from less generically named test data,
 # so it can be run during vignette compilation.
-dataset_se <- demo_query_se
+dataset_se <- toy_query_se
 ```
 
 
@@ -887,13 +887,42 @@ First, load the dataset into a SummarizedExperiment object and filter out genes
 with low expression, or groups that have too few members.
 
 ```{r eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
-# Silently load processed data into memory.
-#load("/mnt/ceph/mbp/servers/bioinformatics-platform/home/sarah.williams/projects/cell_groupings/analysis/10_data_for_doco/larger_doco_examples.rdata")
 
-larger_doco_example_filename <- system.file("extdata", "larger_doco_examples.rdata", package = "celaref")
-load(larger_doco_example_filename)
+ #TEMP.
+# Preprocessed data
+celaref_data_dir <- '/home/sarah.williams/data/projects/cell_groupings/analysis/13_RrunsOnM3/celarefData/celarefData'
+de_table.10X_pbmc4k_k7        <- readRDS(file.path(celaref_data_dir, 'de_table_10X_pbmc4k_k7.rds'))
+de_table.Watkins2009PBMCs     <- readRDS(file.path(celaref_data_dir, 'de_table_Watkins2009_pbmcs.rds'))
+de_table.zeisel.cortex        <-  readRDS(file.path(celaref_data_dir, 'de_table_Zeisel2015_cortex.rds'))
+de_table.zeisel.hippo         <-  readRDS(file.path(celaref_data_dir, 'de_table_Zeisel2015_hc.rds'))
+de_table.Farmer2017lacrimalP4 <- readRDS(file.path(celaref_data_dir, 'de_table_Farmer2017_lacrimalP4.rds'))
+
+# Some tiny info tables  in a 52kb file named for historical reasons...
+load(system.file("extdata", "larger_doco_examples.rdata", package = "celaref"))
 
 ```
+
+<!--
+```{r eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
+# Preprocessed data
+#library(ExperimentHub)
+#eh = ExperimentHub()
+#de_table.10X_pbmc4k_k7        <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_10X_pbmc4k_k7')[[1]]
+#de_table.Watkins2009PBMCs     <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_Watkins2009_pbmcs')[[1]]
+#de_table.zeisel.cortex        <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_Zeisel2015_cortex')[[1]]
+#de_table.zeisel.hippo         <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_Zeisel2015_hc')[[1]]
+#de_table.Farmer2017lacrimalP4 <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_Farmer2017_lacrimalP4')[[1]]
+
+# Some tiny info tables  in a 52kb file named for historical reasons...
+#load(system.file("extdata", "larger_doco_examples.rdata", package = "celaref"))
+
+```
+-->
+
+
+
+
+
 
 ```{r eval=FALSE}
 library(celaref)
@@ -909,7 +938,8 @@ dataset_se.10X_pbmc4k_k7 <- trim_small_groups_and_low_expression_genes(dataset_s
 ```
 
 Then prepare the datasets with the within-experiment comparisons. 
-Setting the num-cores to 7 to let each group run in parallel. 
+Setting the num-cores to 7 to let each group run in parallel (specify less 
+to reduce RAM usage). 
 
 ```{r eval=FALSE}
 de_table.10X_pbmc4k_k7   <- contrast_each_group_to_the_rest(dataset_se.10X_pbmc4k_k7, dataset_name="10X_pbmc4k_k7", num_cores=7) 
@@ -949,7 +979,6 @@ analysis, it is enough to remove it from the sample table.
 ```{r eval=FALSE }
 samples_table        <- samples_table[samples_table$tissue == "Peripheral Blood",] 
 ```
-
 ```{r echo=FALSE}
 kable(head(samples_table))
 ```
@@ -1065,13 +1094,6 @@ label_table.pbmc4k_k7_vs_Watkins2009PBMCs <- make_ref_similarity_names(de_table.
 ```{r eval=TRUE, echo=FALSE}
 kable(label_table.pbmc4k_k7_vs_Watkins2009PBMCs %>% arrange(test_group) ) 
 ```
-
-<!-- Group 1 is large, and -->
-<!-- while adjacent to group 3 in the tSNE plot, does not have a clear 'front runner'  -->
-<!-- for similarity. With the reciprocal match to Th lymphocytes looking at a reciprocal -->
-<!-- match could be useful (below). -->
-
-<!-- Two groups have been labelled with 'B cells', though cluster 4 more confidently. -->
 
 ------
 

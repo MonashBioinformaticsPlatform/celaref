@@ -4,9 +4,9 @@
 \alias{trim_small_groups_and_low_expression_genes}
 \title{trim_small_groups_and_low_expression_genes}
 \usage{
-trim_small_groups_and_low_expression_genes(dataset_se, min_lib_size = 1000,
-  min_group_membership = 5, min_reads_in_sample = 1,
-  min_detected_by_min_samples = 5)
+trim_small_groups_and_low_expression_genes(dataset_se,
+  min_lib_size = 1000, min_group_membership = 5,
+  min_reads_in_sample = 1, min_detected_by_min_samples = 5)
 }
 \arguments{
 \item{dataset_se}{Summarised experiment object containing count data. Also

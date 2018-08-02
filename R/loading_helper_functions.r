@@ -271,7 +271,9 @@ load_se_from_files <- function(counts_file, cell_info_file, gene_info_file = NA,
 #' @import SummarizedExperiment
 #' 
 #' @export
-load_dataset_10Xdata <- function(dataset_path, dataset_genome, clustering_set, gene_id_cols_10X =c("ensembl_ID","GeneSymbol"), id_to_use = gene_id_cols_10X[1] ) {
+load_dataset_10Xdata <- function(dataset_path, dataset_genome, clustering_set, 
+                                 gene_id_cols_10X =c("ensembl_ID","GeneSymbol"), 
+                                 id_to_use = gene_id_cols_10X[1] ) {
 
    matrix_file <- file.path(dataset_path,"filtered_gene_bc_matrices",dataset_genome,"matrix.mtx")
    cells_file  <- file.path(dataset_path,"filtered_gene_bc_matrices",dataset_genome,"barcodes.tsv")
