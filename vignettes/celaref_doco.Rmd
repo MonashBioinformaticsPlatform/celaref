@@ -301,6 +301,19 @@ matched groups listed in shortlab, that are all slightly different. Examples
 
 # Using the package
 
+## Installation
+
+Install from bioconductor via BiocManager
+```{r eval=FALSE}
+# Installing BiocManager if necessary:
+# install.packages("BiocManager")
+BiocManager::install("celaref")
+```
+
+Or dev version from github
+```{r eval=FALSE}
+devtools::install_github("MonashBioinformaticsPlatform/celaref")
+```
 
 ## Quickstart
 
@@ -1305,6 +1318,12 @@ biological similar cell types.
 Interestingly, there's also a reciprocal match from the Lacrimal gland 
 endothelial cells to endothelial-mural cell in the brain sample.
 
+# Session Info
+
+This vignette built on session:
+```{r}
+sessionInfo()
+```
 
 # References
 
