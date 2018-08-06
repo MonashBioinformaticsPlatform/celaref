@@ -887,37 +887,19 @@ First, load the dataset into a SummarizedExperiment object and filter out genes
 with low expression, or groups that have too few members.
 
 ```{r eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
-
- #TEMP.
 # Preprocessed data
-celaref_data_dir <- '/home/sarah.williams/data/projects/cell_groupings/analysis/13_RrunsOnM3/celarefData/celarefData'
-de_table.10X_pbmc4k_k7        <- readRDS(file.path(celaref_data_dir, 'de_table_10X_pbmc4k_k7.rds'))
-de_table.Watkins2009PBMCs     <- readRDS(file.path(celaref_data_dir, 'de_table_Watkins2009_pbmcs.rds'))
-de_table.zeisel.cortex        <-  readRDS(file.path(celaref_data_dir, 'de_table_Zeisel2015_cortex.rds'))
-de_table.zeisel.hippo         <-  readRDS(file.path(celaref_data_dir, 'de_table_Zeisel2015_hc.rds'))
-de_table.Farmer2017lacrimalP4 <- readRDS(file.path(celaref_data_dir, 'de_table_Farmer2017_lacrimalP4.rds'))
+library(ExperimentHub)
+eh = ExperimentHub()
+de_table.10X_pbmc4k_k7        <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_10X_pbmc4k_k7')[[1]]
+de_table.Watkins2009PBMCs     <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_Watkins2009_pbmcs')[[1]]
+de_table.zeisel.cortex        <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_Zeisel2015_cortex')[[1]]
+de_table.zeisel.hippo         <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_Zeisel2015_hc')[[1]]
+de_table.Farmer2017lacrimalP4 <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_Farmer2017_lacrimalP4')[[1]]
 
 # Some tiny info tables  in a 52kb file named for historical reasons...
 load(system.file("extdata", "larger_doco_examples.rdata", package = "celaref"))
 
 ```
-
-<!--
-```{r eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
-# Preprocessed data
-#library(ExperimentHub)
-#eh = ExperimentHub()
-#de_table.10X_pbmc4k_k7        <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_10X_pbmc4k_k7')[[1]]
-#de_table.Watkins2009PBMCs     <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_Watkins2009_pbmcs')[[1]]
-#de_table.zeisel.cortex        <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_Zeisel2015_cortex')[[1]]
-#de_table.zeisel.hippo         <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_Zeisel2015_hc')[[1]]
-#de_table.Farmer2017lacrimalP4 <- ExperimentHub::loadResources(eh, "celarefData", 'de_table_Farmer2017_lacrimalP4')[[1]]
-
-# Some tiny info tables  in a 52kb file named for historical reasons...
-#load(system.file("extdata", "larger_doco_examples.rdata", package = "celaref"))
-
-```
--->
 
 
 
