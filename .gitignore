@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 inst/doc
+github
 vignettes/celaref_doco_files
 vignettes/celaref_doco_cache
 vignettes/celaref_doco.html
