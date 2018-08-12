@@ -25,7 +25,8 @@ kmeans_10_clusters Find them as directory names under
 
 \item{gene_id_cols_10X}{Vector of the names of the columns in the gene 
 description file (\emph{filtered_gene_bc_matrices/GRCh38/genes.csv}). The 
-first element of this will become the ID. Default = c("ensembl_ID","GeneSymbol")}
+first element of this will become the ID. 
+Default = c("ensembl_ID","GeneSymbol")}
 
 \item{id_to_use}{Column from \bold{gene_id_cols_10X} that defines the gene 
 identifier to use as 'ID' in the returned SummarisedExperiment object.
@@ -70,9 +71,11 @@ dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="
 
 }
 \seealso{
-\href{https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{SummarizedExperiment} For general doco on the SummarizedExperiment objects.
+\href{https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{SummarizedExperiment} 
+For general doco on the SummarizedExperiment objects.
 
-\code{\link[celaref]{convert_se_gene_ids}} describes method for converting IDs.
+\code{\link[celaref]{convert_se_gene_ids}} describes method for 
+converting IDs.
 
 Other Data loading functions: \code{\link{contrast_each_group_to_the_rest_for_norm_ma_with_limma}},
   \code{\link{load_se_from_tables}}

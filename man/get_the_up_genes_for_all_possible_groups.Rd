@@ -14,7 +14,8 @@ as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
 \item{de_table.ref}{A differential expression table of the reference dataset,
 as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
 
-\item{rankmetric}{Placeholder for support of different ranking methods, but only the default supported. Omit.}
+\item{rankmetric}{Placeholder for support of different ranking methods, 
+but only the default supported. Omit.}
 }
 \value{
 \emph{de_table.marked} This will alsmost be a subset of \bold{de_table.ref}, 
@@ -46,5 +47,6 @@ de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
 
 }
 \seealso{
-\code{\link[celaref]{get_the_up_genes_for_group}} Function for testing a single group.
+\code{\link[celaref]{get_the_up_genes_for_group}} Function for 
+testing a single group.
 }

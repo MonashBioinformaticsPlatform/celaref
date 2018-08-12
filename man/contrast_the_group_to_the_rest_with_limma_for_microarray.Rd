@@ -15,16 +15,16 @@ filtering (removal of low-expression probes/genes)}
 
 \item{sample_sheet_table}{Tab-separated text file of sample information.
 Columns must have names. Sample/microarray ids should be listed under 
-\bold{sample_name} column. The cell-type (or 'group') of each sample should be 
-listed under a column \bold{group_name}.}
+\bold{sample_name} column. The cell-type (or 'group') of each sample should 
+be listed under a column \bold{group_name}.}
 
 \item{the_group}{Which query group is being tested.}
 
 \item{sample_name}{Name of \bold{sample_sheet_table} with sample ID}
 
-\item{extra_factor_name}{Optionally, an extra cross-group factor (as column name in 
-\bold{sample_sheet_table}) to include in the model used by limma. E.g. An  
-be a individual/mouse id. Refer limma docs. Default = NA}
+\item{extra_factor_name}{Optionally, an extra cross-group factor (as column 
+name in \bold{sample_sheet_table}) to include in the model used by limma. 
+E.g. An  individual/mouse id. Refer limma docs. Default = NA}
 
 \item{pval_threshold}{For reporting only, a p-value threshold. Default = 0.01}
 }
@@ -33,10 +33,13 @@ A tibble, the within-experiment de_table (differential expression
 table), for the group specified.
 }
 \description{
-Private function used by contrast_each_group_to_the_rest_for_norm_ma_with_limma
+Private function used by 
+contrast_each_group_to_the_rest_for_norm_ma_with_limma
 }
 \seealso{
-\code{\link[celaref]{contrast_each_group_to_the_rest_for_norm_ma_with_limma}} public calling function
+\code{\link[celaref]{contrast_each_group_to_the_rest_for_norm_ma_with_limma}}
+public calling function
 
-\href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma} Limma package for differential expression.
+\href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma}
+Limma package for differential expression.
 }

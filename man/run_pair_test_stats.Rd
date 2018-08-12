@@ -8,7 +8,9 @@ run_pair_test_stats(de_table.ref.marked, the_test_group, groupA, groupB,
   enforceAgtB = TRUE)
 }
 \arguments{
-\item{de_table.ref.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
+\item{de_table.ref.marked}{The output of 
+\code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast 
+of interest.}
 
 \item{the_test_group}{Name of the test group in query dataset.}
 
@@ -16,7 +18,8 @@ run_pair_test_stats(de_table.ref.marked, the_test_group, groupA, groupB,
 
 \item{groupB}{Another of the reference group names}
 
-\item{enforceAgtB}{Do a one tailed test of A 'less' B (more similar)? Or two-tailed. Default = TRUE.}
+\item{enforceAgtB}{Do a one tailed test of A 'less' B (more similar)? 
+Or two-tailed. Default = TRUE.}
 }
 \value{
 A tibble of wilcox / man-whitneyU test results for this contrast.
