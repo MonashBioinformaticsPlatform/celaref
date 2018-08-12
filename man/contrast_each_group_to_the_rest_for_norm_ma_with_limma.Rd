@@ -15,21 +15,22 @@ filtering (removal of low-expression probes/genes)}
 
 \item{sample_sheet_table}{Tab-separated text file of sample information.
 Columns must have names. Sample/microarray ids should be listed under 
-\bold{sample_name} column. The cell-type (or 'group') of each sample should be 
-listed under a column \bold{group_name}.}
+\bold{sample_name} column. The cell-type (or 'group') of each sample should 
+be listed under a column \bold{group_name}.}
 
 \item{dataset_name}{Short, meaningful name for this dataset/experiment.}
 
 \item{sample_name}{Name of \bold{sample_sheet_table} with sample ID}
 
-\item{group_name}{Name of \bold{sample_sheet_table} with group/cell-type. Default = "group"}
+\item{group_name}{Name of \bold{sample_sheet_table} with group/cell-type. 
+Default = "group"}
 
-\item{groups2test}{An optional character vector specificing specific groups to check.
-By default (set to NA), all groups will be tested.}
+\item{groups2test}{An optional character vector specificing specific groups 
+to check. By default (set to NA), all groups will be tested.}
 
-\item{extra_factor_name}{Optionally, an extra cross-group factor (as column name in 
-\bold{sample_sheet_table}) to include in the model used by limma. E.g. An  
-be a individual/mouse id. Refer limma docs. Default = NA}
+\item{extra_factor_name}{Optionally, an extra cross-group factor (as column 
+name in \bold{sample_sheet_table}) to include in the model used by limma. 
+E.g. An individual/mouse id. Refer limma docs. Default = NA}
 
 \item{pval_threshold}{For reporting only, a p-value threshold. Default = 0.01}
 }
@@ -38,8 +39,8 @@ A tibble, the within-experiment de_table (differential expression
 table)
 }
 \description{
-This function loads and processes microarray data (from purified cell populations) that
-can be used as a reference.
+This function loads and processes microarray data (from purified cell 
+populations) that can be used as a reference.
 }
 \details{
 Sometimes there are microarray studies measureing purified cell populations 
@@ -68,7 +69,8 @@ function.
 }
 \examples{
 
-contrast_each_group_to_the_rest_for_norm_ma_with_limma(norm_expression_table=demo_microarray_expr, 
+contrast_each_group_to_the_rest_for_norm_ma_with_limma(
+    norm_expression_table=demo_microarray_expr, 
     sample_sheet_table=demo_microarray_sample_sheet,
     dataset_name="DemoSimMicroarrayRef", 
     sample_name="cell_sample", group_name="group") 
@@ -82,9 +84,12 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma(
 
 }
 \seealso{
-\code{\link[celaref]{contrast_each_group_to_the_rest}} is the funciton that makes comparable output on the scRNAseq data (dataset_se objects).
+\code{\link[celaref]{contrast_each_group_to_the_rest}} is the 
+funciton that makes comparable output on the scRNAseq data (dataset_se 
+objects).
 
-\href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma} Limma package for differential expression.
+\href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma} 
+Limma package for differential expression.
 
 Other Data loading functions: \code{\link{load_dataset_10Xdata}},
   \code{\link{load_se_from_tables}}

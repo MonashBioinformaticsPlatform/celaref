@@ -7,7 +7,9 @@
 get_rankstat_table(de_table.ref.marked, the_test_group)
 }
 \arguments{
-\item{de_table.ref.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
+\item{de_table.ref.marked}{The output of 
+\code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast 
+of interest.}
 
 \item{the_test_group}{Name of query group to test}
 }
@@ -28,11 +30,13 @@ median rank in each of the reference groups, with reference group rankings.
 # de_table.demo_ref   <- contrast_each_group_to_the_rest(demo_ref_se,   "demo_ref")
 
 de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
-    de_table.demo_query, de_table.demo_ref)
+    de_table.demo_query, 
+    de_table.demo_ref)
 
 get_rankstat_table(de_table.marked.query_vs_ref, "Group3")
 
 }
 \seealso{
-\code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} To prepare the \bold{de_table.ref.marked} input.
+\code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} To 
+prepare the \bold{de_table.ref.marked} input.
 }

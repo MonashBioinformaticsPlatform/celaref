@@ -48,7 +48,9 @@ dataset_se <- convert_se_gene_ids(dataset_se, new_id='dummyname', eval_col='tota
 
 }
 \seealso{
-\href{https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{SummarizedExperiment} For general doco on the SummarizedExperiment objects.
+\href{https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{SummarizedExperiment} 
+For general doco on the SummarizedExperiment objects.
 
-\code{\link[celaref]{load_se_from_files}} For reading data from flat files (not 10X cellRanger output)
+\code{\link[celaref]{load_se_from_files}} For reading data from flat 
+files (not 10X cellRanger output)
 }

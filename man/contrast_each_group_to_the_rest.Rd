@@ -14,29 +14,34 @@ requires 'ID' and 'group' to be set within the cell information
 
 \item{dataset_name}{Short, meaningful name for this dataset/experiment.}
 
-\item{groups2test}{An optional character vector specificing specific groups to check.
-By default (set to NA), all groups will be tested.}
+\item{groups2test}{An optional character vector specificing specific groups 
+to check. By default (set to NA), all groups will be tested.}
 
 \item{num_cores}{Number of cores to use to run MAST jobs in parallel.
 Ignored if parallel package not available. Set to 1 to avoid parallelisation.
 Default = 2}
 }
 \value{
-A tibble the within-experiment de_table (differential expression table).
-This is a core summary of the individual experiment/dataset, which is
+A tibble the within-experiment de_table (differential expression 
+table). This is a core summary of the individual experiment/dataset, which is
 used for the cross-dataset comparisons.
 
 The table feilds won't neccesarily match across datasets, as they include
-cell annotations information. Important columns (used in downstream analysis) are:
+cell annotations information. Important columns (used in downstream analysis)
+are:
 
 \describe{
 \item{ID}{Gene identifier}
-\item{ci_inner}{ Inner (conservative) 95\% confidence interval of log2 fold change. }
+\item{ci_inner}{ Inner (conservative) 95\% confidence interval of 
+    log2 fold-change.}
 \item{fdr}{Multiple hypothesis corrected p-value (using BH/FDR method)}
 \item{group}{Cells from this group were compared to everything else}
-\item{sig_up}{Significnatly differentially expressed (fdr < 0.01), with a postivie fold change?}
-\item{rank}{Rank position (within group), ranked by CI inner, highest to lowest. }
-\item{rescaled_rank}{Rank scaled 0(top most overrepresented genes in group)-1(top most not-present genes)}
+\item{sig_up}{Significnatly differentially expressed (fdr < 0.01), with a 
+     positive fold change?}
+\item{rank}{Rank position (within group), ranked by CI inner, highest to 
+    lowest. }
+\item{rescaled_rank}{Rank scaled 0(top most overrepresented genes in group) - 
+    1(top most not-present genes)}
 \item{dataset}{Name of dataset/experiment}
 }
 }
@@ -47,8 +52,8 @@ compared to the rest of the cells.
 }
 \details{
 Note that this function is \emph{slow}, because it runs the differential
-expression. It only needs to be run once per dataset though (unless group labels
-change). Having package \pkg{parallel} installed is highly recomended.
+expression. It only needs to be run once per dataset though (unless group 
+labels change). Having package \pkg{parallel} installed is highly recomended.
 
 Both reference and query datasets should be processed with this
 function.

@@ -14,16 +14,22 @@ make_ref_similarity_names_for_group(the_test_group, mwtest_res_table,
 \item{mwtest_res_table}{Mann-whitney test results as constructed 
 in \code{\link[celaref]{make_ref_similarity_names_using_marked}}}
 
-\item{de_table.ref.marked}{The output of \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of interest.}
+\item{de_table.ref.marked}{The output of 
+\code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of 
+interest.}
 
-\item{reciprocal_matches}{Simplified table of reciprocal matches prepared within \code{\link{make_ref_similarity_names_using_marked}}. 
+\item{reciprocal_matches}{Simplified table of reciprocal matches prepared 
+within \code{\link{make_ref_similarity_names_using_marked}}. 
 If omitted no reciprocal matching done. Default = NA.}
 
-\item{the_test_dataset}{A short meaningful name for the experiment. (Should match \emph{test_dataset} column in \bold{de_table.marked})}
+\item{the_test_dataset}{A short meaningful name for the experiment. 
+(Should match \emph{test_dataset} column in \bold{de_table.marked})}
 
-\item{the_ref_dataset}{A short meaningful name for the experiment. (Should match \emph{dataset} column in \bold{de_table.marked})}
+\item{the_ref_dataset}{A short meaningful name for the experiment. 
+(Should match \emph{dataset} column in \bold{de_table.marked})}
 
-\item{the_pval}{pval as per \code{\link[celaref]{make_ref_similarity_names_using_marked}}}
+\item{the_pval}{pval as per 
+\code{\link[celaref]{make_ref_similarity_names_using_marked}}}
 }
 \value{
 A tibble with just one group's labelling information, as per 

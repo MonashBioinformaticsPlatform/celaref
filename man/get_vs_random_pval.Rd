@@ -15,8 +15,8 @@ get_vs_random_pval(de_table.ref.marked, the_group, the_test_group)
 #'}
 }
 \value{
-Pvalue result of a binomial test of each 'top gene' being greater than
-the theoretical random median rank of 0.5 (halfway).
+Pvalue result of a binomial test of each 'top gene' being greater 
+than the theoretical random median rank of 0.5 (halfway).
 }
 \description{
 Internal function to run a bionomial test of median test rank > 0.5 (random).

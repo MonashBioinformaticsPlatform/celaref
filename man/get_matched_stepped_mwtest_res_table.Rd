@@ -7,7 +7,8 @@
 get_matched_stepped_mwtest_res_table(mwtest_res_table.this, the_pval)
 }
 \arguments{
-\item{mwtest_res_table.this}{Combined output of \code{\link{get_ranking_and_test_results}}}
+\item{mwtest_res_table.this}{Combined output of 
+\code{\link{get_ranking_and_test_results}}}
 
 \item{the_pval}{Pvalue threshold}
 }

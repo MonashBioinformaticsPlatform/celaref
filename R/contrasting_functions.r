@@ -11,8 +11,8 @@
 #' compared to the rest of the cells.
 #'
 #' Note that this function is \emph{slow}, because it runs the differential
-#' expression. It only needs to be run once per dataset though (unless group labels
-#' change). Having package \pkg{parallel} installed is highly recomended.
+#' expression. It only needs to be run once per dataset though (unless group 
+#' labels change). Having package \pkg{parallel} installed is highly recomended.
 #'
 #' Both reference and query datasets should be processed with this
 #' function.
@@ -28,28 +28,33 @@
 #' requires 'ID' and 'group' to be set within the cell information
 #' (see \code{colData()})
 #' @param dataset_name Short, meaningful name for this dataset/experiment.
-#' @param groups2test An optional character vector specificing specific groups to check.
-#' By default (set to NA), all groups will be tested.
+#' @param groups2test An optional character vector specificing specific groups 
+#' to check. By default (set to NA), all groups will be tested.
 #' @param num_cores Number of cores to use to run MAST jobs in parallel.
 #' Ignored if parallel package not available. Set to 1 to avoid parallelisation.
 #' Default = 2
 #'
 #'
-#' @return A tibble the within-experiment de_table (differential expression table).
-#' This is a core summary of the individual experiment/dataset, which is
+#' @return A tibble the within-experiment de_table (differential expression 
+#' table). This is a core summary of the individual experiment/dataset, which is
 #' used for the cross-dataset comparisons.
 #'
 #' The table feilds won't neccesarily match across datasets, as they include
-#' cell annotations information. Important columns (used in downstream analysis) are:
+#' cell annotations information. Important columns (used in downstream analysis)
+#' are:
 #'
-#' \describe{
+#'\describe{
 #'\item{ID}{Gene identifier}
-#'\item{ci_inner}{ Inner (conservative) 95\% confidence interval of log2 fold change. }
+#'\item{ci_inner}{ Inner (conservative) 95\% confidence interval of 
+#'     log2 fold-change.}
 #'\item{fdr}{Multiple hypothesis corrected p-value (using BH/FDR method)}
 #'\item{group}{Cells from this group were compared to everything else}
-#'\item{sig_up}{Significnatly differentially expressed (fdr < 0.01), with a postivie fold change?}
-#'\item{rank}{Rank position (within group), ranked by CI inner, highest to lowest. }
-#'\item{rescaled_rank}{Rank scaled 0(top most overrepresented genes in group)-1(top most not-present genes)}
+#'\item{sig_up}{Significnatly differentially expressed (fdr < 0.01), with a 
+#'      positive fold change?}
+#'\item{rank}{Rank position (within group), ranked by CI inner, highest to 
+#'     lowest. }
+#'\item{rescaled_rank}{Rank scaled 0(top most overrepresented genes in group) - 
+#'     1(top most not-present genes)}
 #'\item{dataset}{Name of dataset/experiment}
 #'}
 #'
@@ -67,7 +72,9 @@
 #' @import SummarizedExperiment
 #' 
 #' @export
-contrast_each_group_to_the_rest <- function(dataset_se, dataset_name, groups2test=NA, num_cores=2) {
+contrast_each_group_to_the_rest <- function(
+   dataset_se, dataset_name, groups2test=NA, num_cores=2
+) {
    
    # Which groups to look at? Default all in query dataset.
    if (length(groups2test) == 1 && is.na(groups2test)) {
@@ -83,14 +90,35 @@ contrast_each_group_to_the_rest <- function(dataset_se, dataset_name, groups2tes
    ## Add the 'proportion of genes covered in this factor' variable.
    # Not really a proprotion, buts in the model (and is proportional)
    # see MAST doco/paper - its used in the model for reasons.
-   colData(dataset_se)$pofgenes <- scale(Matrix::colSums(as.matrix(assay(dataset_se)) > 0 ) )
+   colData(dataset_se)$pofgenes <- 
+      scale(Matrix::colSums(as.matrix(assay(dataset_se)) > 0 ) )
    
-   ## For each group, test it versus evyerthing else (paralallised, with lapply fallback )
+   ## For each group, test it versus evyerthing else 
+   #  (paralallised, with lapply fallback if no parallel, or windows )
+   if (num_cores > 1) {
+      if (! requireNamespace("parallel", quietly = TRUE) ) {
+         message(paste0("Parallel package not installed. Please install. ",
+                        "Or set num_threads = 1 to suppress this message.",
+                        "Running single threaded"))
+         num_cores = 1
+      }
+      if (Sys.info()['sysname'] == "Windows") {
+         message(paste0("Sorry, multithreading not supported on windows.",
+                        "(Developed on linux). Running single threaded"))
+         num_cores = 1
+      }
+   }
+
    de_table_list <- NA
-   if (requireNamespace("parallel", quietly = TRUE) & num_cores >= 1) {
-      de_table_list <- parallel::mclapply(groups2test, FUN=contrast_the_group_to_the_rest, dataset_se=dataset_se, mc.cores=num_cores)
+   if (num_cores > 1) {
+      de_table_list <- parallel::mclapply(groups2test, 
+                                          FUN=contrast_the_group_to_the_rest, 
+                                          dataset_se=dataset_se, 
+                                          mc.cores=num_cores)
    } else {
-      de_table_list <- base::lapply(groups2test, FUN=contrast_the_group_to_the_rest, dataset_se=dataset_se) 
+      de_table_list <- base::lapply(groups2test, 
+                                    FUN=contrast_the_group_to_the_rest, 
+                                    dataset_se=dataset_se) 
    }
    de_table.allvsrest <- dplyr::bind_rows(de_table_list)
 
@@ -100,14 +128,6 @@ contrast_each_group_to_the_rest <- function(dataset_se, dataset_name, groups2tes
    
    return(de_table.allvsrest)
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -136,26 +156,32 @@ contrast_each_group_to_the_rest <- function(dataset_se, dataset_name, groups2tes
 #' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest}}
 #'
 #' @import SummarizedExperiment
-contrast_the_group_to_the_rest <- function( dataset_se, the_group, pvalue_threshold=0.01) {
+contrast_the_group_to_the_rest <- function( 
+   dataset_se, the_group, pvalue_threshold=0.01) {
    
    TEST = 'test'
    REST = 'rest'
    # must have pofgenes set.
    stopifnot("pofgenes" %in% colnames(colData(dataset_se)))
    
-   # Define test vs rest factor for model (TvsR only applicable for a single contrast.)
+   # Define test vs rest factor for model 
+   # (TvsR only applicable for a single contrast.)
    col_data_for_MAST      <- colData(dataset_se)
-   col_data_for_MAST$TvsR <- factor(ifelse(col_data_for_MAST$group == the_group, TEST, REST), levels=c(REST, TEST)) #Note order for MAST
+   col_data_for_MAST$TvsR <- factor(
+      ifelse(col_data_for_MAST$group == the_group, TEST, REST), 
+      levels=c(REST, TEST)) #Note order for MAST
    
    
    ## Log2 transform the counts
    
    # *** NB: Adding 1.1 to each count before log! Not 1! ***
-   # When there is *no* expression of a given gene within a group - coeficcients aren't generated.= (NA)
-   # But they can still be sinigicant - and for scRNA these could be real+relevant! Particularly with small groups.
+   # When there is *no* expression of a given gene within a group - 
+   # coeficcients aren't generated.= (NA)
+   # But they can still be sinigicant - and for scRNA these could be 
+   # real+relevant! Particularly with small groups.
    # .. I think this is just a quirk of how mast is calculating them.
-   # If I add 1.1 instead of 1 pre-log transformation, means log2(0+1.1) min is 0.014,
-   # not 0 - and coef (log2FC) is generated
+   # If I add 1.1 instead of 1 pre-log transformation, means log2(0+1.1) 
+   # min is 0.014, not 0 - and coef (log2FC) is generated
    # Adding 1.1 isn't going to have any real difference to adding 1.
    # ***
    TO_ADD <- 1.1 # Defining it here so it no get changed.
@@ -164,16 +190,19 @@ contrast_the_group_to_the_rest <- function( dataset_se, the_group, pvalue_thresh
    
    # MAST uses a SE internally (inherits) but needs the parts to make it itself.
    ## Make sca object for MAST
-   sca <- MAST::FromMatrix(logged_counts, cData=col_data_for_MAST, fData=rowData(dataset_se))
+   sca <- MAST::FromMatrix(logged_counts, 
+                           cData=col_data_for_MAST, 
+                           fData=rowData(dataset_se))
    
    
    ## Make Zlm model and run contrast:
    # Slow step.
    # MAST uses pofgene in the model, see doco/paper.
-   # Would have liked to model group level and then to contrasts of groupA - (avg of all other groups).
+   # Would have liked to model group level and then to contrasts of 
+   # groupA - (avg of all other groups).
    # Would allow this step to run only once per experiment, not per each group.
-   # But that is complicated, and the 'summary' method (what actually does calcs) only supports
-   # simple single coeffient test.
+   # But that is complicated, and the 'summary' method 
+   # (what actually does calcs) only supports simple single coeffient test.
    zlm.TvsR        <- MAST::zlm(~ TvsR + pofgenes, sca)
    the_contrast    <- 'TvsRtest'
    summary.TvsR    <- MAST::summary(zlm.TvsR, doLRT = 'TvsRtest')
@@ -181,10 +210,13 @@ contrast_the_group_to_the_rest <- function( dataset_se, the_group, pvalue_thresh
    
    # Grab the p-values form the 'H' hurdle model. And the logFC from the calcs
    # all for testvsrest term of formula (vs intercept) (equates to test-rest )
-   mast_res <- merge(summary.TvsR.df[summary.TvsR.df$contrast==the_contrast  & summary.TvsR.df$component=='H',
-                                     c("primerid", "Pr(>Chisq)")], #hurdle P-values
-                     summary.TvsR.df[summary.TvsR.df$contrast==the_contrast  & summary.TvsR.df$component=='logFC',
-                                     c("primerid", "coef", "ci.hi", "ci.lo")], by='primerid') #logFC coefficients
+   mast_res <- merge(
+      summary.TvsR.df[
+         summary.TvsR.df$contrast==the_contrast  & summary.TvsR.df$component=='H',
+         c("primerid", "Pr(>Chisq)")], #hurdle P-values
+      summary.TvsR.df[
+         summary.TvsR.df$contrast==the_contrast  & summary.TvsR.df$component=='logFC',
+         c("primerid", "coef", "ci.hi", "ci.lo")], by='primerid') #logFC coefs
    #> head(mast_res)
    #       primerid  Pr(>Chisq)        coef       ci.hi       ci.lo
    #1 0610007P14Rik 0.785451166  0.08833968  0.33665327 -0.15997391
@@ -192,7 +224,8 @@ contrast_the_group_to_the_rest <- function( dataset_se, the_group, pvalue_thresh
    #3 0610009O20Rik 0.869118657 -0.03563795  0.09585160 -0.16712750
    
    
-   ## Reformat the results with more infomative colnames. primerid=>gene, Pr(>Chisq)=>pval
+   ## Reformat the results with more infomative colnames. 
+   # primerid=>gene, Pr(>Chisq)=>pval
    de_table <- data.frame(mast_res)
    colnames(de_table) <- c("ID", "pval", "log2FC","ci.hi", "ci.lo")
    
@@ -202,8 +235,12 @@ contrast_the_group_to_the_rest <- function( dataset_se, the_group, pvalue_thresh
    
    # Order by Innermost/conservative CI
    # upper/lower mean numerically, actually want to use inner/outer rel to 0
-   de_table$ci_inner  <- mapply(FUN=get_inner_or_outer_ci, MoreArgs = list(get_inner=TRUE),  de_table$log2FC, de_table$ci.hi, de_table$ci.lo)
-   de_table$ci_outer  <- mapply(FUN=get_inner_or_outer_ci, MoreArgs = list(get_inner=FALSE), de_table$log2FC, de_table$ci.hi, de_table$ci.lo)
+   de_table$ci_inner  <- mapply(FUN=get_inner_or_outer_ci, 
+                                MoreArgs = list(get_inner=TRUE),  
+                                de_table$log2FC, de_table$ci.hi, de_table$ci.lo)
+   de_table$ci_outer  <- mapply(FUN=get_inner_or_outer_ci, 
+                                MoreArgs = list(get_inner=FALSE), 
+                                de_table$log2FC, de_table$ci.hi, de_table$ci.lo)
    de_table <- de_table[,! colnames(de_table) %in% c("ci.hi", "ci.lo")]
    de_table <- de_table[order(de_table$ci_inner, decreasing = TRUE),]
    
@@ -245,7 +282,7 @@ contrast_the_group_to_the_rest <- function( dataset_se, the_group, pvalue_thresh
 #'
 #' @return inner or outer CI from \bold{ci.hi} or \bold{ci.low}
 #'
-get_inner_or_outer_ci<- function(fc, ci.hi, ci.lo, get_inner=TRUE)      {
+get_inner_or_outer_ci<- function(fc, ci.hi, ci.lo, get_inner=TRUE) {
    
    if (is.na(fc)) {
       return(0)
@@ -284,42 +321,56 @@ get_inner_or_outer_ci<- function(fc, ci.hi, ci.lo, get_inner=TRUE)      {
 #'  as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
 #' @param de_table.ref A differential expression table of the reference dataset,
 #'  as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
-#' @param rankmetric Placeholder for support of different ranking methods, but only the default supported. Omit. 
+#' @param rankmetric Placeholder for support of different ranking methods, 
+#' but only the default supported. Omit. 
 #' 
 #' @return \emph{de_table.marked} This will be a subset of \bold{de_table.ref}, 
-#' with an added column \emph{test_group} set to \bold{the_group}. If nothing passes the rankmetric criteria, NA.
+#' with an added column \emph{test_group} set to \bold{the_group}. 
+#' If nothing passes the rankmetric criteria, NA.
 #'
 #' @examples
 #' de_table.marked.Group3vsRef <- get_the_up_genes_for_group(the_group="Group3",
 #' de_table.test=de_table.demo_query, de_table.ref=de_table.demo_ref)
 #'
 #' @seealso  
-#' \code{\link[celaref]{contrast_each_group_to_the_rest}} For prepraring the de_table.* tables.
-#' \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} For running all query groups at once.
+#' \code{\link[celaref]{contrast_each_group_to_the_rest}} For prepraring the 
+#' de_table.* tables.
+#' \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} For running 
+#' all query groups at once.
 #
 #'
 #'@export
-get_the_up_genes_for_group <- function(the_group, de_table.test, de_table.ref, rankmetric='TOP100_LOWER_CI_GTE1') {
+get_the_up_genes_for_group <- function(
+   the_group, de_table.test, de_table.ref, rankmetric='TOP100_LOWER_CI_GTE1'
+) {
    
-   # Trialled a bunch. Decided on TOP100_LOWER_CI_GTE, but leave option here. (might be useful for other data types)
+   # Trialled a bunch. Decided on TOP100_LOWER_CI_GTE, but leave option here. 
+   # (might be useful for other data types)
    the_up_genes <- c()
    if (rankmetric=='TOP100_LOWER_CI_GTE1') {
-      the_up_genes <- de_table.test$ID[de_table.test$group == the_group & de_table.test$rank <= 100 & de_table.test$ci_inner >= 1]
+      the_up_genes <- de_table.test$ID[de_table.test$group == the_group & 
+                                       de_table.test$rank <= 100 & 
+                                       de_table.test$ci_inner >= 1]
    } else if (rankmetric=='BOTTOM100_LOWER_CI_LTE1') {
+      # Undocumented feature for testing, dont use (it doesn't work so well)
       max_rank <- max(de_table.test$rank)
-      the_up_genes <- de_table.test$ID[de_table.test$group == the_group & de_table.test$rank >= (max_rank - 100 + 1) & de_table.test$ci_inner <= -1]
+      the_up_genes <- de_table.test$ID[de_table.test$group == the_group & 
+                                       de_table.test$rank >= (max_rank - 100 + 1) & 
+                                       de_table.test$ci_inner <= -1]
    } else {stop("Unknown rank metric")}
    
-   
-   
-   
-   
-   # Nothing selected. Or nothing selected thats in ref data. NA gets rbinded harmlesslessy
+
+   # Nothing selected. Or nothing selected thats in ref data. 
+   # NA gets rbinded harmlesslessy
    if (length(the_up_genes) == 0 ) {
-      warning(paste0("Found no mark-able genes meeting criteria when looking for 'up' genes in ",the_group,
-                     " Cannot test it for similarity. Could occur if: cell groups are very similar,",
-                     "a lack of statistical power (e.g. small number of cells in group),",
-                     "or for a heterogenous cluster. It may only affect one/some groups, continuing with the rest.") )
+      warning(paste0("Found no mark-able genes meeting criteria when looking ",
+                     "for 'up' genes in ",the_group,
+                     " Cannot test it for similarity. ",
+                     "Could occur if: cell groups are very similar, ",
+                     "a lack of statistical power ",
+                     "(e.g. small number of cells in group), ",
+                     "or for a heterogenous cluster. It may only affect ",
+                     "one/some groups, continuing with the rest.") )
       return(NA)
       }
    if (sum(de_table.ref$ID %in% the_up_genes) == 0) {return(NA)}
@@ -352,7 +403,8 @@ get_the_up_genes_for_group <- function(the_group, de_table.test, de_table.ref, r
 #'  as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
 #' @param de_table.ref A differential expression table of the reference dataset,
 #'  as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
-#' @param rankmetric Placeholder for support of different ranking methods, but only the default supported. Omit. 
+#' @param rankmetric Placeholder for support of different ranking methods, 
+#' but only the default supported. Omit. 
 #' 
 #' @return \emph{de_table.marked} This will alsmost be a subset of \bold{de_table.ref}, 
 #' with an added column \emph{test_group} set to the query groups, and 
@@ -367,32 +419,44 @@ get_the_up_genes_for_group <- function(the_group, de_table.test, de_table.ref, r
 #'    de_table.test=de_table.demo_query ,
 #'    de_table.ref=de_table.demo_ref )
 #'
-#' @seealso  \code{\link[celaref]{get_the_up_genes_for_group}} Function for testing a single group.
+#' @seealso  \code{\link[celaref]{get_the_up_genes_for_group}} Function for 
+#' testing a single group.
 #'
 #'
 #' @export
-get_the_up_genes_for_all_possible_groups <- function(de_table.test, de_table.ref, rankmetric='TOP100_LOWER_CI_GTE1'){
+get_the_up_genes_for_all_possible_groups <- function(
+   de_table.test, de_table.ref, rankmetric='TOP100_LOWER_CI_GTE1' 
+){
    
    # Sanity check: there should be only one test_dataset present in de_table.test, 
    # that will be propagated.
    test_dataset_name <- unique(de_table.test$dataset) 
-   if (length(test_dataset_name) !=1 ) { stop("Detected more than one 'dataset' within test dataset. Need one at a time.")}
+   if (length(test_dataset_name) !=1 ) { 
+      stop(paste("Detected more than one 'dataset' within test dataset.",
+                 "Need one at a time."))
+   }
    
-   
-   
+
    # Run get_the_up_genes foreach group, 
    # But remove NAs before contsructing table
    #   e.g. no sig for myoepithelail vs rest. :. it will produce a NA result.
    de_table.marked.list <- lapply(FUN=get_the_up_genes_for_group, 
-                                  X = levels(de_table.test$group), rankmetric=rankmetric,
-                                  de_table.test=de_table.test, de_table.ref=de_table.ref)
+                                  X = levels(de_table.test$group), 
+                                  rankmetric=rankmetric,
+                                  de_table.test=de_table.test, 
+                                  de_table.ref=de_table.ref)
    
 
-   if (all(is.na(de_table.marked.list))) { warning("Found no mark-able genes meeting criteria when looking for 'up' genes in each group. Cannot test for similarity. Could be an error, or occur if cell groups are very similar or due to a lack of statistical power.") }
+   if (all(is.na(de_table.marked.list))) { 
+      warning(paste("Found no mark-able genes meeting criteria when looking ",
+                    "for 'up' genes in each group. Cannot test for similarity.",
+                    "Could be an error, or occur if cell groups are very ",
+                    "similar or due to a lack of statistical power.")) }
    
    # remove the NAs.
    de_table.marked.list <- de_table.marked.list[! is.na(de_table.marked.list)]
-   de_table.marked      <- as.data.frame(dplyr::bind_rows(de_table.marked.list), stringsAsFactors=FALSE)
+   de_table.marked      <- as.data.frame(dplyr::bind_rows(de_table.marked.list), 
+                                         stringsAsFactors=FALSE)
    de_table.marked$test_dataset <-  test_dataset_name
    
    
@@ -414,8 +478,8 @@ get_the_up_genes_for_all_possible_groups <- function(de_table.test, de_table.ref
 
 #' contrast_each_group_to_the_rest_for_norm_ma_with_limma
 #'
-#' This function loads and processes microarray data (from purified cell populations) that
-#' can be used as a reference. 
+#' This function loads and processes microarray data (from purified cell 
+#' populations) that can be used as a reference. 
 #' 
 #' Sometimes there are microarray studies measureing purified cell populations 
 #' that would be measured together in a single-cell sequenicng experiment. E.g. 
@@ -445,16 +509,17 @@ get_the_up_genes_for_all_possible_groups <- function(de_table.test, de_table.ref
 #' filtering (removal of low-expression probes/genes)
 #' @param sample_sheet_table Tab-separated text file of sample information.
 #' Columns must have names. Sample/microarray ids should be listed under 
-#' \bold{sample_name} column. The cell-type (or 'group') of each sample should be 
-#' listed under a column \bold{group_name}.
+#' \bold{sample_name} column. The cell-type (or 'group') of each sample should 
+#' be listed under a column \bold{group_name}.
 #' @param dataset_name Short, meaningful name for this dataset/experiment.
 #' @param sample_name Name of \bold{sample_sheet_table} with sample ID
-#' @param group_name Name of \bold{sample_sheet_table} with group/cell-type. Default = "group"
-#' @param groups2test An optional character vector specificing specific groups to check.
-#' By default (set to NA), all groups will be tested.
-#' @param extra_factor_name Optionally, an extra cross-group factor (as column name in 
-#' \bold{sample_sheet_table}) to include in the model used by limma. E.g. An  
-#' be a individual/mouse id. Refer limma docs. Default = NA
+#' @param group_name Name of \bold{sample_sheet_table} with group/cell-type. 
+#' Default = "group"
+#' @param groups2test An optional character vector specificing specific groups 
+#' to check. By default (set to NA), all groups will be tested.
+#' @param extra_factor_name Optionally, an extra cross-group factor (as column 
+#' name in \bold{sample_sheet_table}) to include in the model used by limma. 
+#' E.g. An individual/mouse id. Refer limma docs. Default = NA
 #' @param pval_threshold For reporting only, a p-value threshold. Default = 0.01
 #' 
 #' @return A tibble, the within-experiment de_table (differential expression
@@ -462,7 +527,8 @@ get_the_up_genes_for_all_possible_groups <- function(de_table.test, de_table.ref
 #'
 #' @examples
 #' 
-#' contrast_each_group_to_the_rest_for_norm_ma_with_limma(norm_expression_table=demo_microarray_expr, 
+#' contrast_each_group_to_the_rest_for_norm_ma_with_limma(
+#'     norm_expression_table=demo_microarray_expr, 
 #'     sample_sheet_table=demo_microarray_sample_sheet,
 #'     dataset_name="DemoSimMicroarrayRef", 
 #'     sample_name="cell_sample", group_name="group") 
@@ -475,20 +541,37 @@ get_the_up_genes_for_all_possible_groups <- function(de_table.test, de_table.ref
 #'
 #' 
 #' @family Data loading functions
-#' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest}} is the funciton that makes comparable output on the scRNAseq data (dataset_se objects).
-#' @seealso \href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma} Limma package for differential expression.
+#' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest}} is the 
+#' funciton that makes comparable output on the scRNAseq data (dataset_se 
+#' objects).
+#' @seealso \href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma} 
+#' Limma package for differential expression.
 #'
 #'@export
-contrast_each_group_to_the_rest_for_norm_ma_with_limma <- function(norm_expression_table, sample_sheet_table,
-                                                                   dataset_name, sample_name, group_name="group", 
-                                                                   groups2test=NA, extra_factor_name=NA, pval_threshold=0.01) {
+contrast_each_group_to_the_rest_for_norm_ma_with_limma <- function(
+   norm_expression_table, sample_sheet_table, dataset_name, sample_name, 
+   group_name="group", groups2test=NA, extra_factor_name=NA, 
+   pval_threshold=0.01 
+) {
    
-   if (! requireNamespace("limma", quietly = TRUE)) {  stop("This function require limma installed.")  }
+   if (! requireNamespace("limma", quietly = TRUE)) {  
+      stop("This function require limma installed.")  
+   }
    
    # Which groups to look at? Default all in query dataset.
-   if (! group_name %in% base::colnames(sample_sheet_table)) {stop(paste("Cannot find group specification '",group_name,"' in sample_sheet_table columns"))}
-   if (group_name != 'group') {sample_sheet_table$group <- dplyr::pull(sample_sheet_table[,group_name])}
-   if (! is.factor(sample_sheet_table$group)) {sample_sheet_table$group <- factor(sample_sheet_table$group)}
+   if (! group_name %in% base::colnames(sample_sheet_table)) { 
+      stop( paste("Cannot find group specification '",group_name,
+                  "' in sample_sheet_table columns"))
+   }
+   
+   if (group_name != 'group') {
+      sample_sheet_table$group <- dplyr::pull(sample_sheet_table[,group_name])
+   }
+   
+   if (! is.factor(sample_sheet_table$group)) {
+      sample_sheet_table$group <- factor(sample_sheet_table$group)
+   }
+   
    if (length(groups2test) <= 1 && is.na(groups2test)) {
       groups2test = levels(sample_sheet_table$group)
    } else { # Check its sensible before long processing steps
@@ -500,11 +583,13 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma <- function(norm_expressi
    }
    
    # Next for each group, test it versus everthing else
-   de_table_list <- lapply(groups2test, FUN=contrast_the_group_to_the_rest_with_limma_for_microarray, 
+   de_table_list <- lapply(groups2test, 
+                           FUN=contrast_the_group_to_the_rest_with_limma_for_microarray, 
                            norm_expression_table=norm_expression_table, 
                            sample_sheet_table=sample_sheet_table, 
-                           extra_factor_name=extra_factor_name, # ie. individual id where applicable
-                           sample_name=sample_name, pval_threshold=pval_threshold)
+                           extra_factor_name=extra_factor_name, 
+                           sample_name=sample_name, 
+                           pval_threshold=pval_threshold)
    de_table.allvsrest <- dplyr::bind_rows(de_table_list)
    
    # Factorise group,and add dataset name
@@ -519,38 +604,45 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma <- function(norm_expressi
 
 #' contrast_the_group_to_the_rest_with_limma_for_microarray
 #'
-#' Private function used by contrast_each_group_to_the_rest_for_norm_ma_with_limma
+#' Private function used by 
+#' contrast_each_group_to_the_rest_for_norm_ma_with_limma
 #' 
 #' 
 #' @param norm_expression_table A logged, normalised expression table. Any 
 #' filtering (removal of low-expression probes/genes)
 #' @param sample_sheet_table Tab-separated text file of sample information.
 #' Columns must have names. Sample/microarray ids should be listed under 
-#' \bold{sample_name} column. The cell-type (or 'group') of each sample should be 
-#' listed under a column \bold{group_name}.
+#' \bold{sample_name} column. The cell-type (or 'group') of each sample should 
+#' be listed under a column \bold{group_name}.
 #' @param the_group Which query group is being tested.
 #' @param sample_name Name of \bold{sample_sheet_table} with sample ID
-#' @param extra_factor_name Optionally, an extra cross-group factor (as column name in 
-#' \bold{sample_sheet_table}) to include in the model used by limma. E.g. An  
-#' be a individual/mouse id. Refer limma docs. Default = NA
+#' @param extra_factor_name Optionally, an extra cross-group factor (as column 
+#' name in \bold{sample_sheet_table}) to include in the model used by limma. 
+#' E.g. An  individual/mouse id. Refer limma docs. Default = NA
 #' @param pval_threshold For reporting only, a p-value threshold. Default = 0.01
 #' 
 #' @return A tibble, the within-experiment de_table (differential expression
 #' table), for the group specified.
 #'
-#' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest_for_norm_ma_with_limma}} public calling function
-#' @seealso \href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma} Limma package for differential expression.
+#' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest_for_norm_ma_with_limma}}
+#' public calling function
+#' @seealso \href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma}
+#' Limma package for differential expression.
 #' @importFrom magrittr %>%
-contrast_the_group_to_the_rest_with_limma_for_microarray <- function(norm_expression_table, sample_sheet_table, the_group, 
-                                                                     sample_name, extra_factor_name=NA, pval_threshold=0.01){
+contrast_the_group_to_the_rest_with_limma_for_microarray <- function(
+   norm_expression_table, sample_sheet_table, the_group, 
+   sample_name, extra_factor_name=NA, pval_threshold=0.01 
+){
    
    
-   if (! requireNamespace("limma", quietly = TRUE)) {  stop("This function requires limma installed.")  }
+   if (! requireNamespace("limma", quietly = TRUE)) {  
+      stop("This function requires limma installed.")  
+   }
    
    
    if(! the_group %in% sample_sheet_table$group){
-      warning(paste("Couln't find group", the_group, "in samplesheet, only",base::paste(levels(sample_sheet_table$group), collapse="")))
-      stop(paste("Couln't find group", the_group, "in samplesheet, only",base::paste(levels(sample_sheet_table$group), collapse="")))
+      stop(paste("Couln't find group", the_group, "in samplesheet, only",
+                 base::paste(levels(sample_sheet_table$group), collapse="")))
    }
    
    
@@ -560,7 +652,8 @@ contrast_the_group_to_the_rest_with_limma_for_microarray <- function(norm_expres
    
    # Design is only Test vs Rest
    # 'cause that's how the single cell stuff is. 
-   TvsR <- factor(ifelse(sample_sheet_table$group==the_group, 'test', 'rest'), levels=c('rest','test'))
+   TvsR <- factor(ifelse(sample_sheet_table$group==the_group, 'test', 'rest'), 
+                  levels=c('rest','test'))
    design <- stats::model.matrix(~0+TvsR)
    
    # Optionally, include *one* other (balanced-ish) factor in the model e.g. individual.
@@ -577,13 +670,15 @@ contrast_the_group_to_the_rest_with_limma_for_microarray <- function(norm_expres
    fit2 <- limma::eBayes(fit2)
    
    # Want toptable And some CI information from fit2.
-   de_table <- get_limma_top_table_with_ci(fit2, the_coef="TvsRtest-TvsRrest", ci=0.95)
+   de_table <- get_limma_top_table_with_ci(fit2, 
+                                           the_coef="TvsRtest-TvsRrest", 
+                                           ci=0.95)
    
    # Order by the inner CI of for ranking.
    de_table <- de_table[order(de_table$ci_inner, decreasing = TRUE),]
    
    
-   # Adding some (duplicated) feilds here to match the ids used for the mast results 
+   # Adding some (duplicated) feilds here to match the ids used for sc results 
    de_table$log2FC        <- de_table$logFC
    de_table$fdr           <- stats::p.adjust(de_table$P.Value, 'fdr')
    de_table$group         <- the_group
@@ -611,17 +706,22 @@ contrast_the_group_to_the_rest_with_limma_for_microarray <- function(norm_expres
 #' lower confidence intervals to the logFC. Calculated according to 
 #' \url{https://support.bioconductor.org/p/36108/}
 #'
-#' @param fit2 The fit2 object after calling eBayes as per standard limma workflow. 
-#' Ie object that topTable gets called on.
+#' @param fit2 The fit2 object after calling eBayes as per standard limma 
+#' workflow. Ie object that topTable gets called on.
 #' @param the_coef Coeffient. As passed to topTable.
 #' @param ci Confidence interval. Number between 0 and 1, default 0.95 (95\%)
 #'
-#' @return Output of topTable, but with the (95%) confidence interval reported for the logFC.
+#' @return Output of topTable, but with the (95%) confidence interval reported 
+#' for the logFC.
 #'
-#' @seealso  \code{\link[celaref]{contrast_the_group_to_the_rest_with_limma_for_microarray}} Calling function.
+#' @seealso  \code{\link[celaref]{contrast_the_group_to_the_rest_with_limma_for_microarray}} 
+#' Calling function.
 #' 
-get_limma_top_table_with_ci <- function(fit2, the_coef, ci=0.95){
-   if (! requireNamespace("limma", quietly = TRUE)) {  stop("This function require limma installed.")  }
+get_limma_top_table_with_ci <- function(fit2, the_coef, ci=0.95 ){
+   
+   if (! requireNamespace("limma", quietly = TRUE)) {  
+      stop("This function require limma installed.")  
+   }
    
    de_res <- limma::topTable(fit2, n=Inf, coef=the_coef)
    de_res <- dplyr::bind_cols(ID=as.character(base::rownames(de_res)), de_res)
@@ -630,8 +730,9 @@ get_limma_top_table_with_ci <- function(fit2, the_coef, ci=0.95){
    # (from Sunny Srivastava)
    #log Int_g = b0 + b1 * trt b1 = logFC
    #
-   #he CI of logFC can be found in the same manner as you would do in normal linear regression, 
-   #but here instead of usual t(0.975, df) quantile, you should use 
+   #he CI of logFC can be found in the same manner as you would do in normal 
+   # linear regression, 
+   # but here instead of usual t(0.975, df) quantile, you should use 
    #
    #the moderated t quantile ie 
    #t(0.975, df.residual + df.prior) 
@@ -645,7 +746,9 @@ get_limma_top_table_with_ci <- function(fit2, the_coef, ci=0.95){
    #
    # ~~~~~~~~~~~
    # above is confirmed:
-   # Sunny's CI is exactly right. CIs could be an option in topTable(), but this the first request for them, so the demand doesn't seem enough for now. Best wishes Gordon
+   # Sunny's CI is exactly right. CIs could be an option in topTable(), 
+   # but this the first request for them, so the demand doesn't seem enough 
+   # for now. Best wishes Gordon
    half_ci_outer <- 1-((1-0.95) / 2 )
    ci_amount <- stats::dt(half_ci_outer, fit2$df.residual, fit2$df.prior) * fit2$stdev.unscaled * sqrt(fit2$s2.post)
    de_res$ci <- ci_amount[de_res$ID,]  
@@ -653,8 +756,16 @@ get_limma_top_table_with_ci <- function(fit2, the_coef, ci=0.95){
    # Get upper/lower then inner/outer CI.    
    de_res$CI_upper <- de_res$logFC + de_res$ci
    de_res$CI_lower <- de_res$logFC - de_res$ci
-   de_res$ci_inner <- base::mapply(FUN=get_inner_or_outer_ci, MoreArgs = list(get_inner=TRUE),   de_res$logFC, de_res$CI_upper, de_res$CI_lower)
-   de_res$ci_outer <- base::mapply(FUN=get_inner_or_outer_ci, MoreArgs = list(get_inner=FALSE),  de_res$logFC, de_res$CI_upper, de_res$CI_lower)
+   de_res$ci_inner <- base::mapply(FUN=get_inner_or_outer_ci, 
+                                   MoreArgs = list(get_inner=TRUE),   
+                                   de_res$logFC, 
+                                   de_res$CI_upper, 
+                                   de_res$CI_lower)
+   de_res$ci_outer <- base::mapply(FUN=get_inner_or_outer_ci, 
+                                   MoreArgs = list(get_inner=FALSE),  
+                                   de_res$logFC, 
+                                   de_res$CI_upper, 
+                                   de_res$CI_lower)
    
    return(de_res)
    

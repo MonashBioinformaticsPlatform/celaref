@@ -7,15 +7,16 @@
 get_limma_top_table_with_ci(fit2, the_coef, ci = 0.95)
 }
 \arguments{
-\item{fit2}{The fit2 object after calling eBayes as per standard limma workflow. 
-Ie object that topTable gets called on.}
+\item{fit2}{The fit2 object after calling eBayes as per standard limma 
+workflow. Ie object that topTable gets called on.}
 
 \item{the_coef}{Coeffient. As passed to topTable.}
 
 \item{ci}{Confidence interval. Number between 0 and 1, default 0.95 (95\%)}
 }
 \value{
-Output of topTable, but with the (95%) confidence interval reported for the logFC.
+Output of topTable, but with the (95%) confidence interval reported 
+for the logFC.
 }
 \description{
 Internal function that wraps limma topTable output but also adds upper and 
@@ -23,5 +24,6 @@ lower confidence intervals to the logFC. Calculated according to
 \url{https://support.bioconductor.org/p/36108/}
 }
 \seealso{
-\code{\link[celaref]{contrast_the_group_to_the_rest_with_limma_for_microarray}} Calling function.
+\code{\link[celaref]{contrast_the_group_to_the_rest_with_limma_for_microarray}} 
+Calling function.
 }

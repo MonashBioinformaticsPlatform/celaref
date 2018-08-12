@@ -13,13 +13,17 @@ trim_small_groups_and_low_expression_genes(dataset_se,
 requires 'ID' and 'group' to be set within the cell information
 (see \code{colData()})}
 
-\item{min_lib_size}{Minimum library size. Cells with fewer than this many reads removed. Default = 1000}
+\item{min_lib_size}{Minimum library size. Cells with fewer than this many 
+reads removed. Default = 1000}
 
-\item{min_group_membership}{Throw out groups/clusters with fewer than this many cells. May change with experiment size. Default = 5}
+\item{min_group_membership}{Throw out groups/clusters with fewer than this 
+many cells. May change with experiment size. Default = 5}
 
-\item{min_reads_in_sample}{Require this many reads to consider a gene detected in a sample. Default = 1}
+\item{min_reads_in_sample}{Require this many reads to consider a gene 
+detected in a sample. Default = 1}
 
-\item{min_detected_by_min_samples}{Keep genes detected in this many samples. May change with experiment size. Default = 5}
+\item{min_detected_by_min_samples}{Keep genes detected in this many samples. 
+May change with experiment size. Default = 5}
 }
 \value{
 A filtered dataset_se, ready for use.
@@ -29,8 +33,8 @@ Filter and return a SummarizedExperiment object (dataset_se) by several
 metrics:
 \itemize{
   \item Cells with at least \bold{min_lib_size} total reads.
-  \item Genes expressed in at least \bold{min_detected_by_min_samples} cells, at a threshold of
-  \bold{min_reads_in_sample} per cell.
+  \item Genes expressed in at least \bold{min_detected_by_min_samples} cells, 
+  at a threshold of \bold{min_reads_in_sample} per cell.
   \item Remove entire groups (clusters) of cells where there are fewer than
   \bold{min_group_membership} cells in that group.
 }
@@ -49,8 +53,11 @@ Of course 'reasonable' thresholds for filtering cells/genes are subjective.
 Defaults are moderately sensible starting points.
 }
 \examples{
-demo_query_se.trimmed  <- trim_small_groups_and_low_expression_genes(demo_query_se)
-demo_query_se.trimmed2 <- trim_small_groups_and_low_expression_genes(demo_ref_se, 
-                                                                     min_group_membership = 10)
+
+demo_query_se.trimmed  <- 
+   trim_small_groups_and_low_expression_genes(demo_query_se)
+demo_query_se.trimmed2 <- 
+   trim_small_groups_and_low_expression_genes(demo_ref_se, 
+                                              min_group_membership = 10)
 
 }
