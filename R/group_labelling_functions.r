@@ -563,8 +563,8 @@ get_ranking_and_test_results <- function (
    # All vs all, or some subset.
    pairset <- NA
    if (is.na(num_steps) || num_steps == 0 ) { # All vs all.
-      pairset <- base::expand.grid('groupArank'=1:last_rank, 
-                                   'groupBrank'=1:last_rank) 
+      pairset <- base::expand.grid('groupArank'=seq_len(last_rank), 
+                                   'groupBrank'=seq_len(last_rank)) 
       pairset <- tibble::as.tibble(pairset) %>% 
          dplyr::filter(.data$groupArank!=.data$groupBrank) # no self contrast
    } else { 
@@ -812,7 +812,7 @@ get_matched_stepped_mwtest_res_table <- function(
    # last in match is the last reference group that matches (usually 1)
    if (base::nrow(mwtest_res_table.this.stepped.sig) >  0) {
       last_of_match <- mwtest_res_table.this.stepped.sig$grouprank[1]
-      return(mwtest_res_table.this.stepped[1:last_of_match,])
+      return(mwtest_res_table.this.stepped[seq_len(last_of_match),])
    } else {
       # Or NA for no match.
       return(NA)
