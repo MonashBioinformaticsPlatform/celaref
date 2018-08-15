@@ -250,8 +250,8 @@ contrast_the_group_to_the_rest <- function(
    de_table$sig           <- de_table$fdr <= pvalue_threshold
    de_table$sig_up        <- de_table$sig & de_table$log2FC > 0
    de_table$gene_count    <- nrow(de_table)
-   de_table$rank          <- 1:nrow(de_table)
-   de_table$rescaled_rank <- 1:nrow(de_table) / nrow(de_table)
+   de_table$rank          <- seq_len(nrow(de_table))
+   de_table$rescaled_rank <- seq_len(nrow(de_table)) / nrow(de_table)
    
    
    #       gene         pval   log2FC ci_inner ci_outer          fdr      group  sig sig_up gene_count rank rescaled_rank
@@ -685,8 +685,8 @@ contrast_the_group_to_the_rest_with_limma_for_microarray <- function(
    de_table$sig           <- de_table$fdr <= pval_threshold
    de_table$sig_up        <- de_table$sig & de_table$log2FC > 0
    de_table$gene_count    <- nrow(de_table)
-   de_table$rank          <- 1:nrow(de_table)
-   de_table$rescaled_rank <- 1:nrow(de_table) / nrow(de_table)
+   de_table$rank          <- seq_len(nrow(de_table))
+   de_table$rescaled_rank <- seq_len(nrow(de_table)) / nrow(de_table)
    
    return(de_table)
    
