@@ -8,17 +8,20 @@ get_the_up_genes_for_all_possible_groups(de_table.test, de_table.ref,
   rankmetric = "TOP100_LOWER_CI_GTE1")
 }
 \arguments{
-\item{de_table.test}{A differential expression table of the query experiment,
-as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
+\item{de_table.test}{A differential expression table of the query 
+experiment, as generated from 
+\code{\link[celaref]{contrast_each_group_to_the_rest}}}
 
-\item{de_table.ref}{A differential expression table of the reference dataset,
-as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
+\item{de_table.ref}{A differential expression table of the reference 
+dataset, as generated from 
+\code{\link[celaref]{contrast_each_group_to_the_rest}}}
 
 \item{rankmetric}{Placeholder for support of different ranking methods, 
 but only the default supported. Omit.}
 }
 \value{
-\emph{de_table.marked} This will alsmost be a subset of \bold{de_table.ref}, 
+\emph{de_table.marked} This will alsmost be a subset of 
+\bold{de_table.ref}, 
 with an added column \emph{test_group} set to the query groups, and 
 \emph{test_dataset} set to \bold{test_dataset_name}.
 

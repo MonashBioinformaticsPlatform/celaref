@@ -19,7 +19,8 @@ Pvalue result of a binomial test of each 'top gene' being greater
 than the theoretical random median rank of 0.5 (halfway).
 }
 \description{
-Internal function to run a bionomial test of median test rank > 0.5 (random).
+Internal function to run a bionomial test of 
+median test rank > 0.5 (random).
 }
 \details{
 For use by make_ref_similarity_names_for_group

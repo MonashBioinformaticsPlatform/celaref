@@ -12,7 +12,8 @@
 #'
 #' Note that this function is \emph{slow}, because it runs the differential
 #' expression. It only needs to be run once per dataset though (unless group 
-#' labels change). Having package \pkg{parallel} installed is highly recomended.
+#' labels change). 
+#' Having package \pkg{parallel} installed is highly recomended.
 #'
 #' Both reference and query datasets should be processed with this
 #' function.
@@ -20,9 +21,9 @@
 #' The tables produced by this function (usually named something like
 #' \emph{de_table.datasetname}) contain summarised results of MAST results.
 #' Each group is compared versus cells in the group, versus not in the group,
-#' (Ie. always a 2-group contrast, other groups information is ignored). As per
-#' MAST reccomendataions, the proportion of genes seen in each cell is included
-#' in the model.
+#' (Ie. always a 2-group contrast, other groups information is ignored). 
+#' As per MAST reccomendataions, the proportion of genes seen in each cell is 
+#' included in the model.
 #'
 #' @param dataset_se Summarised experiment object containing count data. Also
 #' requires 'ID' and 'group' to be set within the cell information
@@ -31,17 +32,17 @@
 #' @param groups2test An optional character vector specificing specific groups 
 #' to check. By default (set to NA), all groups will be tested.
 #' @param num_cores Number of cores to use to run MAST jobs in parallel.
-#' Ignored if parallel package not available. Set to 1 to avoid parallelisation.
-#' Default = 2
+#' Ignored if parallel package not available. Set to 1 to avoid
+#' parallelisation. Default = 2
 #'
 #'
 #' @return A tibble the within-experiment de_table (differential expression 
-#' table). This is a core summary of the individual experiment/dataset, which is
-#' used for the cross-dataset comparisons.
+#' table). This is a core summary of the individual experiment/dataset, 
+#' which is used for the cross-dataset comparisons.
 #'
 #' The table feilds won't neccesarily match across datasets, as they include
-#' cell annotations information. Important columns (used in downstream analysis)
-#' are:
+#' cell annotations information. Important columns 
+#' (used in downstream analysis) are:
 #'
 #'\describe{
 #'\item{ID}{Gene identifier}
@@ -53,7 +54,7 @@
 #'      positive fold change?}
 #'\item{rank}{Rank position (within group), ranked by CI inner, highest to 
 #'     lowest. }
-#'\item{rescaled_rank}{Rank scaled 0(top most overrepresented genes in group) - 
+#'\item{rescaled_rank}{Rank scaled 0(top most overrepresented genes in group) -
 #'     1(top most not-present genes)}
 #'\item{dataset}{Name of dataset/experiment}
 #'}
@@ -137,13 +138,14 @@ contrast_each_group_to_the_rest <- function(
 #' between a specified group and cells not in that group.
 #'
 #'
-#' This function should only be called by \code{contrast_each_group_to_the_rest}
-#' (which can be passed a single group name if desired). Else 'pofgenes' will not
-#' be defined.
+#' This function should only be called by 
+#' \code{contrast_each_group_to_the_rest}
+#' (which can be passed a single group name if desired). Else 'pofgenes' will
+#' not be defined.
 #'
 #' MAST is supplied with log2(counts + 1.1), and zlm called with model
-#' '~ TvsR + pofgenes' . The p-values reported are from the hurdle model. FDR is
-#' with default fdr/BH method.
+#' '~ TvsR + pofgenes' . The p-values reported are from the hurdle model. FDR 
+#' is with default fdr/BH method.
 #'
 #'
 #' @param dataset_se Datast summarisedExperiment object.
@@ -188,7 +190,7 @@ contrast_the_group_to_the_rest <- function(
    logged_counts  <- log2( assay(dataset_se) + TO_ADD)
    
    
-   # MAST uses a SE internally (inherits) but needs the parts to make it itself.
+   # MAST uses a SE internally (inherits) but needs the parts to make it itself
    ## Make sca object for MAST
    sca <- MAST::FromMatrix(logged_counts, 
                            cData=col_data_for_MAST, 
@@ -236,11 +238,11 @@ contrast_the_group_to_the_rest <- function(
    # Order by Innermost/conservative CI
    # upper/lower mean numerically, actually want to use inner/outer rel to 0
    de_table$ci_inner  <- mapply(FUN=get_inner_or_outer_ci, 
-                                MoreArgs = list(get_inner=TRUE),  
-                                de_table$log2FC, de_table$ci.hi, de_table$ci.lo)
+                               MoreArgs = list(get_inner=TRUE),  
+                               de_table$log2FC, de_table$ci.hi, de_table$ci.lo)
    de_table$ci_outer  <- mapply(FUN=get_inner_or_outer_ci, 
-                                MoreArgs = list(get_inner=FALSE), 
-                                de_table$log2FC, de_table$ci.hi, de_table$ci.lo)
+                               MoreArgs = list(get_inner=FALSE), 
+                               de_table$log2FC, de_table$ci.hi, de_table$ci.lo)
    de_table <- de_table[,! colnames(de_table) %in% c("ci.hi", "ci.lo")]
    de_table <- de_table[order(de_table$ci_inner, decreasing = TRUE),]
    
@@ -277,8 +279,8 @@ contrast_the_group_to_the_rest <- function(
 #' @param fc Fold-change
 #' @param ci.hi Higher fold-change CI (numerically)
 #' @param ci.lo smaller fold-change CI (numerically)
-#' @param get_inner If TRUE, get the more conservative inner CI, else the bigger
-#' outside one.
+#' @param get_inner If TRUE, get the more conservative inner CI, else the 
+#' bigger outside one.
 #'
 #' @return inner or outer CI from \bold{ci.hi} or \bold{ci.low}
 #'
@@ -317,20 +319,24 @@ get_inner_or_outer_ci<- function(fc, ci.hi, ci.lo, get_inner=TRUE) {
 #' 
 #'
 #' @param the_group The group (from the test/query experiment) to examine. 
-#' @param de_table.test A differential expression table of the query experiment,
-#'  as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
-#' @param de_table.ref A differential expression table of the reference dataset,
-#'  as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' @param de_table.test A differential expression table of the query 
+#' experiment, as generated from 
+#' \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' @param de_table.ref A differential expression table of the reference 
+#' dataset, as generated from 
+#' \code{\link[celaref]{contrast_each_group_to_the_rest}}
 #' @param rankmetric Placeholder for support of different ranking methods, 
 #' but only the default supported. Omit. 
 #' 
-#' @return \emph{de_table.marked} This will be a subset of \bold{de_table.ref}, 
-#' with an added column \emph{test_group} set to \bold{the_group}. 
-#' If nothing passes the rankmetric criteria, NA.
+#' @return \emph{de_table.marked} This will be a subset of 
+#' \bold{de_table.ref}, with an added column \emph{test_group} set to 
+#' \bold{the_group}. If nothing passes the rankmetric criteria, NA.
 #'
 #' @examples
-#' de_table.marked.Group3vsRef <- get_the_up_genes_for_group(the_group="Group3",
-#' de_table.test=de_table.demo_query, de_table.ref=de_table.demo_ref)
+#' de_table.marked.Group3vsRef <- get_the_up_genes_for_group(
+#'                                   the_group="Group3",
+#'                                   de_table.test=de_table.demo_query, 
+#'                                   de_table.ref=de_table.demo_ref)
 #'
 #' @seealso  
 #' \code{\link[celaref]{contrast_each_group_to_the_rest}} For prepraring the 
@@ -399,14 +405,17 @@ get_the_up_genes_for_group <- function(
 #' \code{\link[celaref]{get_the_up_genes_for_group}} that merges output for 
 #' each group in the query into one table.
 #' 
-#' @param de_table.test A differential expression table of the query experiment,
-#'  as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
-#' @param de_table.ref A differential expression table of the reference dataset,
-#'  as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' @param de_table.test A differential expression table of the query 
+#' experiment, as generated from 
+#' \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' @param de_table.ref A differential expression table of the reference 
+#' dataset, as generated from 
+#' \code{\link[celaref]{contrast_each_group_to_the_rest}}
 #' @param rankmetric Placeholder for support of different ranking methods, 
 #' but only the default supported. Omit. 
 #' 
-#' @return \emph{de_table.marked} This will alsmost be a subset of \bold{de_table.ref}, 
+#' @return \emph{de_table.marked} This will alsmost be a subset of 
+#' \bold{de_table.ref}, 
 #' with an added column \emph{test_group} set to the query groups, and 
 #' \emph{test_dataset} set to \bold{test_dataset_name}.
 #' 
@@ -428,8 +437,8 @@ get_the_up_genes_for_all_possible_groups <- function(
    de_table.test, de_table.ref, rankmetric='TOP100_LOWER_CI_GTE1' 
 ){
    
-   # Sanity check: there should be only one test_dataset present in de_table.test, 
-   # that will be propagated.
+   # Sanity check: there should be only one test_dataset present in 
+   # de_table.test, that will be propagated.
    test_dataset_name <- unique(de_table.test$dataset) 
    if (length(test_dataset_name) !=1 ) { 
       stop(paste("Detected more than one 'dataset' within test dataset.",
@@ -449,14 +458,16 @@ get_the_up_genes_for_all_possible_groups <- function(
 
    if (all(is.na(de_table.marked.list))) { 
       warning(paste("Found no mark-able genes meeting criteria when looking ",
-                    "for 'up' genes in each group. Cannot test for similarity.",
+                    "for 'up' genes in each group. ",
+                    "Cannot test for similarity.",
                     "Could be an error, or occur if cell groups are very ",
                     "similar or due to a lack of statistical power.")) }
    
    # remove the NAs.
    de_table.marked.list <- de_table.marked.list[! is.na(de_table.marked.list)]
-   de_table.marked      <- as.data.frame(dplyr::bind_rows(de_table.marked.list), 
-                                         stringsAsFactors=FALSE)
+   de_table.marked      <- as.data.frame(
+                              dplyr::bind_rows(de_table.marked.list), 
+                              stringsAsFactors=FALSE)
    de_table.marked$test_dataset <-  test_dataset_name
    
    
@@ -482,8 +493,9 @@ get_the_up_genes_for_all_possible_groups <- function(
 #' populations) that can be used as a reference. 
 #' 
 #' Sometimes there are microarray studies measureing purified cell populations 
-#' that would be measured together in a single-cell sequenicng experiment. E.g. 
-#' comparing PBMC scRNA to FACs-sorted blood cell populations. This function 
+#' that would be measured together in a single-cell sequenicng experiment. 
+#' E.g. comparing PBMC scRNA to FACs-sorted blood cell populations. 
+#' This function 
 #' will process microarray data with limma and format it for comparisions.
 #' 
 #' The microarray data used should consist of purified cell types 
@@ -498,8 +510,9 @@ get_the_up_genes_for_all_possible_groups <- function(
 #' one step. Ie. equivalent to the output of 
 #' \code{\link[celaref]{contrast_each_group_to_the_rest}}. 
 #' 
-#' Also, note that while downstream functions can accept the microarray-derived 
-#' data as query datasets, its not really intended and assumptions might not
+#' Also, note that while downstream functions can accept 
+#' the microarray-derived data as query datasets, 
+#' its not really intended and assumptions might not
 #' hold (Generally, its known what got loaded onto a microarray!)
 #' 
 #' The (otherwise optional) 'limma' package must be installed to use this 
@@ -520,7 +533,8 @@ get_the_up_genes_for_all_possible_groups <- function(
 #' @param extra_factor_name Optionally, an extra cross-group factor (as column 
 #' name in \bold{sample_sheet_table}) to include in the model used by limma. 
 #' E.g. An individual/mouse id. Refer limma docs. Default = NA
-#' @param pval_threshold For reporting only, a p-value threshold. Default = 0.01
+#' @param pval_threshold For reporting only, a p-value threshold. 
+#' Default = 0.01
 #' 
 #' @return A tibble, the within-experiment de_table (differential expression
 #' table)
@@ -656,7 +670,8 @@ contrast_the_group_to_the_rest_with_limma_for_microarray <- function(
                   levels=c('rest','test'))
    design <- stats::model.matrix(~0+TvsR)
    
-   # Optionally, include *one* other (balanced-ish) factor in the model e.g. individual.
+   # Optionally, include *one* other (balanced-ish) factor in the model 
+   #e.g. individual.
    # (more would just be less generic)
    if(! is.na(extra_factor_name)) {
       extra <- sample_sheet_table %>% dplyr::pull(extra_factor_name)
@@ -664,7 +679,7 @@ contrast_the_group_to_the_rest_with_limma_for_microarray <- function(
    }
    
    # Set contrast and run
-   contrast.matrix <- limma::makeContrasts( "TvsRtest-TvsRrest", levels=design) 
+   contrast.matrix <- limma::makeContrasts( "TvsRtest-TvsRrest", levels=design)
    fit <- limma::lmFit(norm_expression_table, design)
    fit2 <- limma::contrasts.fit(fit, contrast.matrix)
    fit2 <- limma::eBayes(fit2)

@@ -13,8 +13,8 @@ get_inner_or_outer_ci(fc, ci.hi, ci.lo, get_inner = TRUE)
 
 \item{ci.lo}{smaller fold-change CI (numerically)}
 
-\item{get_inner}{If TRUE, get the more conservative inner CI, else the bigger
-outside one.}
+\item{get_inner}{If TRUE, get the more conservative inner CI, else the 
+bigger outside one.}
 }
 \value{
 inner or outer CI from \bold{ci.hi} or \bold{ci.low}

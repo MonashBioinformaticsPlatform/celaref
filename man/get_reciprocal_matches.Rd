@@ -20,7 +20,8 @@ ref vs query.}
 List of table of reciprocal matches tested from reference to query.
 }
 \description{
-Internal function to run a bionomial test of median test rank > 0.5 (random).
+Internal function to run a bionomial test of 
+median test rank > 0.5 (random).
 }
 \details{
 For use by make_ref_similarity_names_using_marked

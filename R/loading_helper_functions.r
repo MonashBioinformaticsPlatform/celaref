@@ -16,8 +16,9 @@
 #' and cell info, this is handy for loading subsets of cells.
 #' However, if \bold{gene_info_file} is defined, all genes must match exactly.
 #'
-#' The \code{load_se_from_files} form of this function will run the same checks,
-#' but will read everything from files in one go. The \code{load_se_from_tables}
+#' The \code{load_se_from_files} form of this function will run the same 
+#' checks, but will read everything from files in one go. The 
+#' \code{load_se_from_tables}
 #' form is perhaps more useful when the annotations need to be modified (e.g. 
 #' programmatically adding a different gene identifier, renaming groups, 
 #' removing unwanted samples). 
@@ -32,10 +33,11 @@
 #' @param counts_matrix A tab-separated matrix of read counts for each gene
 #' (row) and each cell (column). Columns and rows should be named.
 #' 
-#' @param cell_info_table Table of cell information. If there is a column labelled
-#' \emph{cell_sample}, that will be used as the unique cell identifiers. If not,
-#' the first column is assumed to be cell identifiers, and will be copied to a
-#' new feild labelled \emph{cell_sample}.
+#' @param cell_info_table Table of cell information. 
+#' If there is a column labelled
+#' \emph{cell_sample}, that will be used as the unique cell identifiers. 
+#' If not, the first column is assumed to be cell identifiers, and will be 
+#' copied to a new feild labelled \emph{cell_sample}.
 #' Similarly - the clusters of these cells should be listed in one column -
 #' which can be called 'group' (case-sensitive) or specified with
 #' \bold{group_col_name}. \emph{Minimal data format: <cell_sample> <group>}
@@ -43,16 +45,20 @@
 #' @param gene_info_table Optional table of gene information. If there is a
 #' column labelled
 #' \emph{ID}, that will be used as the gene identifiers (they must be unique!).
-#' If not, the first column is assumed to be a gene identifier, and will be copied to a
-#' new feild labelled \emph{ID}. Must match all rownames in \bold{counts_matrix}.
-#' If omitted, ID wll be generated from the rownames of counts_matrix. Default=NA
+#' If not, the first column is assumed to be a gene identifier, and will be 
+#' copied to a
+#' new feild labelled \emph{ID}. Must match all rownames in 
+#' \bold{counts_matrix}.
+#' If omitted, ID wll be generated from the rownames of counts_matrix. 
+#' Default=NA
 #' 
-#' @param group_col_name Name of the column in \bold{cell_info_table} containing
+#' @param group_col_name Name of the column in \bold{cell_info_table} 
+#' containing
 #' the cluster/group that each cell belongs to. Case-sensitive. Default='group'
 #' 
 #' @param cell_col_name Name of the column in \bold{cell_info_table} containing
-#' a cell id. Ignored if \emph{cell_sample} column is already present. If omitted, 
-#' (and no \emph{cell_sample} column) will use first column.
+#' a cell id. Ignored if \emph{cell_sample} column is already present. 
+#' If omitted, (and no \emph{cell_sample} column) will use first column.
 #' Case-sensitive. Default=NA
 #'
 #' @return A SummarisedExperiment object containing the count data, cell info
@@ -84,11 +90,12 @@
 #' 
 #' @export   
 load_se_from_tables <- function(
-   counts_matrix, cell_info_table, gene_info_table = NA, group_col_name="group",
-   cell_col_name=NA 
+   counts_matrix, cell_info_table, gene_info_table = NA, 
+   group_col_name="group", cell_col_name=NA 
 ) {
    
-   # If there's no cell_sample, and no cell_col_name, make the first 'cell_sample', else use cell_col_name.
+   # If there's no cell_sample, and no cell_col_name, make the first 
+   # one 'cell_sample', else use cell_col_name.
    if (! "cell_sample" %in% colnames(cell_info_table)) {
       if (is.na(cell_col_name)) {
          cell_info_table <- cbind.data.frame(cell_sample=cell_info_table[,1], 
@@ -97,9 +104,10 @@ load_se_from_tables <- function(
       }
       else {
          stopifnot(cell_col_name %in% colnames(cell_info_table))
-         cell_info_table <- cbind.data.frame(cell_sample=cell_info_table[,cell_col_name], 
-                                             cell_info_table, 
-                                             stringsAsFactors = FALSE )
+         cell_info_table <- cbind.data.frame(
+            cell_sample=cell_info_table[,cell_col_name], 
+            cell_info_table, 
+            stringsAsFactors = FALSE )
       }
    }
    
@@ -123,11 +131,11 @@ load_se_from_tables <- function(
    if (   length(cells) != nrow(cell_info_table) 
        || length(cells) != ncol(counts_matrix)   ) {
       message(paste0(
-         "Not all cells were listed in both counts matrix and cell_info_file. ",
-         "Is this expected? Keeping the ", length(cells), " in common"))
+         "Not all cells were listed in both counts matrix and cell_info_file.",
+         " Is this expected? Keeping the ", length(cells), " in common"))
    }
-   cell_info_table <-cell_info_table[match(cells, cell_info_table$cell_sample),]
-   counts_matrix   <-counts_matrix[,cells]
+   cell_info_table<-cell_info_table[match(cells, cell_info_table$cell_sample),]
+   counts_matrix  <-counts_matrix[,cells]
    
    
    # NB factorising group after removal of unmatched cells
@@ -260,8 +268,8 @@ load_se_from_files <- function(
 #' @param dataset_genome The genome that the reads were aligned against, 
 #' e.g. GRCh38.  Check for this as a directory name under the 
 #' \emph{filtered_gene_bc_matrices} subdirectory if unsure.
-#' @param clustering_set The 10X cellRanger pipeline produces several different 
-#' cluster definitions per dataset. Specify which one to use e.g. 
+#' @param clustering_set The 10X cellRanger pipeline produces several 
+#' different  cluster definitions per dataset. Specify which one to use e.g. 
 #' kmeans_10_clusters Find them as directory names under 
 #' \emph{analysis/clustering/}
 #' @param gene_id_cols_10X Vector of the names of the columns in the gene 
@@ -284,7 +292,8 @@ load_se_from_files <- function(
 #'     clustering_set="kmeans_4_clusters", gene_id_cols_10X=c("gene")) 
 #' 
 #' \dontrun{
-#' dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="GRCh38", 
+#' dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', 
+#'     dataset_genome="GRCh38", 
 #'     clustering_set="kmeans_7_clusters") 
 #' } 
 #'
@@ -372,8 +381,8 @@ load_dataset_10Xdata <- function(
 #' \code{colData(dataset_se)})) of the \bold{dataset_se}, which will become
 #' the new ID column. Non-uniqueness of this column is handled gracefully! 
 #' Any \emph{NAs} will be dropped.
-#' @param eval_col Which column to use to break ties of duplicate \bold{new_id}.
-#' Must be a column within the feature information (view 
+#' @param eval_col Which column to use to break ties of duplicate 
+#' \bold{new_id}. Must be a column within the feature information (view 
 #' \code{colData(dataset_se)})) of the \bold{dataset_se}. Total reads per gene
 #' feature is a good choice.
 #' @param find_max If false, this will choose the minimal \bold{eval_col} 
@@ -391,7 +400,8 @@ load_dataset_10Xdata <- function(
 #' dataset_se <- demo_ref_se
 #' rowData(dataset_se)$dummyname <- toupper(rowData(dataset_se)$ID)
 #'
-#' # If not already present, define a column to evaluate, typically total reads/gene.
+#' # If not already present, define a column to evaluate, 
+#' # typically total reads/gene.
 #' rowData(dataset_se)$total_count <- rowSums(assay(dataset_se))
 #' 
 #' dataset_se <- convert_se_gene_ids(dataset_se, new_id='dummyname', eval_col='total_count') 
@@ -408,7 +418,7 @@ load_dataset_10Xdata <- function(
 convert_se_gene_ids <- function(dataset_se, new_id, eval_col, find_max=TRUE) {
    
    old_id = "ID" 
-   if (! all(c(old_id, new_id, eval_col) %in% colnames(rowData(dataset_se))) ) {
+   if (! all(c(old_id, new_id, eval_col) %in% colnames(rowData(dataset_se)))) {
       stop(paste("Can't find all of", c(old_id, new_id, eval_col), 
                  "in rowData(dataset_se) colnames"))
    } 
@@ -451,14 +461,15 @@ convert_se_gene_ids <- function(dataset_se, new_id, eval_col, find_max=TRUE) {
 #' metrics:
 #' \itemize{
 #'   \item Cells with at least \bold{min_lib_size} total reads.
-#'   \item Genes expressed in at least \bold{min_detected_by_min_samples} cells, 
-#'   at a threshold of \bold{min_reads_in_sample} per cell.
+#'   \item Genes expressed in at least \bold{min_detected_by_min_samples} 
+#'   cells, at a threshold of \bold{min_reads_in_sample} per cell.
 #'   \item Remove entire groups (clusters) of cells where there are fewer than
 #'   \bold{min_group_membership} cells in that group.
 #' }
 #'
-#' If it hasn't been done already, it is highly reccomended to use this function
-#' to filter out genes with no/low total counts (especially in single cell data,
+#' If it hasn't been done already, it is highly reccomended to use this 
+#' function to filter out genes with no/low total counts 
+#' (especially in single cell data,
 #' there can be many) - without expression they are not useful and may reduce
 #' statistical power.
 #'
@@ -477,8 +488,8 @@ convert_se_gene_ids <- function(dataset_se, new_id, eval_col, find_max=TRUE) {
 #' reads removed. Default = 1000
 #' @param min_reads_in_sample Require this many reads to consider a gene 
 #' detected in a sample. Default = 1
-#' @param min_detected_by_min_samples Keep genes detected in this many samples. 
-#' May change with experiment size. Default = 5
+#' @param min_detected_by_min_samples Keep genes detected in this many 
+#' samples.  May change with experiment size. Default = 5
 #' @param min_group_membership Throw out groups/clusters with fewer than this 
 #' many cells. May change with experiment size. Default = 5
 #'

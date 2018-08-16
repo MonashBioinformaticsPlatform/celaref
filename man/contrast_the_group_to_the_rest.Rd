@@ -23,13 +23,14 @@ Internal function to calculate differential expression within an experiment
 between a specified group and cells not in that group.
 }
 \details{
-This function should only be called by \code{contrast_each_group_to_the_rest}
-(which can be passed a single group name if desired). Else 'pofgenes' will not
-be defined.
+This function should only be called by 
+\code{contrast_each_group_to_the_rest}
+(which can be passed a single group name if desired). Else 'pofgenes' will
+not be defined.
 
 MAST is supplied with log2(counts + 1.1), and zlm called with model
-'~ TvsR + pofgenes' . The p-values reported are from the hurdle model. FDR is
-with default fdr/BH method.
+'~ TvsR + pofgenes' . The p-values reported are from the hurdle model. FDR 
+is with default fdr/BH method.
 }
 \seealso{
 \code{\link[celaref]{contrast_each_group_to_the_rest}}

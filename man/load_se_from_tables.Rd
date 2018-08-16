@@ -15,10 +15,11 @@ load_se_from_files(counts_file, cell_info_file, gene_info_file = NA,
 \item{counts_matrix}{A tab-separated matrix of read counts for each gene
 (row) and each cell (column). Columns and rows should be named.}
 
-\item{cell_info_table}{Table of cell information. If there is a column labelled
-\emph{cell_sample}, that will be used as the unique cell identifiers. If not,
-the first column is assumed to be cell identifiers, and will be copied to a
-new feild labelled \emph{cell_sample}.
+\item{cell_info_table}{Table of cell information. 
+If there is a column labelled
+\emph{cell_sample}, that will be used as the unique cell identifiers. 
+If not, the first column is assumed to be cell identifiers, and will be 
+copied to a new feild labelled \emph{cell_sample}.
 Similarly - the clusters of these cells should be listed in one column -
 which can be called 'group' (case-sensitive) or specified with
 \bold{group_col_name}. \emph{Minimal data format: <cell_sample> <group>}}
@@ -26,16 +27,20 @@ which can be called 'group' (case-sensitive) or specified with
 \item{gene_info_table}{Optional table of gene information. If there is a
 column labelled
 \emph{ID}, that will be used as the gene identifiers (they must be unique!).
-If not, the first column is assumed to be a gene identifier, and will be copied to a
-new feild labelled \emph{ID}. Must match all rownames in \bold{counts_matrix}.
-If omitted, ID wll be generated from the rownames of counts_matrix. Default=NA}
+If not, the first column is assumed to be a gene identifier, and will be 
+copied to a
+new feild labelled \emph{ID}. Must match all rownames in 
+\bold{counts_matrix}.
+If omitted, ID wll be generated from the rownames of counts_matrix. 
+Default=NA}
 
-\item{group_col_name}{Name of the column in \bold{cell_info_table} containing
+\item{group_col_name}{Name of the column in \bold{cell_info_table} 
+containing
 the cluster/group that each cell belongs to. Case-sensitive. Default='group'}
 
 \item{cell_col_name}{Name of the column in \bold{cell_info_table} containing
-a cell id. Ignored if \emph{cell_sample} column is already present. If omitted, 
-(and no \emph{cell_sample} column) will use first column.
+a cell id. Ignored if \emph{cell_sample} column is already present. 
+If omitted, (and no \emph{cell_sample} column) will use first column.
 Case-sensitive. Default=NA}
 
 \item{counts_file}{A tab-separated file of a matrix of read counts. As per 
@@ -72,8 +77,9 @@ Note that data will be subsetted to cells present in both the counts matrix
 and cell info, this is handy for loading subsets of cells.
 However, if \bold{gene_info_file} is defined, all genes must match exactly.
 
-The \code{load_se_from_files} form of this function will run the same checks,
-but will read everything from files in one go. The \code{load_se_from_tables}
+The \code{load_se_from_files} form of this function will run the same 
+checks, but will read everything from files in one go. The 
+\code{load_se_from_tables}
 form is perhaps more useful when the annotations need to be modified (e.g. 
 programmatically adding a different gene identifier, renaming groups, 
 removing unwanted samples).

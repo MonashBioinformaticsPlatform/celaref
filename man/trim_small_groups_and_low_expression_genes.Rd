@@ -22,8 +22,8 @@ many cells. May change with experiment size. Default = 5}
 \item{min_reads_in_sample}{Require this many reads to consider a gene 
 detected in a sample. Default = 1}
 
-\item{min_detected_by_min_samples}{Keep genes detected in this many samples. 
-May change with experiment size. Default = 5}
+\item{min_detected_by_min_samples}{Keep genes detected in this many 
+samples.  May change with experiment size. Default = 5}
 }
 \value{
 A filtered dataset_se, ready for use.
@@ -33,15 +33,16 @@ Filter and return a SummarizedExperiment object (dataset_se) by several
 metrics:
 \itemize{
   \item Cells with at least \bold{min_lib_size} total reads.
-  \item Genes expressed in at least \bold{min_detected_by_min_samples} cells, 
-  at a threshold of \bold{min_reads_in_sample} per cell.
+  \item Genes expressed in at least \bold{min_detected_by_min_samples} 
+  cells, at a threshold of \bold{min_reads_in_sample} per cell.
   \item Remove entire groups (clusters) of cells where there are fewer than
   \bold{min_group_membership} cells in that group.
 }
 }
 \details{
-If it hasn't been done already, it is highly reccomended to use this function
-to filter out genes with no/low total counts (especially in single cell data,
+If it hasn't been done already, it is highly reccomended to use this 
+function to filter out genes with no/low total counts 
+(especially in single cell data,
 there can be many) - without expression they are not useful and may reduce
 statistical power.
 

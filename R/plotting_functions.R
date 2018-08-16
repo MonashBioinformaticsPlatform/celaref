@@ -18,22 +18,25 @@
 #' median threshold marker is a quick indication of potential similarity. 
 #' A complete lack of similarity would have a median rank around 0.5. Median 
 #' rankings much less than 0.5 are common though (an 'anti-cell-groupA' 
-#' signature), because genes overrepresented in one group in an experiment, are 
-#' likely to be relatively 'underrepresented' in the other groups. Taken to an  
+#' signature), because genes overrepresented in one group in an experiment, 
+#' are likely to be relatively 'underrepresented' in the other groups. 
+#' Taken to an  
 #' extreme, if there are only two reference groups, they'll be complete 
 #' opposites.
 #' 
 #' Input can be either the precomputed \emph{de_table.marked} object for the 
-#' comparison, OR both \emph{de_table.test} and \emph{de_table.ref} differential
-#' expression results to compare from 
+#' comparison, OR both \emph{de_table.test} and \emph{de_table.ref} 
+#' differential expression results to compare from 
 #' \code{\link[celaref]{contrast_each_group_to_the_rest}} 
 #' 
 #' @param de_table.marked The output of 
 #'    \code{\link{get_the_up_genes_for_all_possible_groups}} 
 #'    for the contrast of interest.
-#' @param de_table.test A differential expression table of the query experiment,
+#' @param de_table.test A differential expression table of the 
+#'    query experiment,
 #'    as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
-#' @param de_table.ref A differential expression table of the reference dataset,
+#' @param de_table.ref A differential expression table of the 
+#'    reference dataset,
 #'    as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
 #' @param log10trans  Plot on a log scale? Useful for distinishing multiple 
 #'    similar, yet distinct cell type that bunch at top of plot. Default=FALSE.
@@ -73,7 +76,7 @@ make_ranking_violin_plot <- function(
    if ( !defined_de_table.marked 
         & defined_de_table.test 
         & defined_de_table.ref ) {
-      de_table.marked <- get_the_up_genes_for_all_possible_groups(de_table.test, 
+      de_table.marked <- get_the_up_genes_for_all_possible_groups(de_table.test,
                                                                   de_table.ref)
       
    } else if (!( defined_de_table.marked 
