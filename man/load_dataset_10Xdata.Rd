@@ -18,8 +18,8 @@ subdirecotires \emph{analysis}, \emph{filtered_gene_bc_matrices} and
 e.g. GRCh38.  Check for this as a directory name under the 
 \emph{filtered_gene_bc_matrices} subdirectory if unsure.}
 
-\item{clustering_set}{The 10X cellRanger pipeline produces several different 
-cluster definitions per dataset. Specify which one to use e.g. 
+\item{clustering_set}{The 10X cellRanger pipeline produces several 
+different  cluster definitions per dataset. Specify which one to use e.g. 
 kmeans_10_clusters Find them as directory names under 
 \emph{analysis/clustering/}}
 
@@ -65,7 +65,8 @@ dataset_se <- load_dataset_10Xdata(example_10X_dir, dataset_genome="GRCh38",
     clustering_set="kmeans_4_clusters", gene_id_cols_10X=c("gene")) 
 
 \dontrun{
-dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', dataset_genome="GRCh38", 
+dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k', 
+    dataset_genome="GRCh38", 
     clustering_set="kmeans_7_clusters") 
 } 
 

@@ -12,10 +12,12 @@ make_ranking_violin_plot(de_table.marked = NA, de_table.test = NA,
 \code{\link{get_the_up_genes_for_all_possible_groups}} 
 for the contrast of interest.}
 
-\item{de_table.test}{A differential expression table of the query experiment,
+\item{de_table.test}{A differential expression table of the 
+query experiment,
 as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
 
-\item{de_table.ref}{A differential expression table of the reference dataset,
+\item{de_table.ref}{A differential expression table of the 
+reference dataset,
 as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
 
 \item{log10trans}{Plot on a log scale? Useful for distinishing multiple 
@@ -43,14 +45,15 @@ query group / reference group combination. Having this fall above the dotted
 median threshold marker is a quick indication of potential similarity. 
 A complete lack of similarity would have a median rank around 0.5. Median 
 rankings much less than 0.5 are common though (an 'anti-cell-groupA' 
-signature), because genes overrepresented in one group in an experiment, are 
-likely to be relatively 'underrepresented' in the other groups. Taken to an  
+signature), because genes overrepresented in one group in an experiment, 
+are likely to be relatively 'underrepresented' in the other groups. 
+Taken to an  
 extreme, if there are only two reference groups, they'll be complete 
 opposites.
 
 Input can be either the precomputed \emph{de_table.marked} object for the 
-comparison, OR both \emph{de_table.test} and \emph{de_table.ref} differential
-expression results to compare from 
+comparison, OR both \emph{de_table.test} and \emph{de_table.ref} 
+differential expression results to compare from 
 \code{\link[celaref]{contrast_each_group_to_the_rest}}
 }
 \examples{

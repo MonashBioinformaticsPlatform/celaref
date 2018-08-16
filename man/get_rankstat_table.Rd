@@ -14,7 +14,8 @@ of interest.}
 \item{the_test_group}{Name of query group to test}
 }
 \value{
-A tibble of query group name (test_group), number of 'top' genes (n), 
+A tibble of query group name (test_group), 
+number of 'top' genes (n), 
 reference dataset group (group) with its ranking (grouprank) and the median 
 (rescaled 0..1) ranking of 'top' genes (median_rank).
 }

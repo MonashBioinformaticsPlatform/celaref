@@ -16,8 +16,8 @@ requires 'ID' and 'group' to be set within the cell information
 the new ID column. Non-uniqueness of this column is handled gracefully! 
 Any \emph{NAs} will be dropped.}
 
-\item{eval_col}{Which column to use to break ties of duplicate \bold{new_id}.
-Must be a column within the feature information (view 
+\item{eval_col}{Which column to use to break ties of duplicate 
+\bold{new_id}. Must be a column within the feature information (view 
 \code{colData(dataset_se)})) of the \bold{dataset_se}. Total reads per gene
 feature is a good choice.}
 
@@ -41,7 +41,8 @@ already present in the gene info (as seen with \code{rowData()})
 dataset_se <- demo_ref_se
 rowData(dataset_se)$dummyname <- toupper(rowData(dataset_se)$ID)
 
-# If not already present, define a column to evaluate, typically total reads/gene.
+# If not already present, define a column to evaluate, 
+# typically total reads/gene.
 rowData(dataset_se)$total_count <- rowSums(assay(dataset_se))
 
 dataset_se <- convert_se_gene_ids(dataset_se, new_id='dummyname', eval_col='total_count') 

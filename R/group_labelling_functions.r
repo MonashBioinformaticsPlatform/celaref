@@ -11,7 +11,8 @@
 #' have similar similarity, or c) 'No similarity', if there is none.
 #' 
 #' 
-#' Each group is named according to the following rules. Testing for significant 
+#' Each group is named according to the following rules. 
+#' Testing for significant 
 #' (smaller) differences with a one-directional Mann-Whitney U test on their 
 #' rescaled ranks:
 #' \enumerate{
@@ -28,15 +29,17 @@
 #' There are some further heuristic caveats:
 #' \enumerate{
 #'   \item The distribution of top genes in the last (or only) match group is 
-#'   tested versus a theroetical random distribution around 0.5 (as reported in 
-#'   \emph{pval_vs_random} column). If the distribution is not significantly 
-#'   above random  (It is possible in edge cases where there is a skewed dataset
+#'   tested versus a theroetical random distribution around 0.5 (as reported 
+#'   in \emph{pval_vs_random} column). If the distribution is not 
+#'   significantly above random  
+#'   (It is possible in edge cases where there is a skewed dataset
 #'   and no/few matches),
 #'   \emph{no similarity} is reported. The significnat \emph{pval} column is 
 #'   left intact.
 #'   \item The comparison is repeated reciprocally - reference groups vs the 
 #'   query groups. This helps sensitivity of heterogenous query groups - 
-#'   and investigating the reciprocal matches can be informative in these cases.
+#'   and investigating the reciprocal matches can be informative in these 
+#'   cases.
 #'   If a query group doens't 'match' a reference group, but the reference 
 #'   group does match that query group - it is reported in the group label in 
 #'   brackets.
@@ -70,13 +73,16 @@
 #' of use if the \bold{de_table.marked} object has already been created, 
 #' or if reciprocal tests are not wanted. 
 #' 
-#' @param de_table.test A differential expression table of the query experiment,
-#' as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
-#' @param de_table.ref A differential expression table of the reference dataset,
-#' as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' @param de_table.test A differential expression table of the query 
+#' experiment, as generated from 
+#' \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' @param de_table.ref A differential expression table of the reference 
+#' dataset, as generated from 
+#' \code{\link[celaref]{contrast_each_group_to_the_rest}}
 #' @param pval Differences between the rescaled ranking distribution of 'top'
-#' genes on different reference groups are tested with a Mann-Whitney U test. If 
-#' they are \emph{significantly different}, only the top group(s) are reported. 
+#' genes on different reference groups are tested with a Mann-Whitney U test. 
+#' If they are \emph{significantly different}, 
+#' only the top group(s) are reported. 
 #' It isn't a simple cutoff threshold as it can change the number of similar 
 #' groups reported.  ie. A more stringent \bold{pval} is more likely to decide 
 #' that groups are similar -
@@ -91,8 +97,8 @@
 #' Too high (or NA) with a large number of reference groups could be slow. 
 #' Default = 5.
 #' 
-#' @return A table of automagically-generated labels for each query group, given 
-#' their similarity to reference groups. 
+#' @return A table of automagically-generated labels for each query group, 
+#' given their similarity to reference groups. 
 #' 
 #' The columns in this table:
 #' \itemize{
@@ -102,23 +108,25 @@
 #'   \item \bold{pval} : If there is a similarity flagged, this is the P-value 
 #'   from a Mann-Whitney U test from the last 'matched' group to the adjacent  
 #'   'non-matched' group. Ie. If only one label in shortlab, this will be the 
-#'   first of the stepped_pvals, if there are 2, it will be the second. If there
-#'   is 'no_similarity' this will be NA (Because there is no confidence in what 
+#'   first of the stepped_pvals, if there are 2, it will be the second. 
+#'   If there is 'no_similarity' this will be NA 
+#'   (Because there is no confidence in what 
 #'   is the most appropriate of the all non-significant stepped pvalues.).
 #'   \item \bold{stepped_pvals} : P-values from Mann-Whitney U tests across 
 #'   adjacent pairs of reference groups ordered from most to least similar 
 #'   (ascending median rank).
-#'   ie. 1st-2nd most similar first, 2nd-3rd, 3rd-4th e.t.c. The last value will 
-#'   always be NA (no more reference group).
-#'   e.g. refA:8.44e-10,refB:2.37e-06,refC:0.000818,refD:0.435,refE:0.245,refF:NA
+#'   ie. 1st-2nd most similar first, 2nd-3rd, 3rd-4th e.t.c. The last value 
+#'   will always be NA (no more reference group).
+#'   e.g. 
+#'   refA:8.44e-10,refB:2.37e-06,refC:0.000818,refD:0.435,refE:0.245,refF:NA
 #'   \item \bold{pval_to_random} : P-value of test of median rank (of last 
 #'   matched reference group) < random, from binomial test on top gene 
 #'   ranks (being < 0.5). 
 #'   \item \bold{matches} : List of all reference groups that 'match', 
-#'   as described, except it also includes (rare) examples where pval_to_random 
-#'   is not significant. "|" delimited.
-#'   \item \bold{reciprocal_matches} : List of all reference groups that flagged 
-#'   test group as a match when directon of comparison is reversed.
+#'   as described, except it also includes (rare) examples where 
+#'   pval_to_random is not significant. "|" delimited.
+#'   \item \bold{reciprocal_matches} : List of all reference groups that  
+#'   flagged test group as a match when directon of comparison is reversed.
 #'   (significant pval and pval_to_random). "|" delimited.
 #'   \item \bold{similar_non_match}: This column lists any reference groups 
 #'   outside of shortlab that are not signifcantly different to a reported 
@@ -127,9 +135,9 @@
 #'   \item \bold{similar_non_match_detail} : P-values for any details about 
 #'   similar_non_match results. These p-values will always be non-significant.
 #'   E.g. "A > C (p=0.0214,n.s)". "|" delimited. Usually NA.
-#'   \item \bold{differences_within} :  This feild lists any pairs of reference 
-#'   groups in shortlab that are significantly different. "|" delimited. 
-#'   Usually NA.
+#'   \item \bold{differences_within} :  This feild lists any pairs of 
+#'   reference groups in shortlab that are significantly different. 
+#'   "|" delimited. Usually NA.
 #' }
 #' 
 #' 
@@ -193,10 +201,12 @@ make_ref_similarity_names <- function(
 #' \code{\link{get_the_up_genes_for_all_possible_groups}} with the test and 
 #' reference datasets swapped. 
 #' If omitted a reciprocal test will not be done. Default = NA.
-#' @param the_test_dataset Optional. A short meaningful name for the experiment. 
+#' @param the_test_dataset Optional. A short meaningful name for the 
+#' experiment. 
 #' (Should match \emph{test_dataset} column in \bold{de_table.marked}). 
 #' Only needed in a table of more than one dataset. Default = NA.
-#' @param the_ref_dataset Optional. A short meaningful name for the experiment. 
+#' @param the_ref_dataset Optional. A short meaningful name for the 
+#' experiment. 
 #' (Should match \emph{dataset} column in \bold{de_table.marked}). 
 #' Only needed in a table of more than one dataset. Default = NA.
 #' 
@@ -221,8 +231,8 @@ make_ref_similarity_names <- function(
 #' @seealso \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} 
 #' To prepare the \bold{de_table.ref.marked} input.
 #' 
-#' @describeIn make_ref_similarity_names Construct some sensible cluster labels,
-#' but using a premade marked table.  
+#' @describeIn make_ref_similarity_names Construct some sensible cluster 
+#' labels, but using a premade marked table.  
 #'
 #' @export
 make_ref_similarity_names_using_marked <- function(
@@ -232,13 +242,14 @@ make_ref_similarity_names_using_marked <- function(
 ){
    
    # Sanity checks with nicer errors
-   # datatset designations may be omoitted, IF only one dataset in the table (normal)
+   # datatset designations may be omoitted, 
+   # IF only one dataset in the table (normal)
    ref_datasets_present  <- unique(de_table.ref.marked$dataset)
    test_datasets_present <- unique(de_table.ref.marked$test_dataset)   
    if (is.na(the_ref_dataset)) {
       if (base::length(ref_datasets_present) != 1 ) {
-         stop( paste("More than one reference datatset in de_table.ref.marked,",
-                     "specify with the_ref_dataset"))
+         stop(paste("More than one reference datatset in de_table.ref.marked,",
+                    "specify with the_ref_dataset"))
       }
       the_ref_dataset=ref_datasets_present[1]
    } 
@@ -449,7 +460,7 @@ make_ref_similarity_names_for_group <- function(
    shortlab_col=paste0(the_test_group,":")
    if (length(matches) > 0 ) {
       if (not_random_pval_col <= the_pval) {
-         # Shortlab col won't' include matches unless the last is above random. 
+         # Shortlab col won't' include matches unless the last is above random 
          # (even if sig to next)
          shortlab_col = paste0(shortlab_col,paste(matches, collapse="|"))
       } else {
@@ -458,7 +469,8 @@ make_ref_similarity_names_for_group <- function(
       }
    }
    
-   extra_recip_matches = base::setdiff(reciprocal_match_list, reportable_matches)
+   extra_recip_matches = base::setdiff(reciprocal_match_list, 
+                                       reportable_matches)
    if (length(extra_recip_matches) > 0 ) {
       shortlab_col = paste0(shortlab_col,"(", 
                             paste(extra_recip_matches, collapse="|"), ")")
@@ -599,7 +611,9 @@ get_ranking_and_test_results <- function (
    # calculate diferences
    mwtest_res_table <- pairset %>% dplyr::rowwise() %>% 
       dplyr::do (run_pair_test_stats(de_table.ref.marked=de_table.ref.marked, 
-                                     the_test_group, .data$groupA, .data$groupB,
+                                     the_test_group, 
+                                     .data$groupA, 
+                                     .data$groupB,
                                      enforceAgtB=FALSE))
    
    # Collect information
@@ -642,7 +656,8 @@ get_ranking_and_test_results <- function (
 #' of interest.
 #' @param the_test_group Name of query group to test
 #'
-#' @return A tibble of query group name (test_group), number of 'top' genes (n), 
+#' @return A tibble of query group name (test_group), 
+#' number of 'top' genes (n), 
 #' reference dataset group (group) with its ranking (grouprank) and the median 
 #' (rescaled 0..1) ranking of 'top' genes (median_rank).
 #'
@@ -714,11 +729,13 @@ run_pair_test_stats <- function(
 ) {
    
    groupA_ranks <- de_table.ref.marked %>% 
-      dplyr::filter(.data$test_group == the_test_group, .data$group==groupA) %>%
+      dplyr::filter(.data$test_group == the_test_group, 
+                    .data$group      == groupA) %>%
       dplyr::pull(.data$rescaled_rank)
    
    groupB_ranks <- de_table.ref.marked %>% 
-      dplyr::filter(.data$test_group == the_test_group, .data$group==groupB) %>%
+      dplyr::filter(.data$test_group == the_test_group, 
+                    .data$group      == groupB) %>%
       dplyr::pull(.data$rescaled_rank)
    
    
@@ -771,11 +788,11 @@ get_stepped_pvals_str  <- function(mwtest_res_table.this) {
       dplyr::arrange(.data$grouprank) 
    
    stepped_pvals_str=paste0(mwtest_res_table.this.stepped$group, ":", 
-                            base::signif(mwtest_res_table.this.stepped$pval, 3),
-                            collapse=",")
+                        base::signif(mwtest_res_table.this.stepped$pval, 3),
+                        collapse=",")
    stepped_pvals_str=paste0(stepped_pvals_str, ",",
-                            utils::tail(mwtest_res_table.this.stepped$next_group, 1),
-                            ":NA")
+                        utils::tail(mwtest_res_table.this.stepped$next_group, 1),
+                        ":NA")
    return(stepped_pvals_str)
 }
 
@@ -847,7 +864,8 @@ find_within_match_differences <- function(
    
    # Any significant (non-stepped) differences within match (from high to low)
    de_table.ref.marked.thismatch <- de_table.ref.marked %>%
-      dplyr::filter(.data$test_group==the_test_group, .data$group %in% matches) 
+      dplyr::filter(.data$test_group==the_test_group, 
+                    .data$group %in% matches) 
    
    # Do an all vs all test, just within the matches.
    # Care if sig in either direction
@@ -876,7 +894,8 @@ find_within_match_differences <- function(
 
 #' get_vs_random_pval
 #'
-#' Internal function to run a bionomial test of median test rank > 0.5 (random).
+#' Internal function to run a bionomial test of 
+#' median test rank > 0.5 (random).
 #' 
 #' For use by make_ref_similarity_names_for_group
 #'
@@ -892,8 +911,10 @@ find_within_match_differences <- function(
 #' @importFrom magrittr %>%
 get_vs_random_pval <- function(de_table.ref.marked, the_group, the_test_group){
    
-   # Also - last of match should be above (well, below) 0.5 - theoritical random
-   # NB: power-wise there must be 6 or more genes (all true) for this to be sig.
+   # Also - last of match should be 
+   # above (well, below) 0.5 - theoritical random
+   # NB: power-wise there must be 6 or more genes (all true) 
+   #     for this to be sig.
    last_of_match_rank_dist <- de_table.ref.marked %>% 
       dplyr::filter( .data$group == the_group & 
                      .data$test_group == the_test_group) %>%  
@@ -913,7 +934,8 @@ get_vs_random_pval <- function(de_table.ref.marked, the_group, the_test_group){
 
 #' get_reciprocal_matches 
 #'
-#' Internal function to run a bionomial test of median test rank > 0.5 (random).
+#' Internal function to run a bionomial test of 
+#' median test rank > 0.5 (random).
 #' 
 #' For use by make_ref_similarity_names_using_marked
 #'
@@ -923,7 +945,7 @@ get_vs_random_pval <- function(de_table.ref.marked, the_group, the_test_group){
 #' @param de_table.recip.marked Recriprocal ref vs query de_table.ref.marked
 #' @param the_pval See make_ref_similarity_names_using_marked
 #' 
-#' @return List of table of reciprocal matches tested from reference to query.  
+#' @return List of table of reciprocal matches tested from reference to query. 
 #'
 #' @seealso \code{\link[celaref]{make_ref_similarity_names_using_marked}} 
 #'

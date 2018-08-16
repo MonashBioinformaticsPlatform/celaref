@@ -32,7 +32,8 @@ to check. By default (set to NA), all groups will be tested.}
 name in \bold{sample_sheet_table}) to include in the model used by limma. 
 E.g. An individual/mouse id. Refer limma docs. Default = NA}
 
-\item{pval_threshold}{For reporting only, a p-value threshold. Default = 0.01}
+\item{pval_threshold}{For reporting only, a p-value threshold. 
+Default = 0.01}
 }
 \value{
 A tibble, the within-experiment de_table (differential expression
@@ -44,8 +45,9 @@ populations) that can be used as a reference.
 }
 \details{
 Sometimes there are microarray studies measureing purified cell populations 
-that would be measured together in a single-cell sequenicng experiment. E.g. 
-comparing PBMC scRNA to FACs-sorted blood cell populations. This function 
+that would be measured together in a single-cell sequenicng experiment. 
+E.g. comparing PBMC scRNA to FACs-sorted blood cell populations. 
+This function 
 will process microarray data with limma and format it for comparisions.
 
 The microarray data used should consist of purified cell types 
@@ -60,8 +62,9 @@ generates a table of within-dataset differentential expression contrasts in
 one step. Ie. equivalent to the output of 
 \code{\link[celaref]{contrast_each_group_to_the_rest}}.
 
-Also, note that while downstream functions can accept the microarray-derived 
-data as query datasets, its not really intended and assumptions might not
+Also, note that while downstream functions can accept 
+the microarray-derived data as query datasets, 
+its not really intended and assumptions might not
 hold (Generally, its known what got loaded onto a microarray!)
 
 The (otherwise optional) 'limma' package must be installed to use this 

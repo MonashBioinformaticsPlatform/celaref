@@ -10,19 +10,21 @@ get_the_up_genes_for_group(the_group, de_table.test, de_table.ref,
 \arguments{
 \item{the_group}{The group (from the test/query experiment) to examine.}
 
-\item{de_table.test}{A differential expression table of the query experiment,
-as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
+\item{de_table.test}{A differential expression table of the query 
+experiment, as generated from 
+\code{\link[celaref]{contrast_each_group_to_the_rest}}}
 
-\item{de_table.ref}{A differential expression table of the reference dataset,
-as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
+\item{de_table.ref}{A differential expression table of the reference 
+dataset, as generated from 
+\code{\link[celaref]{contrast_each_group_to_the_rest}}}
 
 \item{rankmetric}{Placeholder for support of different ranking methods, 
 but only the default supported. Omit.}
 }
 \value{
-\emph{de_table.marked} This will be a subset of \bold{de_table.ref}, 
-with an added column \emph{test_group} set to \bold{the_group}. 
-If nothing passes the rankmetric criteria, NA.
+\emph{de_table.marked} This will be a subset of 
+\bold{de_table.ref}, with an added column \emph{test_group} set to 
+\bold{the_group}. If nothing passes the rankmetric criteria, NA.
 }
 \description{
 For the most overrepresented genes of the specified group in the test 
@@ -35,8 +37,10 @@ distribution of the \emph{rescaled ranks} of these marked genes in each
 reference data group indicate how similar they are to the query group.
 }
 \examples{
-de_table.marked.Group3vsRef <- get_the_up_genes_for_group(the_group="Group3",
-de_table.test=de_table.demo_query, de_table.ref=de_table.demo_ref)
+de_table.marked.Group3vsRef <- get_the_up_genes_for_group(
+                                  the_group="Group3",
+                                  de_table.test=de_table.demo_query, 
+                                  de_table.ref=de_table.demo_ref)
 
 }
 \seealso{

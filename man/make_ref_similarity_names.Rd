@@ -13,15 +13,18 @@ make_ref_similarity_names_using_marked(de_table.ref.marked,
   the_ref_dataset = NA, pval = 0.01, num_steps = 5)
 }
 \arguments{
-\item{de_table.test}{A differential expression table of the query experiment,
-as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
+\item{de_table.test}{A differential expression table of the query 
+experiment, as generated from 
+\code{\link[celaref]{contrast_each_group_to_the_rest}}}
 
-\item{de_table.ref}{A differential expression table of the reference dataset,
-as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
+\item{de_table.ref}{A differential expression table of the reference 
+dataset, as generated from 
+\code{\link[celaref]{contrast_each_group_to_the_rest}}}
 
 \item{pval}{Differences between the rescaled ranking distribution of 'top'
-genes on different reference groups are tested with a Mann-Whitney U test. If 
-they are \emph{significantly different}, only the top group(s) are reported. 
+genes on different reference groups are tested with a Mann-Whitney U test. 
+If they are \emph{significantly different}, 
+only the top group(s) are reported. 
 It isn't a simple cutoff threshold as it can change the number of similar 
 groups reported.  ie. A more stringent \bold{pval} is more likely to decide 
 that groups are similar -
@@ -46,17 +49,19 @@ of interest.}
 reference datasets swapped. 
 If omitted a reciprocal test will not be done. Default = NA.}
 
-\item{the_test_dataset}{Optional. A short meaningful name for the experiment. 
+\item{the_test_dataset}{Optional. A short meaningful name for the 
+experiment. 
 (Should match \emph{test_dataset} column in \bold{de_table.marked}). 
 Only needed in a table of more than one dataset. Default = NA.}
 
-\item{the_ref_dataset}{Optional. A short meaningful name for the experiment. 
+\item{the_ref_dataset}{Optional. A short meaningful name for the 
+experiment. 
 (Should match \emph{dataset} column in \bold{de_table.marked}). 
 Only needed in a table of more than one dataset. Default = NA.}
 }
 \value{
-A table of automagically-generated labels for each query group, given 
-their similarity to reference groups. 
+A table of automagically-generated labels for each query group, 
+given their similarity to reference groups. 
 
 The columns in this table:
 \itemize{
@@ -66,23 +71,25 @@ The columns in this table:
   \item \bold{pval} : If there is a similarity flagged, this is the P-value 
   from a Mann-Whitney U test from the last 'matched' group to the adjacent  
   'non-matched' group. Ie. If only one label in shortlab, this will be the 
-  first of the stepped_pvals, if there are 2, it will be the second. If there
-  is 'no_similarity' this will be NA (Because there is no confidence in what 
+  first of the stepped_pvals, if there are 2, it will be the second. 
+  If there is 'no_similarity' this will be NA 
+  (Because there is no confidence in what 
   is the most appropriate of the all non-significant stepped pvalues.).
   \item \bold{stepped_pvals} : P-values from Mann-Whitney U tests across 
   adjacent pairs of reference groups ordered from most to least similar 
   (ascending median rank).
-  ie. 1st-2nd most similar first, 2nd-3rd, 3rd-4th e.t.c. The last value will 
-  always be NA (no more reference group).
-  e.g. refA:8.44e-10,refB:2.37e-06,refC:0.000818,refD:0.435,refE:0.245,refF:NA
+  ie. 1st-2nd most similar first, 2nd-3rd, 3rd-4th e.t.c. The last value 
+  will always be NA (no more reference group).
+  e.g. 
+  refA:8.44e-10,refB:2.37e-06,refC:0.000818,refD:0.435,refE:0.245,refF:NA
   \item \bold{pval_to_random} : P-value of test of median rank (of last 
   matched reference group) < random, from binomial test on top gene 
   ranks (being < 0.5). 
   \item \bold{matches} : List of all reference groups that 'match', 
-  as described, except it also includes (rare) examples where pval_to_random 
-  is not significant. "|" delimited.
-  \item \bold{reciprocal_matches} : List of all reference groups that flagged 
-  test group as a match when directon of comparison is reversed.
+  as described, except it also includes (rare) examples where 
+  pval_to_random is not significant. "|" delimited.
+  \item \bold{reciprocal_matches} : List of all reference groups that  
+  flagged test group as a match when directon of comparison is reversed.
   (significant pval and pval_to_random). "|" delimited.
   \item \bold{similar_non_match}: This column lists any reference groups 
   outside of shortlab that are not signifcantly different to a reported 
@@ -91,9 +98,9 @@ The columns in this table:
   \item \bold{similar_non_match_detail} : P-values for any details about 
   similar_non_match results. These p-values will always be non-significant.
   E.g. "A > C (p=0.0214,n.s)". "|" delimited. Usually NA.
-  \item \bold{differences_within} :  This feild lists any pairs of reference 
-  groups in shortlab that are significantly different. "|" delimited. 
-  Usually NA.
+  \item \bold{differences_within} :  This feild lists any pairs of 
+  reference groups in shortlab that are significantly different. 
+  "|" delimited. Usually NA.
 }
 }
 \description{
@@ -111,7 +118,8 @@ This function aims to report a) the top most similar reference group, if
 there's a clear frontrunner, b) A list of multiple similar groups if they 
 have similar similarity, or c) 'No similarity', if there is none.
 
-Each group is named according to the following rules. Testing for significant 
+Each group is named according to the following rules. 
+Testing for significant 
 (smaller) differences with a one-directional Mann-Whitney U test on their 
 rescaled ranks:
 \enumerate{
@@ -128,15 +136,17 @@ rescaled ranks:
 There are some further heuristic caveats:
 \enumerate{
   \item The distribution of top genes in the last (or only) match group is 
-  tested versus a theroetical random distribution around 0.5 (as reported in 
-  \emph{pval_vs_random} column). If the distribution is not significantly 
-  above random  (It is possible in edge cases where there is a skewed dataset
+  tested versus a theroetical random distribution around 0.5 (as reported 
+  in \emph{pval_vs_random} column). If the distribution is not 
+  significantly above random  
+  (It is possible in edge cases where there is a skewed dataset
   and no/few matches),
   \emph{no similarity} is reported. The significnat \emph{pval} column is 
   left intact.
   \item The comparison is repeated reciprocally - reference groups vs the 
   query groups. This helps sensitivity of heterogenous query groups - 
-  and investigating the reciprocal matches can be informative in these cases.
+  and investigating the reciprocal matches can be informative in these 
+  cases.
   If a query group doens't 'match' a reference group, but the reference 
   group does match that query group - it is reported in the group label in 
   brackets.
@@ -172,8 +182,8 @@ or if reciprocal tests are not wanted.
 }
 \section{Functions}{
 \itemize{
-\item \code{make_ref_similarity_names_using_marked}: Construct some sensible cluster labels,
-but using a premade marked table.
+\item \code{make_ref_similarity_names_using_marked}: Construct some sensible cluster 
+labels, but using a premade marked table.
 }}
 
 \examples{

@@ -18,17 +18,17 @@ requires 'ID' and 'group' to be set within the cell information
 to check. By default (set to NA), all groups will be tested.}
 
 \item{num_cores}{Number of cores to use to run MAST jobs in parallel.
-Ignored if parallel package not available. Set to 1 to avoid parallelisation.
-Default = 2}
+Ignored if parallel package not available. Set to 1 to avoid
+parallelisation. Default = 2}
 }
 \value{
 A tibble the within-experiment de_table (differential expression 
-table). This is a core summary of the individual experiment/dataset, which is
-used for the cross-dataset comparisons.
+table). This is a core summary of the individual experiment/dataset, 
+which is used for the cross-dataset comparisons.
 
 The table feilds won't neccesarily match across datasets, as they include
-cell annotations information. Important columns (used in downstream analysis)
-are:
+cell annotations information. Important columns 
+(used in downstream analysis) are:
 
 \describe{
 \item{ID}{Gene identifier}
@@ -40,7 +40,7 @@ are:
      positive fold change?}
 \item{rank}{Rank position (within group), ranked by CI inner, highest to 
     lowest. }
-\item{rescaled_rank}{Rank scaled 0(top most overrepresented genes in group) - 
+\item{rescaled_rank}{Rank scaled 0(top most overrepresented genes in group) -
     1(top most not-present genes)}
 \item{dataset}{Name of dataset/experiment}
 }
@@ -53,7 +53,8 @@ compared to the rest of the cells.
 \details{
 Note that this function is \emph{slow}, because it runs the differential
 expression. It only needs to be run once per dataset though (unless group 
-labels change). Having package \pkg{parallel} installed is highly recomended.
+labels change). 
+Having package \pkg{parallel} installed is highly recomended.
 
 Both reference and query datasets should be processed with this
 function.
@@ -61,9 +62,9 @@ function.
 The tables produced by this function (usually named something like
 \emph{de_table.datasetname}) contain summarised results of MAST results.
 Each group is compared versus cells in the group, versus not in the group,
-(Ie. always a 2-group contrast, other groups information is ignored). As per
-MAST reccomendataions, the proportion of genes seen in each cell is included
-in the model.
+(Ie. always a 2-group contrast, other groups information is ignored). 
+As per MAST reccomendataions, the proportion of genes seen in each cell is 
+included in the model.
 }
 \examples{
 
