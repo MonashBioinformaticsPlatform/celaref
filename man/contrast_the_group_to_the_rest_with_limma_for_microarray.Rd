@@ -37,7 +37,7 @@ Private function used by
 contrast_each_group_to_the_rest_for_norm_ma_with_limma
 }
 \seealso{
-\code{\link[celaref]{contrast_each_group_to_the_rest_for_norm_ma_with_limma}}
+\code{\link{contrast_each_group_to_the_rest_for_norm_ma_with_limma}}
 public calling function
 
 \href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma}

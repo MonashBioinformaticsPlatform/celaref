@@ -33,5 +33,5 @@ MAST is supplied with log2(counts + 1.1), and zlm called with model
 is with default fdr/BH method.
 }
 \seealso{
-\code{\link[celaref]{contrast_each_group_to_the_rest}}
+\code{\link{contrast_each_group_to_the_rest}}
 }

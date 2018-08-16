@@ -38,6 +38,6 @@ get_rankstat_table(de_table.marked.query_vs_ref, "Group3")
 
 }
 \seealso{
-\code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} To 
+\code{\link{get_the_up_genes_for_all_possible_groups}} To 
 prepare the \bold{de_table.ref.marked} input.
 }

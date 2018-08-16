@@ -68,17 +68,17 @@
 #' for \code{make_ref_similarity_names_from_marked}. It accepts two 'de_table' 
 #' outputs of function \code{contrast_each_group_to_the_rest} to compare
 #' and handles running
-#' \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}}. 
+#' \code{\link{get_the_up_genes_for_all_possible_groups}}. 
 #' Sister function \code{make_ref_similarity_names_from_marked} may (rarely) be 
 #' of use if the \bold{de_table.marked} object has already been created, 
 #' or if reciprocal tests are not wanted. 
 #' 
 #' @param de_table.test A differential expression table of the query 
 #' experiment, as generated from 
-#' \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' \code{\link{contrast_each_group_to_the_rest}}
 #' @param de_table.ref A differential expression table of the reference 
 #' dataset, as generated from 
-#' \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' \code{\link{contrast_each_group_to_the_rest}}
 #' @param pval Differences between the rescaled ranking distribution of 'top'
 #' genes on different reference groups are tested with a Mann-Whitney U test. 
 #' If they are \emph{significantly different}, 
@@ -152,7 +152,7 @@
 #' make_ref_similarity_names(de_table.demo_query, de_table.demo_ref, num_steps=3)
 #' make_ref_similarity_names(de_table.demo_query, de_table.demo_ref, num_steps=NA)
 #'
-#' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest}} For 
+#' @seealso \code{\link{contrast_each_group_to_the_rest}} For 
 #' preparing de_table input
 #' 
 #' 
@@ -228,7 +228,7 @@ make_ref_similarity_names <- function(
 #' make_ref_similarity_names_using_marked(de_table.marked.query_vs_ref)
 #' 
 #'
-#' @seealso \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} 
+#' @seealso \code{\link{get_the_up_genes_for_all_possible_groups}} 
 #' To prepare the \bold{de_table.ref.marked} input.
 #' 
 #' @describeIn make_ref_similarity_names Construct some sensible cluster 
@@ -344,7 +344,7 @@ make_ref_similarity_names_using_marked <- function(
 #'
 #' @param the_test_group Query group to make name for
 #' @param mwtest_res_table Mann-whitney test results as constructed 
-#' in \code{\link[celaref]{make_ref_similarity_names_using_marked}}
+#' in \code{\link{make_ref_similarity_names_using_marked}}
 #' @param de_table.ref.marked The output of 
 #' \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast of 
 #' interest.
@@ -356,12 +356,12 @@ make_ref_similarity_names_using_marked <- function(
 #' @param the_ref_dataset A short meaningful name for the experiment. 
 #' (Should match \emph{dataset} column in \bold{de_table.marked})
 #' @param the_pval pval as per 
-#' \code{\link[celaref]{make_ref_similarity_names_using_marked}}
+#' \code{\link{make_ref_similarity_names_using_marked}}
 #' @return A tibble with just one group's labelling information, as per 
-#' \code{\link[celaref]{make_ref_similarity_names_using_marked}}
+#' \code{\link{make_ref_similarity_names_using_marked}}
 #' 
 #'
-#' @seealso \code{\link[celaref]{make_ref_similarity_names_using_marked}} 
+#' @seealso \code{\link{make_ref_similarity_names_using_marked}} 
 #' Only place that uses this function, details there.
 make_ref_similarity_names_for_group <- function(
    the_test_group, mwtest_res_table, de_table.ref.marked, 
@@ -523,22 +523,22 @@ make_ref_similarity_names_for_group <- function(
 #' This function just runs this for a single query group \bold{the_test_group}
 #'
 #' @param de_table.ref.marked see 
-#' \link[celaref]{make_ref_similarity_names_using_marked}
+#' \link{make_ref_similarity_names_using_marked}
 #' @param the_test_group The group to calculate the stats on.
 #' @param the_test_dataset see 
-#' \link[celaref]{make_ref_similarity_names_using_marked}
+#' \link{make_ref_similarity_names_using_marked}
 #' @param the_ref_dataset see 
-#' \link[celaref]{make_ref_similarity_names_using_marked}
+#' \link{make_ref_similarity_names_using_marked}
 #' @param pval see 
-#' \link[celaref]{make_ref_similarity_names_using_marked}
+#' \link{make_ref_similarity_names_using_marked}
 #' @param num_steps see 
-#' \link[celaref]{make_ref_similarity_names_using_marked}
+#' \link{make_ref_similarity_names_using_marked}
 #' 
 #' @return Table of similarity contrast results/assigned names 
 #' e.t.c for a single group. 
 #' Used internally for populating mwtest_res_table tables.
 #' 
-#' @seealso \code{\link[celaref]{make_ref_similarity_names_using_marked}} 
+#' @seealso \code{\link{make_ref_similarity_names_using_marked}} 
 #' which calls this. 
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
@@ -673,7 +673,7 @@ get_ranking_and_test_results <- function (
 #'
 #' get_rankstat_table(de_table.marked.query_vs_ref, "Group3")
 #'
-#' @seealso \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} To 
+#' @seealso \code{\link{get_the_up_genes_for_all_possible_groups}} To 
 #' prepare the \bold{de_table.ref.marked} input.
 #'
 #' @export
@@ -721,7 +721,7 @@ get_rankstat_table <- function(de_table.ref.marked, the_test_group ) {
 #'
 #' @return A tibble of wilcox / man-whitneyU test results for this contrast.
 #'
-#' @seealso  \code{\link[celaref]{make_ref_similarity_names_using_marked}} 
+#' @seealso  \code{\link{make_ref_similarity_names_using_marked}} 
 #'
 #' @importFrom magrittr %>%
 run_pair_test_stats <- function(
@@ -777,7 +777,7 @@ run_pair_test_stats <- function(
 #'
 #' @return Stepped pvalues string
 #'
-#' @seealso  \code{\link[celaref]{make_ref_similarity_names_for_group}} 
+#' @seealso  \code{\link{make_ref_similarity_names_for_group}} 
 #'
 #' @importFrom magrittr %>%
 get_stepped_pvals_str  <- function(mwtest_res_table.this) {
@@ -811,7 +811,7 @@ get_stepped_pvals_str  <- function(mwtest_res_table.this) {
 #'
 #' @return Stepped pvalues string
 #'
-#' @seealso \code{\link[celaref]{make_ref_similarity_names_for_group}} 
+#' @seealso \code{\link{make_ref_similarity_names_for_group}} 
 #'
 #' @importFrom magrittr %>%
 get_matched_stepped_mwtest_res_table <- function(
@@ -854,7 +854,7 @@ get_matched_stepped_mwtest_res_table <- function(
 #' 
 #' @return String of within match differences
 #'
-#' @seealso  \code{\link[celaref]{make_ref_similarity_names_for_group}} 
+#' @seealso  \code{\link{make_ref_similarity_names_for_group}} 
 #'
 #' @importFrom magrittr %>%
 find_within_match_differences <- function(
@@ -906,7 +906,7 @@ find_within_match_differences <- function(
 #' @return Pvalue result of a binomial test of each 'top gene' being greater 
 #' than the theoretical random median rank of 0.5 (halfway).
 #'
-#' @seealso \code{\link[celaref]{make_ref_similarity_names_for_group}} 
+#' @seealso \code{\link{make_ref_similarity_names_for_group}} 
 #'
 #' @importFrom magrittr %>%
 get_vs_random_pval <- function(de_table.ref.marked, the_group, the_test_group){
@@ -947,7 +947,7 @@ get_vs_random_pval <- function(de_table.ref.marked, the_group, the_test_group){
 #' 
 #' @return List of table of reciprocal matches tested from reference to query. 
 #'
-#' @seealso \code{\link[celaref]{make_ref_similarity_names_using_marked}} 
+#' @seealso \code{\link{make_ref_similarity_names_using_marked}} 
 #'
 #' @importFrom magrittr %>%
 get_reciprocal_matches <- function( 

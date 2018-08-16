@@ -60,7 +60,7 @@ Note that unlike the single-cell workflow there are no summarisedExperiment
 objects (they're not really comparable) - this function reads data and 
 generates a table of within-dataset differentential expression contrasts in 
 one step. Ie. equivalent to the output of 
-\code{\link[celaref]{contrast_each_group_to_the_rest}}.
+\code{\link{contrast_each_group_to_the_rest}}.
 
 Also, note that while downstream functions can accept 
 the microarray-derived data as query datasets, 
@@ -87,7 +87,7 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma(
 
 }
 \seealso{
-\code{\link[celaref]{contrast_each_group_to_the_rest}} is the 
+\code{\link{contrast_each_group_to_the_rest}} is the 
 funciton that makes comparable output on the scRNAseq data (dataset_se 
 objects).
 

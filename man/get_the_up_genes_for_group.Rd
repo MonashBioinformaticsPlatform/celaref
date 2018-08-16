@@ -12,11 +12,11 @@ get_the_up_genes_for_group(the_group, de_table.test, de_table.ref,
 
 \item{de_table.test}{A differential expression table of the query 
 experiment, as generated from 
-\code{\link[celaref]{contrast_each_group_to_the_rest}}}
+\code{\link{contrast_each_group_to_the_rest}}}
 
 \item{de_table.ref}{A differential expression table of the reference 
 dataset, as generated from 
-\code{\link[celaref]{contrast_each_group_to_the_rest}}}
+\code{\link{contrast_each_group_to_the_rest}}}
 
 \item{rankmetric}{Placeholder for support of different ranking methods, 
 but only the default supported. Omit.}
@@ -44,8 +44,8 @@ de_table.marked.Group3vsRef <- get_the_up_genes_for_group(
 
 }
 \seealso{
-\code{\link[celaref]{contrast_each_group_to_the_rest}} For prepraring the 
+\code{\link{contrast_each_group_to_the_rest}} For prepraring the 
 de_table.* tables.
-\code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} For running 
+\code{\link{get_the_up_genes_for_all_possible_groups}} For running 
 all query groups at once.
 }

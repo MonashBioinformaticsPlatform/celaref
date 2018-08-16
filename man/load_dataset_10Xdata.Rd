@@ -32,7 +32,7 @@ Default = c("ensembl_ID","GeneSymbol")}
 identifier to use as 'ID' in the returned SummarisedExperiment object.
 Many-to-one relationships betwen the assumed unique first element of 
 \bold{gene_id_cols_10X} and \bold{id_to_use} will be handled gracefully by 
-\code{\link[celaref]{convert_se_gene_ids}}. 
+\code{\link{convert_se_gene_ids}}. 
 Defaults to first element of \bold{gene_id_cols_10X}}
 }
 \value{
@@ -75,7 +75,7 @@ dataset_se <- load_dataset_10Xdata('~/path/to/data/10X_pbmc4k',
 \href{https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{SummarizedExperiment} 
 For general doco on the SummarizedExperiment objects.
 
-\code{\link[celaref]{convert_se_gene_ids}} describes method for 
+\code{\link{convert_se_gene_ids}} describes method for 
 converting IDs.
 
 Other Data loading functions: \code{\link{contrast_each_group_to_the_rest_for_norm_ma_with_limma}},

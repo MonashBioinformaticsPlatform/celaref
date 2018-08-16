@@ -280,7 +280,7 @@ load_se_from_files <- function(
 #' identifier to use as 'ID' in the returned SummarisedExperiment object.
 #' Many-to-one relationships betwen the assumed unique first element of 
 #' \bold{gene_id_cols_10X} and \bold{id_to_use} will be handled gracefully by 
-#' \code{\link[celaref]{convert_se_gene_ids}}. 
+#' \code{\link{convert_se_gene_ids}}. 
 #' Defaults to first element of \bold{gene_id_cols_10X}
 #' 
 #' @return A SummarisedExperiment object containing the count data, cell info
@@ -299,7 +299,7 @@ load_se_from_files <- function(
 #'
 #' @seealso \href{https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{SummarizedExperiment} 
 #' For general doco on the SummarizedExperiment objects.
-#' @seealso \code{\link[celaref]{convert_se_gene_ids}} describes method for 
+#' @seealso \code{\link{convert_se_gene_ids}} describes method for 
 #' converting IDs.
 #' 
 #' @family Data loading functions
@@ -408,7 +408,7 @@ load_dataset_10Xdata <- function(
 #'
 #' @seealso \href{https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{SummarizedExperiment} 
 #' For general doco on the SummarizedExperiment objects.
-#' @seealso \code{\link[celaref]{load_se_from_files}} For reading data from flat 
+#' @seealso \code{\link{load_se_from_files}} For reading data from flat 
 #' files (not 10X cellRanger output)
 #'
 #' @import SummarizedExperiment
