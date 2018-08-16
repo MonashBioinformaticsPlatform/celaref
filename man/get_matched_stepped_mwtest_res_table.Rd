@@ -22,5 +22,5 @@ Internal function to grab a table of the matched group(s).
 For use by make_ref_similarity_names_for_group
 }
 \seealso{
-\code{\link[celaref]{make_ref_similarity_names_for_group}}
+\code{\link{make_ref_similarity_names_for_group}}
 }

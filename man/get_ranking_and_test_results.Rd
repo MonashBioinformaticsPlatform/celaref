@@ -9,21 +9,21 @@ get_ranking_and_test_results(de_table.ref.marked, the_test_group,
 }
 \arguments{
 \item{de_table.ref.marked}{see 
-\link[celaref]{make_ref_similarity_names_using_marked}}
+\link{make_ref_similarity_names_using_marked}}
 
 \item{the_test_group}{The group to calculate the stats on.}
 
 \item{the_test_dataset}{see 
-\link[celaref]{make_ref_similarity_names_using_marked}}
+\link{make_ref_similarity_names_using_marked}}
 
 \item{the_ref_dataset}{see 
-\link[celaref]{make_ref_similarity_names_using_marked}}
+\link{make_ref_similarity_names_using_marked}}
 
 \item{num_steps}{see 
-\link[celaref]{make_ref_similarity_names_using_marked}}
+\link{make_ref_similarity_names_using_marked}}
 
 \item{pval}{see 
-\link[celaref]{make_ref_similarity_names_using_marked}}
+\link{make_ref_similarity_names_using_marked}}
 }
 \value{
 Table of similarity contrast results/assigned names 
@@ -40,6 +40,6 @@ for parameter details.
 This function just runs this for a single query group \bold{the_test_group}
 }
 \seealso{
-\code{\link[celaref]{make_ref_similarity_names_using_marked}} 
+\code{\link{make_ref_similarity_names_using_marked}} 
 which calls this.
 }

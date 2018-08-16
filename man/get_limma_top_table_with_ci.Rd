@@ -24,6 +24,6 @@ lower confidence intervals to the logFC. Calculated according to
 \url{https://support.bioconductor.org/p/36108/}
 }
 \seealso{
-\code{\link[celaref]{contrast_the_group_to_the_rest_with_limma_for_microarray}} 
+\code{\link{contrast_the_group_to_the_rest_with_limma_for_microarray}} 
 Calling function.
 }

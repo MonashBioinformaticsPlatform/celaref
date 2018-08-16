@@ -155,7 +155,7 @@ contrast_each_group_to_the_rest <- function(
 #' @return A tibble, the within-experiment de_table (differential expression
 #' table), for the group specified.
 #'
-#' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' @seealso \code{\link{contrast_each_group_to_the_rest}}
 #'
 #' @import SummarizedExperiment
 contrast_the_group_to_the_rest <- function( 
@@ -321,10 +321,10 @@ get_inner_or_outer_ci<- function(fc, ci.hi, ci.lo, get_inner=TRUE) {
 #' @param the_group The group (from the test/query experiment) to examine. 
 #' @param de_table.test A differential expression table of the query 
 #' experiment, as generated from 
-#' \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' \code{\link{contrast_each_group_to_the_rest}}
 #' @param de_table.ref A differential expression table of the reference 
 #' dataset, as generated from 
-#' \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' \code{\link{contrast_each_group_to_the_rest}}
 #' @param rankmetric Placeholder for support of different ranking methods, 
 #' but only the default supported. Omit. 
 #' 
@@ -339,9 +339,9 @@ get_inner_or_outer_ci<- function(fc, ci.hi, ci.lo, get_inner=TRUE) {
 #'                                   de_table.ref=de_table.demo_ref)
 #'
 #' @seealso  
-#' \code{\link[celaref]{contrast_each_group_to_the_rest}} For prepraring the 
+#' \code{\link{contrast_each_group_to_the_rest}} For prepraring the 
 #' de_table.* tables.
-#' \code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} For running 
+#' \code{\link{get_the_up_genes_for_all_possible_groups}} For running 
 #' all query groups at once.
 #
 #'
@@ -402,15 +402,15 @@ get_the_up_genes_for_group <- function(
 #' reference data group indicate how similar they are to the query group. 
 #' 
 #' This function is simply a conveinent wrapper for 
-#' \code{\link[celaref]{get_the_up_genes_for_group}} that merges output for 
+#' \code{\link{get_the_up_genes_for_group}} that merges output for 
 #' each group in the query into one table.
 #' 
 #' @param de_table.test A differential expression table of the query 
 #' experiment, as generated from 
-#' \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' \code{\link{contrast_each_group_to_the_rest}}
 #' @param de_table.ref A differential expression table of the reference 
 #' dataset, as generated from 
-#' \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#' \code{\link{contrast_each_group_to_the_rest}}
 #' @param rankmetric Placeholder for support of different ranking methods, 
 #' but only the default supported. Omit. 
 #' 
@@ -428,7 +428,7 @@ get_the_up_genes_for_group <- function(
 #'    de_table.test=de_table.demo_query ,
 #'    de_table.ref=de_table.demo_ref )
 #'
-#' @seealso  \code{\link[celaref]{get_the_up_genes_for_group}} Function for 
+#' @seealso  \code{\link{get_the_up_genes_for_group}} Function for 
 #' testing a single group.
 #'
 #'
@@ -508,7 +508,7 @@ get_the_up_genes_for_all_possible_groups <- function(
 #' objects (they're not really comparable) - this function reads data and 
 #' generates a table of within-dataset differentential expression contrasts in 
 #' one step. Ie. equivalent to the output of 
-#' \code{\link[celaref]{contrast_each_group_to_the_rest}}. 
+#' \code{\link{contrast_each_group_to_the_rest}}. 
 #' 
 #' Also, note that while downstream functions can accept 
 #' the microarray-derived data as query datasets, 
@@ -555,7 +555,7 @@ get_the_up_genes_for_all_possible_groups <- function(
 #'
 #' 
 #' @family Data loading functions
-#' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest}} is the 
+#' @seealso \code{\link{contrast_each_group_to_the_rest}} is the 
 #' funciton that makes comparable output on the scRNAseq data (dataset_se 
 #' objects).
 #' @seealso \href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma} 
@@ -638,7 +638,7 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma <- function(
 #' @return A tibble, the within-experiment de_table (differential expression
 #' table), for the group specified.
 #'
-#' @seealso \code{\link[celaref]{contrast_each_group_to_the_rest_for_norm_ma_with_limma}}
+#' @seealso \code{\link{contrast_each_group_to_the_rest_for_norm_ma_with_limma}}
 #' public calling function
 #' @seealso \href{https://bioconductor.org/packages/release/bioc/html/limma.html}{Limma}
 #' Limma package for differential expression.
@@ -729,7 +729,7 @@ contrast_the_group_to_the_rest_with_limma_for_microarray <- function(
 #' @return Output of topTable, but with the (95%) confidence interval reported 
 #' for the logFC.
 #'
-#' @seealso  \code{\link[celaref]{contrast_the_group_to_the_rest_with_limma_for_microarray}} 
+#' @seealso  \code{\link{contrast_the_group_to_the_rest_with_limma_for_microarray}} 
 #' Calling function.
 #' 
 get_limma_top_table_with_ci <- function(fit2, the_coef, ci=0.95 ){

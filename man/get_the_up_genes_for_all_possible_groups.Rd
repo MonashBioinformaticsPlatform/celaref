@@ -10,11 +10,11 @@ get_the_up_genes_for_all_possible_groups(de_table.test, de_table.ref,
 \arguments{
 \item{de_table.test}{A differential expression table of the query 
 experiment, as generated from 
-\code{\link[celaref]{contrast_each_group_to_the_rest}}}
+\code{\link{contrast_each_group_to_the_rest}}}
 
 \item{de_table.ref}{A differential expression table of the reference 
 dataset, as generated from 
-\code{\link[celaref]{contrast_each_group_to_the_rest}}}
+\code{\link{contrast_each_group_to_the_rest}}}
 
 \item{rankmetric}{Placeholder for support of different ranking methods, 
 but only the default supported. Omit.}
@@ -40,7 +40,7 @@ distribution of the \emph{rescaled ranks} of these marked genes in each
 reference data group indicate how similar they are to the query group.
 
 This function is simply a conveinent wrapper for 
-\code{\link[celaref]{get_the_up_genes_for_group}} that merges output for 
+\code{\link{get_the_up_genes_for_group}} that merges output for 
 each group in the query into one table.
 }
 \examples{
@@ -50,6 +50,6 @@ de_table.marked.query_vs_ref <- get_the_up_genes_for_all_possible_groups(
 
 }
 \seealso{
-\code{\link[celaref]{get_the_up_genes_for_group}} Function for 
+\code{\link{get_the_up_genes_for_group}} Function for 
 testing a single group.
 }

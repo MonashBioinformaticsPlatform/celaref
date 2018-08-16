@@ -21,5 +21,5 @@ make_ref_similarity_names_using_marked
 For use by make_ref_similarity_names_for_group
 }
 \seealso{
-\code{\link[celaref]{make_ref_similarity_names_for_group}}
+\code{\link{make_ref_similarity_names_for_group}}
 }

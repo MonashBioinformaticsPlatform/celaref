@@ -15,11 +15,11 @@ make_ref_similarity_names_using_marked(de_table.ref.marked,
 \arguments{
 \item{de_table.test}{A differential expression table of the query 
 experiment, as generated from 
-\code{\link[celaref]{contrast_each_group_to_the_rest}}}
+\code{\link{contrast_each_group_to_the_rest}}}
 
 \item{de_table.ref}{A differential expression table of the reference 
 dataset, as generated from 
-\code{\link[celaref]{contrast_each_group_to_the_rest}}}
+\code{\link{contrast_each_group_to_the_rest}}}
 
 \item{pval}{Differences between the rescaled ranking distribution of 'top'
 genes on different reference groups are tested with a Mann-Whitney U test. 
@@ -175,7 +175,7 @@ Function \code{make_ref_similarity_names} is a convenience wrapper function
 for \code{make_ref_similarity_names_from_marked}. It accepts two 'de_table' 
 outputs of function \code{contrast_each_group_to_the_rest} to compare
 and handles running
-\code{\link[celaref]{get_the_up_genes_for_all_possible_groups}}. 
+\code{\link{get_the_up_genes_for_all_possible_groups}}. 
 Sister function \code{make_ref_similarity_names_from_marked} may (rarely) be 
 of use if the \bold{de_table.marked} object has already been created, 
 or if reciprocal tests are not wanted.
@@ -215,9 +215,9 @@ make_ref_similarity_names_using_marked(de_table.marked.query_vs_ref)
 
 }
 \seealso{
-\code{\link[celaref]{contrast_each_group_to_the_rest}} For 
+\code{\link{contrast_each_group_to_the_rest}} For 
 preparing de_table input
 
-\code{\link[celaref]{get_the_up_genes_for_all_possible_groups}} 
+\code{\link{get_the_up_genes_for_all_possible_groups}} 
 To prepare the \bold{de_table.ref.marked} input.
 }

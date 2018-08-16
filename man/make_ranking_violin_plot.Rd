@@ -14,11 +14,11 @@ for the contrast of interest.}
 
 \item{de_table.test}{A differential expression table of the 
 query experiment,
-as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
+as generated from \code{\link{contrast_each_group_to_the_rest}}}
 
 \item{de_table.ref}{A differential expression table of the 
 reference dataset,
-as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}}
+as generated from \code{\link{contrast_each_group_to_the_rest}}}
 
 \item{log10trans}{Plot on a log scale? Useful for distinishing multiple 
 similar, yet distinct cell type that bunch at top of plot. Default=FALSE.}
@@ -54,7 +54,7 @@ opposites.
 Input can be either the precomputed \emph{de_table.marked} object for the 
 comparison, OR both \emph{de_table.test} and \emph{de_table.ref} 
 differential expression results to compare from 
-\code{\link[celaref]{contrast_each_group_to_the_rest}}
+\code{\link{contrast_each_group_to_the_rest}}
 }
 \examples{
 

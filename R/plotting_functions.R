@@ -27,17 +27,17 @@
 #' Input can be either the precomputed \emph{de_table.marked} object for the 
 #' comparison, OR both \emph{de_table.test} and \emph{de_table.ref} 
 #' differential expression results to compare from 
-#' \code{\link[celaref]{contrast_each_group_to_the_rest}} 
+#' \code{\link{contrast_each_group_to_the_rest}} 
 #' 
 #' @param de_table.marked The output of 
 #'    \code{\link{get_the_up_genes_for_all_possible_groups}} 
 #'    for the contrast of interest.
 #' @param de_table.test A differential expression table of the 
 #'    query experiment,
-#'    as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#'    as generated from \code{\link{contrast_each_group_to_the_rest}}
 #' @param de_table.ref A differential expression table of the 
 #'    reference dataset,
-#'    as generated from \code{\link[celaref]{contrast_each_group_to_the_rest}}
+#'    as generated from \code{\link{contrast_each_group_to_the_rest}}
 #' @param log10trans  Plot on a log scale? Useful for distinishing multiple 
 #'    similar, yet distinct cell type that bunch at top of plot. Default=FALSE.
 #' 

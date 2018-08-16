@@ -10,11 +10,11 @@ de_table.demo_query
 }
 \value{
 An example de_table from 
-\link[celaref]{contrast_each_group_to_the_rest} (for demo query dataset)
+\link{contrast_each_group_to_the_rest} (for demo query dataset)
 }
 \description{
 Small example dataset that is the output of
-\link[celaref]{contrast_each_group_to_the_rest}. It contains the results
+\link{contrast_each_group_to_the_rest}. It contains the results
 of each group compared to the rest of the sample (ie within sample 
 differential expression)
 }
