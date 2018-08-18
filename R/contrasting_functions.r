@@ -1,9 +1,3 @@
-
-
-
-
-
-
 #' contrast_each_group_to_the_rest
 #'
 #' Produces a table of within-experiment differential expression results (for
@@ -82,8 +76,8 @@ contrast_each_group_to_the_rest <- function(
       groups2test = levels(dataset_se$group)
    } else { # Check its sensible before long processing steps
       if (! all(groups2test %in% levels(dataset_se$group))) {
-         print(paste("can't find all of ",groups2test))
-         stop("Can't find all test groups in dataset")
+         stop("Can't find all test groups (",
+              paste(groups2test, collapse = ","),") in dataset")   
          return(NA)
       }
    }
@@ -98,14 +92,15 @@ contrast_each_group_to_the_rest <- function(
    #  (paralallised, with lapply fallback if no parallel, or windows )
    if (num_cores > 1) {
       if (! requireNamespace("parallel", quietly = TRUE) ) {
-         message(paste0("Parallel package not installed. Please install. ",
-                        "Or set num_threads = 1 to suppress this message.",
-                        "Running single threaded"))
+         message("Parallel package not installed. Please install. ",
+                 "Or set num_threads = 1 to suppress this message.",
+                 "Running single threaded")
          num_cores = 1
       }
       if (Sys.info()['sysname'] == "Windows") {
-         message(paste0("Sorry, multithreading not supported on windows.",
-                        "(Developed on linux). Running single threaded"))
+         message("Sorry, multithreading not supported on windows. ",
+                 "Use linux, or set num_threads = 1 to suppress this message.",
+                 "Running single threaded")
          num_cores = 1
       }
    }
@@ -369,14 +364,14 @@ get_the_up_genes_for_group <- function(
    # Nothing selected. Or nothing selected thats in ref data. 
    # NA gets rbinded harmlesslessy
    if (length(the_up_genes) == 0 ) {
-      warning(paste0("Found no mark-able genes meeting criteria when looking ",
-                     "for 'up' genes in ",the_group,
-                     " Cannot test it for similarity. ",
-                     "Could occur if: cell groups are very similar, ",
-                     "a lack of statistical power ",
-                     "(e.g. small number of cells in group), ",
-                     "or for a heterogenous cluster. It may only affect ",
-                     "one/some groups, continuing with the rest.") )
+      warning("Found no mark-able genes meeting criteria when looking ",
+              "for 'up' genes in ",the_group,
+              " Cannot test it for similarity. ",
+              "Could occur if: cell groups are very similar, ",
+              "a lack of statistical power ",
+              "(e.g. small number of cells in group), ",
+              "or for a heterogenous cluster. It may only affect ",
+              "one/some groups, continuing with the rest.") 
       return(NA)
       }
    if (sum(de_table.ref$ID %in% the_up_genes) == 0) {return(NA)}
@@ -441,8 +436,8 @@ get_the_up_genes_for_all_possible_groups <- function(
    # de_table.test, that will be propagated.
    test_dataset_name <- unique(de_table.test$dataset) 
    if (length(test_dataset_name) !=1 ) { 
-      stop(paste("Detected more than one 'dataset' within test dataset.",
-                 "Need one at a time."))
+      stop("Detected more than one 'dataset' within test dataset.",
+           "Need one at a time.")
    }
    
 
@@ -457,11 +452,11 @@ get_the_up_genes_for_all_possible_groups <- function(
    
 
    if (all(is.na(de_table.marked.list))) { 
-      warning(paste("Found no mark-able genes meeting criteria when looking ",
-                    "for 'up' genes in each group. ",
-                    "Cannot test for similarity.",
-                    "Could be an error, or occur if cell groups are very ",
-                    "similar or due to a lack of statistical power.")) }
+      warning("Found no mark-able genes meeting criteria when looking ",
+              "for 'up' genes in each group. ",
+              "Cannot test for similarity.",
+              "Could be an error, or occur if cell groups are very ",
+              "similar or due to a lack of statistical power.") }
    
    # remove the NAs.
    de_table.marked.list <- de_table.marked.list[! is.na(de_table.marked.list)]
@@ -574,8 +569,8 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma <- function(
    
    # Which groups to look at? Default all in query dataset.
    if (! group_name %in% base::colnames(sample_sheet_table)) { 
-      stop( paste("Cannot find group specification '",group_name,
-                  "' in sample_sheet_table columns"))
+      stop( "Cannot find group specification '",group_name,
+            "' in sample_sheet_table columns")
    }
    
    if (group_name != 'group') {
@@ -590,8 +585,8 @@ contrast_each_group_to_the_rest_for_norm_ma_with_limma <- function(
       groups2test = levels(sample_sheet_table$group)
    } else { # Check its sensible before long processing steps
       if (! all(groups2test %in% levels(sample_sheet_table$group))) {
-         print(paste("can't find all of ",groups2test))
-         stop("Can't find all test groups in dataset")   
+         stop("Can't find all test groups (",
+              paste(groups2test, collapse = ","),") in dataset")   
          return(NA)   
       }
    }
