@@ -166,9 +166,9 @@ make_ref_similarity_names <- function(
    test_dataset <- unique(de_table.test$dataset)
    ref_dataset  <- unique(de_table.ref$dataset)   
    if (length(test_dataset) >1  || length(ref_dataset) > 1) {
-      stop( paste("Either test or reference includes more than",
-                  "one dataset in dataset column.", 
-                  "Trim down or use make_ref_similarity_names_using_marked"))
+      stop( "Either test or reference includes more than ",
+            "one dataset in dataset column. ", 
+            "Trim down or use make_ref_similarity_names_using_marked")
    }
    
    # Prepare the marked and reciprocal marked tables
@@ -248,15 +248,15 @@ make_ref_similarity_names_using_marked <- function(
    test_datasets_present <- unique(de_table.ref.marked$test_dataset)   
    if (is.na(the_ref_dataset)) {
       if (base::length(ref_datasets_present) != 1 ) {
-         stop(paste("More than one reference datatset in de_table.ref.marked,",
-                    "specify with the_ref_dataset"))
+         stop("More than one reference datatset in de_table.ref.marked, ",
+              "specify with the_ref_dataset")
       }
       the_ref_dataset=ref_datasets_present[1]
    } 
    if (is.na(the_test_dataset)) {
       if (base::length(test_datasets_present) != 1 ) {
-         stop(paste("More than one reference datatset in de_table.ref.marked,",
-                    "specify with the_test_dataset"))
+         stop("More than one reference datatset in de_table.ref.marked, ",
+              "specify with the_test_dataset")
       }
       the_test_dataset=test_datasets_present[1]
    } 
@@ -273,12 +273,12 @@ make_ref_similarity_names_using_marked <- function(
    have_recip <- typeof(de_table.recip.marked) == "list" #NA is logical
    if (have_recip) {
       if ( ! the_ref_dataset %in% unique(de_table.recip.marked$test_dataset)) {
-         stop(paste("Cannot find specified ref dataset as query dataset",
-                    "in de_table.recip.marked"))
+         stop("Cannot find specified ref dataset as query dataset",
+               "in de_table.recip.marked")
       }
       if ( ! the_test_dataset %in% unique(de_table.recip.marked$dataset)) {
-         stop(paste("Cannot find specified test dataset as ref dataset",
-                    "in de_table.recip.marked"))
+         stop("Cannot find specified test dataset as ref dataset",
+               "in de_table.recip.marked")
       }
    }
    
@@ -567,7 +567,7 @@ get_ranking_and_test_results <- function (
    
    # Sanity checks    
    if (base::nrow(rankstat_table) ==1) { 
-      rlang::warn("Only 1 reference group. Something odd is happening.") 
+      warning("Only 1 reference group. Something odd is happening.") 
    }
    
    
@@ -741,8 +741,8 @@ run_pair_test_stats <- function(
    
    if (enforceAgtB) {
       if (stats::median(groupA_ranks) > stats::median(groupB_ranks)) {
-         stop( paste("Running test comparision in wrong direction (B < A)",
-                     "this shouldn't happen"))
+         stop("Running test comparision in wrong direction (B < A) ",
+              "this shouldn't happen")
       }
    }
 

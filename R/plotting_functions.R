@@ -82,8 +82,8 @@ make_ranking_violin_plot <- function(
    } else if (!( defined_de_table.marked 
                  & !defined_de_table.test  
                  & !defined_de_table.ref )) {
-      stop(paste("Specify either 'de_table.marked' or both de_table.test ",
-                 "AND de_table.ref (naming parameters)"))
+      stop("Specify either 'de_table.marked' or both de_table.test ",
+           "AND de_table.ref (naming parameters)")
    } #Else, de_table.marked provided, continue
    
    

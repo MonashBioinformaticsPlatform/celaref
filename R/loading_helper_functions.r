@@ -113,8 +113,8 @@ load_se_from_tables <- function(
    
    # Check for 'group' anything from group_col_name will be copied into group
    if (! group_col_name %in% colnames(cell_info_table)) {
-      stop( paste0("Couldn't find group/cluster column ", group_col_name ,
-                   " in cell_info_table ",cell_info_table) )
+      stop( "Couldn't find group/cluster column ", group_col_name ,
+            " in cell_info_table ",cell_info_table )
    }
    if (group_col_name != "group") {
       cell_info_table$group <- cell_info_table[,group_col_name]
@@ -124,15 +124,15 @@ load_se_from_tables <- function(
    # Only keep common cells, match order
    cells <- intersect(cell_info_table$cell_sample, colnames(counts_matrix))
    if (length(cells) <= 1) { 
-      stop(paste("Couldn't find cells in common between counts matrix",
-                 "(col names) and cell_info_file (cell_sample column,",
-                 "first col or specified as cell_col_name)")) 
+      stop("Couldn't find cells in common between counts matrix ",
+           "(col names) and cell_info_file (cell_sample column, ",
+           "first col or specified as cell_col_name)") 
    }
    if (   length(cells) != nrow(cell_info_table) 
        || length(cells) != ncol(counts_matrix)   ) {
-      message(paste0(
-         "Not all cells were listed in both counts matrix and cell_info_file.",
-         " Is this expected? Keeping the ", length(cells), " in common"))
+      message("Not all cells were listed in both ",
+         "counts matrix and cell_info_file. ",
+         "Is this expected? Keeping the ", length(cells), " in common")
    }
    cell_info_table<-cell_info_table[match(cells, cell_info_table$cell_sample),]
    counts_matrix  <-counts_matrix[,cells]
@@ -168,9 +168,9 @@ load_se_from_tables <- function(
       num_genes <- length(genes)
       if (    num_genes != nrow(gene_info_table) 
            || num_genes != nrow(counts_matrix)   ) { 
-         stop( paste("Gene IDs did not match between ID feild of",
-                     " gene_info_file (or first column), and row names of ",
-                     "counts matrix ")) 
+         stop( "Gene IDs did not match between ID feild of ",
+               "gene_info_file (or first column), and row names of ",
+               "counts matrix")
       }
       
       # Create a summarised experiment object.
@@ -419,8 +419,8 @@ convert_se_gene_ids <- function(dataset_se, new_id, eval_col, find_max=TRUE) {
    
    old_id = "ID" 
    if (! all(c(old_id, new_id, eval_col) %in% colnames(rowData(dataset_se)))) {
-      stop(paste("Can't find all of", c(old_id, new_id, eval_col), 
-                 "in rowData(dataset_se) colnames"))
+      stop("Can't find all of ", c(old_id, new_id, eval_col), 
+           " in rowData(dataset_se) colnames")
    } 
    
    row_data_df <- BiocGenerics::as.data.frame(rowData(dataset_se))[,c(old_id,new_id, eval_col)]
