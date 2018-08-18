@@ -303,16 +303,22 @@ matched groups listed in shortlab, that are all slightly different. Examples
 
 ## Installation
 
-Install from bioconductor via BiocManager
+
+The bioconductor landing page with information about this package is at 
+https://bioconductor.org/packages/celaref
+ 
+To install from bioconductor via BiocManager
 ```{r eval=FALSE}
 # Installing BiocManager if necessary:
 # install.packages("BiocManager")
 BiocManager::install("celaref")
 ```
 
-Or dev version from github
+Or, to use the dev version from github
 ```{r eval=FALSE}
 devtools::install_github("MonashBioinformaticsPlatform/celaref")
+# Or
+BiocManager::install("MonashBioinformaticsPlatform/celaref")
 ```
 
 ## Quickstart
@@ -323,7 +329,7 @@ group corresponds to which cell type yet.
 
 Luckily, there's an older dataset (the reference) of the same tissue type in which 
 someone else has already determined the cell types. 
-They very helpfully named them  'Weird subtype', 'Exciting', 'Mystery cell type' and 'dunno'.
+They very helpfully named them  'Weird subtype', 'Exciting', 'Mystery cell type' and 'Dunno'.
 
 This example uses the reference dataset to flag likely cell types in the new experiment.
 
