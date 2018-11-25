@@ -644,7 +644,7 @@ It will:
 
 ```{r eval=FALSE} 
 # Count and store total reads/gene.
-rowData(dataset_se)$total_count <- rowSums(assay(dataset_se))
+rowData(dataset_se)$total_count <- Matrix::rowSums(assay(dataset_se))
 # rowData(dataset_se) must already list column 'GeneSymbol'
 dataset_se <- convert_se_gene_ids(dataset_se, new_id='GeneSymbol', eval_col = 'total_count')
 
