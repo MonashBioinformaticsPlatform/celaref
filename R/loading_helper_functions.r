@@ -93,6 +93,8 @@ load_se_from_tables <- function(
    counts_matrix, cell_info_table, gene_info_table = NA, 
    group_col_name="group", cell_col_name=NA 
 ) {
+
+   cell_info_table <- data.frame(cell_info_table, stringsAsFactors = FALSE)
    
    # If there's no cell_sample, and no cell_col_name, make the first 
    # one 'cell_sample', else use cell_col_name.
@@ -154,7 +156,7 @@ load_se_from_tables <- function(
       rowData(dataset_se)$ID <- rownames(assay(dataset_se))
    }
    else {
-      
+      gene_info_table <- data.frame(gene_info_table, stringsAsFactors = FALSE)
       # If there's no ID col, make the first 'ID'
       if (! "ID" %in% colnames(gene_info_table)) {
          gene_info_table <- cbind.data.frame(
