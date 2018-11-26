@@ -18,8 +18,9 @@ experiment, as generated from
 dataset, as generated from 
 \code{\link{contrast_each_group_to_the_rest}}}
 
-\item{rankmetric}{Placeholder for support of different ranking methods, 
-but only the default supported. Omit.}
+\item{rankmetric}{For support of different ranking methods. Unter testing.}
+
+\item{n}{For tweaking maximum returned genes from different ranking methods.}
 }
 \value{
 \emph{de_table.marked} This will be a subset of 

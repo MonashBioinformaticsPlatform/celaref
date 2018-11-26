@@ -6,7 +6,7 @@
 \title{make_ref_similarity_names}
 \usage{
 make_ref_similarity_names(de_table.test, de_table.ref, pval = 0.01,
-  num_steps = 5)
+  num_steps = 5, rankmetric = "TOP100_LOWER_CI_GTE1", n = 100)
 
 make_ref_similarity_names_using_marked(de_table.ref.marked,
   de_table.recip.marked = NA, the_test_dataset = NA,
@@ -39,6 +39,10 @@ Setting too low may means it is possible to miss groups with some similarity
 to the reported matches (\emph{similar_non_match} column)).
 Too high (or NA) with a large number of reference groups could be slow. 
 Default = 5.}
+
+\item{rankmetric}{For support of different ranking methods. Unter testing.}
+
+\item{n}{For tweaking maximum returned genes from different ranking methods.}
 
 \item{de_table.ref.marked}{The output of 
 \code{\link{get_the_up_genes_for_all_possible_groups}} for the contrast 
