@@ -342,22 +342,48 @@ get_inner_or_outer_ci<- function(fc, ci.hi, ci.lo, get_inner=TRUE) {
 #'
 #'@export
 get_the_up_genes_for_group <- function(
-   the_group, de_table.test, de_table.ref, rankmetric='TOP100_LOWER_CI_GTE1'
+   the_group, de_table.test, de_table.ref, rankmetric='TOP100_LOWER_CI_GTE1',
+   n=100
 ) {
    
    # Trialled a bunch. Decided on TOP100_LOWER_CI_GTE, but leave option here. 
    # (might be useful for other data types)
    the_up_genes <- c()
-   if (rankmetric=='TOP100_LOWER_CI_GTE1') {
+   if (rankmetric=='TOP100_LOWER_CI_GTE1') { 
       the_up_genes <- de_table.test$ID[de_table.test$group == the_group & 
-                                       de_table.test$rank <= 100 & 
-                                       de_table.test$ci_inner >= 1]
+                                          de_table.test$rank <= n & 
+                                          de_table.test$ci_inner >= 1]
+   } else if (rankmetric=='TOP100_LOWER_CI_GTE0') { 
+      # Try a >0 test. Likely to be stupidly over inclusive - so probably not a good idea!
+      the_up_genes <- de_table.test$ID[de_table.test$group == the_group & 
+                                          de_table.test$rank <= n & 
+                                          de_table.test$ci_inner >= 0]
+   } else if (rankmetric=='TOP100_SIG') { 
+      # Significnatly up genes, within the top 100 (more stringent than SIG_N)
+      the_up_genes <- de_table.test$ID[de_table.test$group == the_group & 
+                                          de_table.test$rank <= n & 
+                                          de_table.test$sig   == TRUE & 
+                                          de_table.test$ci_inner >= 0]
+   } else if (rankmetric=='SIG_N') { 
+      # Up to 100 significantly up genes (still inner CI ranking.)
+      #Still require > CI_INNER 0, but < 0 shouldn't happen
+      de_table.test.group <- de_table.test[de_table.test$group == the_group & 
+                                              de_table.test$sig   == TRUE & 
+                                              de_table.test$ci_inner >= 0, ] 
+      ids <- de_table.test.group$ID[order(de_table.test.group$rank)]
+      if (length(ids) == 0 ){
+         the_up_genes <- character(0)
+      } else if (length(ids) > n) {
+         the_up_genes <- ids[seq_len(n)]
+      } else {
+         the_up_genes <- ids
+      }
    } else if (rankmetric=='BOTTOM100_LOWER_CI_LTE1') {
       # Undocumented feature for testing, dont use (it doesn't work so well)
       max_rank <- max(de_table.test$rank)
       the_up_genes <- de_table.test$ID[de_table.test$group == the_group & 
-                                       de_table.test$rank >= (max_rank - 100 + 1) & 
-                                       de_table.test$ci_inner <= -1]
+                                          de_table.test$rank >= (max_rank - n + 1) & 
+                                          de_table.test$ci_inner <= -1]
    } else {stop("Unknown rank metric")}
    
 
@@ -406,8 +432,10 @@ get_the_up_genes_for_group <- function(
 #' @param de_table.ref A differential expression table of the reference 
 #' dataset, as generated from 
 #' \code{\link{contrast_each_group_to_the_rest}}
-#' @param rankmetric Placeholder for support of different ranking methods, 
-#' but only the default supported. Omit. 
+#' @param rankmetric For support of different ranking methods, 
+#' but only the default tested. 
+#' @param n For tweaking maximum returned genes from different ranking methods.
+#' Under testing. 
 #' 
 #' @return \emph{de_table.marked} This will alsmost be a subset of 
 #' \bold{de_table.ref}, 
@@ -429,7 +457,7 @@ get_the_up_genes_for_group <- function(
 #'
 #' @export
 get_the_up_genes_for_all_possible_groups <- function(
-   de_table.test, de_table.ref, rankmetric='TOP100_LOWER_CI_GTE1' 
+   de_table.test, de_table.ref, rankmetric='TOP100_LOWER_CI_GTE1', n=100 
 ){
    
    # Sanity check: there should be only one test_dataset present in 
@@ -448,7 +476,8 @@ get_the_up_genes_for_all_possible_groups <- function(
                                   X = levels(de_table.test$group), 
                                   rankmetric=rankmetric,
                                   de_table.test=de_table.test, 
-                                  de_table.ref=de_table.ref)
+                                  de_table.ref=de_table.ref,
+                                  n=n)
    
 
    if (all(is.na(de_table.marked.list))) { 

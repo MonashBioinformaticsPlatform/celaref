@@ -5,7 +5,7 @@
 \title{get_the_up_genes_for_all_possible_groups}
 \usage{
 get_the_up_genes_for_all_possible_groups(de_table.test, de_table.ref,
-  rankmetric = "TOP100_LOWER_CI_GTE1")
+  rankmetric = "TOP100_LOWER_CI_GTE1", n = 100)
 }
 \arguments{
 \item{de_table.test}{A differential expression table of the query 
@@ -16,8 +16,11 @@ experiment, as generated from
 dataset, as generated from 
 \code{\link{contrast_each_group_to_the_rest}}}
 
-\item{rankmetric}{Placeholder for support of different ranking methods, 
-but only the default supported. Omit.}
+\item{rankmetric}{For support of different ranking methods, 
+but only the default tested.}
+
+\item{n}{For tweaking maximum returned genes from different ranking methods.
+Under testing.}
 }
 \value{
 \emph{de_table.marked} This will alsmost be a subset of 

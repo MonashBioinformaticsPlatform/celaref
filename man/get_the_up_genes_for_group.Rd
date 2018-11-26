@@ -5,7 +5,7 @@
 \title{get_the_up_genes_for_group}
 \usage{
 get_the_up_genes_for_group(the_group, de_table.test, de_table.ref,
-  rankmetric = "TOP100_LOWER_CI_GTE1")
+  rankmetric = "TOP100_LOWER_CI_GTE1", n = 100)
 }
 \arguments{
 \item{the_group}{The group (from the test/query experiment) to examine.}
