@@ -96,6 +96,9 @@
 #' to the reported matches (\emph{similar_non_match} column)).
 #' Too high (or NA) with a large number of reference groups could be slow. 
 #' Default = 5.
+#' @param rankmetric For support of different ranking methods. Unter testing.
+#' @param n For tweaking maximum returned genes from different ranking methods.
+#' 
 #' 
 #' @return A table of automagically-generated labels for each query group, 
 #' given their similarity to reference groups. 
@@ -159,7 +162,8 @@
 #' @importFrom magrittr %>%
 #' @export
 make_ref_similarity_names <- function(
-   de_table.test, de_table.ref, pval=0.01, num_steps=5 
+   de_table.test, de_table.ref, pval=0.01, num_steps=5, 
+   rankmetric='TOP100_LOWER_CI_GTE1', n=100
 ) {
    
    # Read one dataset name from test and query. 
@@ -173,9 +177,11 @@ make_ref_similarity_names <- function(
    
    # Prepare the marked and reciprocal marked tables
    de_table.ref.marked   <- 
-      get_the_up_genes_for_all_possible_groups(de_table.test, de_table.ref)
+      get_the_up_genes_for_all_possible_groups(de_table.test, de_table.ref, 
+                                               rankmetric = rankmetric, n=n)
    de_table.recip.marked <- 
-      get_the_up_genes_for_all_possible_groups(de_table.ref, de_table.test)
+      get_the_up_genes_for_all_possible_groups(de_table.ref, de_table.test, 
+                                               rankmetric = rankmetric, n=n)
 
    return(make_ref_similarity_names_using_marked(de_table.ref.marked, 
                                                  de_table.recip.marked,

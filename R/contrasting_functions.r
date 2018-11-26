@@ -320,8 +320,8 @@ get_inner_or_outer_ci<- function(fc, ci.hi, ci.lo, get_inner=TRUE) {
 #' @param de_table.ref A differential expression table of the reference 
 #' dataset, as generated from 
 #' \code{\link{contrast_each_group_to_the_rest}}
-#' @param rankmetric Placeholder for support of different ranking methods, 
-#' but only the default supported. Omit. 
+#' @param rankmetric For support of different ranking methods. Unter testing.
+#' @param n For tweaking maximum returned genes from different ranking methods.
 #' 
 #' @return \emph{de_table.marked} This will be a subset of 
 #' \bold{de_table.ref}, with an added column \emph{test_group} set to 
@@ -432,10 +432,8 @@ get_the_up_genes_for_group <- function(
 #' @param de_table.ref A differential expression table of the reference 
 #' dataset, as generated from 
 #' \code{\link{contrast_each_group_to_the_rest}}
-#' @param rankmetric For support of different ranking methods, 
-#' but only the default tested. 
+#' @param rankmetric For support of different ranking methods. Unter testing.
 #' @param n For tweaking maximum returned genes from different ranking methods.
-#' Under testing. 
 #' 
 #' @return \emph{de_table.marked} This will alsmost be a subset of 
 #' \bold{de_table.ref}, 
