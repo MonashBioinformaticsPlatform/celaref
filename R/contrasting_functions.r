@@ -320,8 +320,15 @@ get_inner_or_outer_ci<- function(fc, ci.hi, ci.lo, get_inner=TRUE) {
 #' @param de_table.ref A differential expression table of the reference 
 #' dataset, as generated from 
 #' \code{\link{contrast_each_group_to_the_rest}}
-#' @param rankmetric For support of different ranking methods. Unter testing.
+#' @param rankmetric Specifiy ranking method used to pick the
+#' 'top' genes. The default 'TOP100_LOWER_CI_GTE1' picks genes from the top 100
+#' overrepresented genes (ranked by inner 95% confidence interval) - appears to 
+#' work best for distinct cell types (e.g. tissue sample.). 'TOP100_SIG' again 
+#' picks from the top 100 ranked genes, but requires only statistical 
+#' significance, 95% CI threshold - may perform better on more similar cell 
+#' clusters (e.g. PBMCs).
 #' @param n For tweaking maximum returned genes from different ranking methods.
+#' Will change the p-values! Suggest leaving as default unless you're keen.
 #' 
 #' @return \emph{de_table.marked} This will be a subset of 
 #' \bold{de_table.ref}, with an added column \emph{test_group} set to 
@@ -353,37 +360,18 @@ get_the_up_genes_for_group <- function(
       the_up_genes <- de_table.test$ID[de_table.test$group == the_group & 
                                           de_table.test$rank <= n & 
                                           de_table.test$ci_inner >= 1]
-   } else if (rankmetric=='TOP100_LOWER_CI_GTE0') { 
-      # Try a >0 test. Likely to be stupidly over inclusive - so probably not a good idea!
-      the_up_genes <- de_table.test$ID[de_table.test$group == the_group & 
-                                          de_table.test$rank <= n & 
-                                          de_table.test$ci_inner >= 0]
    } else if (rankmetric=='TOP100_SIG') { 
       # Significnatly up genes, within the top 100 (more stringent than SIG_N)
       the_up_genes <- de_table.test$ID[de_table.test$group == the_group & 
                                           de_table.test$rank <= n & 
                                           de_table.test$sig   == TRUE & 
                                           de_table.test$ci_inner >= 0]
-   } else if (rankmetric=='SIG_N') { 
-      # Up to 100 significantly up genes (still inner CI ranking.)
-      #Still require > CI_INNER 0, but < 0 shouldn't happen
-      de_table.test.group <- de_table.test[de_table.test$group == the_group & 
-                                              de_table.test$sig   == TRUE & 
-                                              de_table.test$ci_inner >= 0, ] 
-      ids <- de_table.test.group$ID[order(de_table.test.group$rank)]
-      if (length(ids) == 0 ){
-         the_up_genes <- character(0)
-      } else if (length(ids) > n) {
-         the_up_genes <- ids[seq_len(n)]
-      } else {
-         the_up_genes <- ids
-      }
    } else if (rankmetric=='BOTTOM100_LOWER_CI_LTE1') {
-      # Undocumented feature for testing, dont use (it doesn't work so well)
+      # Undocumented feature for testing, don't use. (It doesn't work well!)
       max_rank <- max(de_table.test$rank)
       the_up_genes <- de_table.test$ID[de_table.test$group == the_group & 
-                                          de_table.test$rank >= (max_rank - n + 1) & 
-                                          de_table.test$ci_inner <= -1]
+                                    de_table.test$rank >= (max_rank - n + 1) & 
+                                    de_table.test$ci_inner <= -1]
    } else {stop("Unknown rank metric")}
    
 
@@ -432,8 +420,15 @@ get_the_up_genes_for_group <- function(
 #' @param de_table.ref A differential expression table of the reference 
 #' dataset, as generated from 
 #' \code{\link{contrast_each_group_to_the_rest}}
-#' @param rankmetric For support of different ranking methods. Unter testing.
+#' @param rankmetric Specifiy ranking method used to pick the
+#' 'top' genes. The default 'TOP100_LOWER_CI_GTE1' picks genes from the top 100
+#' overrepresented genes (ranked by inner 95% confidence interval) - appears to 
+#' work best for distinct cell types (e.g. tissue sample.). 'TOP100_SIG' again 
+#' picks from the top 100 ranked genes, but requires only statistical 
+#' significance, 95% CI threshold - may perform better on more similar cell 
+#' clusters (e.g. PBMCs).
 #' @param n For tweaking maximum returned genes from different ranking methods.
+#' Will change the p-values! Suggest leaving as default unless you're keen.
 #' 
 #' @return \emph{de_table.marked} This will alsmost be a subset of 
 #' \bold{de_table.ref}, 

@@ -18,9 +18,16 @@ experiment, as generated from
 dataset, as generated from 
 \code{\link{contrast_each_group_to_the_rest}}}
 
-\item{rankmetric}{For support of different ranking methods. Unter testing.}
+\item{rankmetric}{Specifiy ranking method used to pick the
+'top' genes. The default 'TOP100_LOWER_CI_GTE1' picks genes from the top 100
+overrepresented genes (ranked by inner 95% confidence interval) - appears to 
+work best for distinct cell types (e.g. tissue sample.). 'TOP100_SIG' again 
+picks from the top 100 ranked genes, but requires only statistical 
+significance, 95% CI threshold - may perform better on more similar cell 
+clusters (e.g. PBMCs).}
 
-\item{n}{For tweaking maximum returned genes from different ranking methods.}
+\item{n}{For tweaking maximum returned genes from different ranking methods.
+Will change the p-values! Suggest leaving as default unless you're keen.}
 }
 \value{
 \emph{de_table.marked} This will be a subset of 
