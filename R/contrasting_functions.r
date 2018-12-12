@@ -161,36 +161,47 @@ contrast_the_group_to_the_rest <- function(
    # must have pofgenes set.
    stopifnot("pofgenes" %in% colnames(colData(dataset_se)))
    
-   # Define test vs rest factor for model 
-   # (TvsR only applicable for a single contrast.)
-   col_data_for_MAST      <- colData(dataset_se)
-   col_data_for_MAST$TvsR <- factor(
-      ifelse(col_data_for_MAST$group == the_group, TEST, REST), 
-      levels=c(REST, TEST)) #Note order for MAST
    
+   # Mast expects primerid (when coercing from sce, else it creates it itself)
+   row_data_for_MAST <- data.frame(primerid=row.names(logged_counts), 
+                                   stringsAsFactors =FALSE)
    
    ## Log2 transform the counts
    
-   # *** NB: Adding 1.1 to each count before log! Not 1! ***
-   # When there is *no* expression of a given gene within a group - 
-   # coeficcients aren't generated.= (NA)
-   # But they can still be sinigicant - and for scRNA these could be 
-   # real+relevant! Particularly with small groups.
-   # .. I think this is just a quirk of how mast is calculating them.
-   # If I add 1.1 instead of 1 pre-log transformation, means log2(0+1.1) 
-   # min is 0.014, not 0 - and coef (log2FC) is generated
-   # Adding 1.1 isn't going to have any real difference to adding 1.
-   # ***
-   TO_ADD <- 1.1 # Defining it here so it no get changed.
-   logged_counts  <- log2( assay(dataset_se) + TO_ADD)
+   # If none of test or rest has any expression for a given gene - no FC will
+   # be calcualted for either.
+   # Previously added 1.1 to address this, (so no '0's) 
+   #   but now we need sparse matricies!
+   # So add 2 dummy genes - TESTall and RESTall, they express 1x everything.
+   # This should have only minor statistical effects.
+   TO_ADD <- 1 # 1.1 no more
+   dummy_cols <-  Matrix::Matrix(cbind(
+      dummyTESTall = rep(1,nrow(dataset_se)),
+      dummyRESTall= rep(1,nrow(dataset_se)) ) ,
+      sparse=TRUE
+   )
+   logged_counts <- Matrix::Matrix(  
+      cbind(dummy_cols, log2( assay(dataset_se) + TO_ADD)),
+      sparse=TRUE)
    
    
-   # MAST uses a SE internally (inherits) but needs the parts to make it itself
-   ## Make sca object for MAST
-   sca <- MAST::FromMatrix(logged_counts, 
-                           cData=col_data_for_MAST, 
-                           fData=rowData(dataset_se))
+   # Define test vs rest factor for model 
+   # (TvsR only applicable for a single contrast.)
+   # Minimal coldata for mast (needs the dummy express-on-of-everything-cells)
+   TvsR <- factor(
+      c( c('test','rest'), # add 2x dummy cells up front
+         ifelse(colData(dataset_se)$group == the_group, TEST, REST)), 
+      levels=c(REST, TEST))
+   pofgenes <- c(c(0,0),colData(dataset_se)$pofgenes)
+   col_data_for_MAST <- data.frame(TvsR=TvsR, pofgenes=pofgenes)
    
+   # MAST uses a scASSAY internally 
+   #https://github.com/RGLab/MAST/issues/103
+   sca <- SingleCellExperiment(
+      assays  = SimpleList(logcounts=logged_counts),
+      colData = col_data_for_MAST,
+      rowData = row_data_for_MAST)
+   sca = as(sca, 'SingleCellAssay')
    
    ## Make Zlm model and run contrast:
    # Slow step.
@@ -233,11 +244,11 @@ contrast_the_group_to_the_rest <- function(
    # Order by Innermost/conservative CI
    # upper/lower mean numerically, actually want to use inner/outer rel to 0
    de_table$ci_inner  <- mapply(FUN=get_inner_or_outer_ci, 
-                               MoreArgs = list(get_inner=TRUE),  
-                               de_table$log2FC, de_table$ci.hi, de_table$ci.lo)
+                                MoreArgs = list(get_inner=TRUE),  
+                                de_table$log2FC, de_table$ci.hi, de_table$ci.lo)
    de_table$ci_outer  <- mapply(FUN=get_inner_or_outer_ci, 
-                               MoreArgs = list(get_inner=FALSE), 
-                               de_table$log2FC, de_table$ci.hi, de_table$ci.lo)
+                                MoreArgs = list(get_inner=FALSE), 
+                                de_table$log2FC, de_table$ci.hi, de_table$ci.lo)
    de_table <- de_table[,! colnames(de_table) %in% c("ci.hi", "ci.lo")]
    de_table <- de_table[order(de_table$ci_inner, decreasing = TRUE),]
    
@@ -258,8 +269,10 @@ contrast_the_group_to_the_rest <- function(
    #1902   Eno1 6.245552e-20 2.029549 1.681717 2.377380 4.687634e-17 Epithelial TRUE   TRUE       6755    4  0.0005921540
    #4256    Pkm 4.906642e-17 1.953987 1.579322 2.328652 2.117840e-14 Epithelial TRUE   TRUE       6755    5  0.0007401925
    
+   
    return(de_table)
 }
+
 
 
 
