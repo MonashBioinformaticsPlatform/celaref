@@ -65,7 +65,6 @@
 #' }
 #' 
 #' @import SummarizedExperiment
-#' 
 #' @export
 contrast_each_group_to_the_rest <- function(
    dataset_se, dataset_name, groups2test=NA, num_cores=2
@@ -86,7 +85,7 @@ contrast_each_group_to_the_rest <- function(
    # Not really a proprotion, buts in the model (and is proportional)
    # see MAST doco/paper - its used in the model for reasons.
    colData(dataset_se)$pofgenes <- 
-      scale(Matrix::colSums(as.matrix(assay(dataset_se)) > 0 ) )
+      as.numeric(scale(Matrix::colSums(assay(dataset_se) > 0)))
    
    ## For each group, test it versus evyerthing else 
    #  (paralallised, with lapply fallback if no parallel, or windows )
@@ -163,7 +162,7 @@ contrast_the_group_to_the_rest <- function(
    
    
    # Mast expects primerid (when coercing from sce, else it creates it itself)
-   row_data_for_MAST <- data.frame(primerid=row.names(logged_counts), 
+   row_data_for_MAST <- data.frame(primerid=row.names(rowData(dataset_se)), 
                                    stringsAsFactors =FALSE)
    
    ## Log2 transform the counts
