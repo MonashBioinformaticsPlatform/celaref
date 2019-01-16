@@ -152,6 +152,7 @@ contrast_each_group_to_the_rest <- function(
 #' @seealso \code{\link{contrast_each_group_to_the_rest}}
 #'
 #' @import SummarizedExperiment
+#' @importFrom "methods" as
 contrast_the_group_to_the_rest <- function( 
    dataset_se, the_group, pvalue_threshold=0.01) {
    
@@ -160,7 +161,7 @@ contrast_the_group_to_the_rest <- function(
    # must have pofgenes set.
    stopifnot("pofgenes" %in% colnames(colData(dataset_se)))
    
-   
+
    # Mast expects primerid (when coercing from sce, else it creates it itself)
    row_data_for_MAST <- data.frame(primerid=row.names(rowData(dataset_se)), 
                                    stringsAsFactors =FALSE)
@@ -200,8 +201,10 @@ contrast_the_group_to_the_rest <- function(
       assays  = SimpleList(logcounts=logged_counts),
       colData = col_data_for_MAST,
       rowData = row_data_for_MAST)
+
    sca = as(sca, 'SingleCellAssay')
    
+
    ## Make Zlm model and run contrast:
    # Slow step.
    # MAST uses pofgene in the model, see doco/paper.
