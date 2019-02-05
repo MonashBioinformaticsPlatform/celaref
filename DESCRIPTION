@@ -23,11 +23,12 @@ Imports:
    readr,
    tibble
 Suggests:
-   limma,
-   parallel,
-   knitr,
-   rmarkdown,
-   ExperimentHub
+    limma,
+    parallel,
+    knitr,
+    rmarkdown,
+    ExperimentHub,
+    testthat
 biocViews: SingleCell
 VignetteBuilder: knitr
 License: GPL-3
