@@ -1,7 +1,6 @@
 context("Loading functions")
 library(celaref)
 
-# devtools::test("celaref")
 
 test_that("Load se from files, tables, 10X", {
   
@@ -11,6 +10,7 @@ test_that("Load se from files, tables, 10X", {
       # any 0-length (or 1 length) dimensions are a fail, 
       # and is usual fail case.
       # but don't check what's actually there, because it could change
+      # These are different sized datasets anyway.
       
       expect_gt(base::ncol(test_se), 1) # cells
       expect_gt(nrow(test_se),  1) # genes # 1 gene would be wrong too.

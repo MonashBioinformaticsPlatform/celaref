@@ -68,6 +68,7 @@
 #' @export
 contrast_each_group_to_the_rest <- function(
    dataset_se, dataset_name, groups2test=NA, num_cores=2
+   
 ) {
    
    # Which groups to look at? Default all in query dataset.
@@ -152,7 +153,7 @@ contrast_each_group_to_the_rest <- function(
 #' @seealso \code{\link{contrast_each_group_to_the_rest}}
 #'
 #' @import SummarizedExperiment
-#' @importFrom "methods" as
+#' @import MAST
 contrast_the_group_to_the_rest <- function( 
    dataset_se, the_group, pvalue_threshold=0.01) {
    
@@ -197,14 +198,20 @@ contrast_the_group_to_the_rest <- function(
    
    # MAST uses a scASSAY internally 
    #https://github.com/RGLab/MAST/issues/103
-   sca <- SingleCellExperiment(
+   # For the sca conversion - need to inidialise the SCA first with new, then call as.
+   # Not sure why, but without that it only works with MAST library-ed in script (ie externally)
+   sce.in <- SummarizedExperiment(
       assays  = SimpleList(logcounts=logged_counts),
       colData = col_data_for_MAST,
       rowData = row_data_for_MAST)
-
-   sca = as(sca, 'SingleCellAssay')
    
-
+   # No luck with a simple 'as'.. 
+   # (caused signature erross for zlm setp) 
+   # Somehow this works?
+   sca <- new("SingleCellAssay")
+   as(sca, "SingleCellExperiment") <- sce.in
+   rm(sce.in)
+   
    ## Make Zlm model and run contrast:
    # Slow step.
    # MAST uses pofgene in the model, see doco/paper.
