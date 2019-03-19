@@ -198,13 +198,15 @@ contrast_the_group_to_the_rest <- function(
    
    # MAST uses a scASSAY internally 
    #https://github.com/RGLab/MAST/issues/103
-   # For the sca conversion - need to inidialise the SCA first with new, then call as.
-   # Not sure why, but without that it only works with MAST library-ed in script (ie externally)
+   # For the sca conversion - need to inidialise the SCA first with new, 
+   # then call as. Not sure why, but without that it only works with 
+   # MAST library-ed in script (ie externally)
    sce.in <- SummarizedExperiment(
-      assays  = SimpleList(logcounts=logged_counts),
+      assays  = S4Vectors::SimpleList(logcounts=logged_counts),
       colData = col_data_for_MAST,
       rowData = row_data_for_MAST)
    
+   # Cannnot use usual sca constructor because need to maintain sparse matrix.
    # No luck with a simple 'as'.. 
    # (caused signature erross for zlm setp) 
    # Somehow this works?

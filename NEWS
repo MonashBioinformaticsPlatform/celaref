@@ -1,10 +1,33 @@
+CHANGES IN VERSION 1.1.2
+-----------------------
+
+UPDATES
+
+    o Testing tests
+
+
+
+CHANGES IN VERSION 1.1.1
+-----------------------
+
+BUG FIXES
+
+    o Internal SingleCellAssay coercion bugfix. Should no longer require 
+      library(MAST) call to work.
+    
+
+UPDATES
+
+    o Partying hard with unit tests woo
+
 
 CHANGES IN VERSION 1.1.0
 -----------------------
 
 UPDATES
 
-    o Option to change the gene ranking metric. Maybe useful for similar cell types like PBMCs.
+    o Option to change the gene ranking metric. Maybe useful for similar cell 
+      types like PBMCs.
     o Use sparse matricies to support larger datasets in less RAM.
  
 
