@@ -5,7 +5,8 @@
 \title{contrast_each_group_to_the_rest}
 \usage{
 contrast_each_group_to_the_rest(dataset_se, dataset_name,
-  groups2test = NA, num_cores = 2)
+  groups2test = NA, num_cores = 2, n.group = Inf, n.other = n.group
+  * 5)
 }
 \arguments{
 \item{dataset_se}{Summarised experiment object containing count data. Also
@@ -20,6 +21,12 @@ to check. By default (set to NA), all groups will be tested.}
 \item{num_cores}{Number of cores to use to run MAST jobs in parallel.
 Ignored if parallel package not available. Set to 1 to avoid
 parallelisation. Default = 2}
+
+\item{n.group}{How many cells to keep for each group in groupwise 
+comparisons. Default = Inf}
+
+\item{n.other}{How many cells to keep from everything not in the group.
+Default = \bold{n.group} * 5}
 }
 \value{
 A tibble the within-experiment de_table (differential expression 
@@ -55,6 +62,12 @@ Note that this function is \emph{slow}, because it runs the differential
 expression. It only needs to be run once per dataset though (unless group 
 labels change). 
 Having package \pkg{parallel} installed is highly recomended.
+
+If this function runs out of memory, consider specifying \emph{n.group} and
+\emph{n.other} to run on a subset of cells (taken from each group, 
+and proportionally from the rest for each test). 
+Alternatively use \emph{subset_cells_by_group} to subset \bold{dataset_se}
+for each group independantly.
 
 Both reference and query datasets should be processed with this
 function.

@@ -9,6 +9,12 @@
 #' labels change). 
 #' Having package \pkg{parallel} installed is highly recomended.
 #'
+#' If this function runs out of memory, consider specifying \emph{n.group} and
+#' \emph{n.other} to run on a subset of cells (taken from each group, 
+#' and proportionally from the rest for each test). 
+#' Alternatively use \emph{subset_cells_by_group} to subset \bold{dataset_se}
+#' for each group independantly.
+#'
 #' Both reference and query datasets should be processed with this
 #' function.
 #'
@@ -28,7 +34,11 @@
 #' @param num_cores Number of cores to use to run MAST jobs in parallel.
 #' Ignored if parallel package not available. Set to 1 to avoid
 #' parallelisation. Default = 2
-#'
+#' @param n.group How many cells to keep for each group in groupwise 
+#' comparisons. Default = Inf
+#' @param n.other How many cells to keep from everything not in the group.
+#' Default = \bold{n.group} * 5
+#' 
 #'
 #' @return A tibble the within-experiment de_table (differential expression 
 #' table). This is a core summary of the individual experiment/dataset, 
@@ -67,7 +77,8 @@
 #' @import SummarizedExperiment
 #' @export
 contrast_each_group_to_the_rest <- function(
-   dataset_se, dataset_name, groups2test=NA, num_cores=2
+   dataset_se, dataset_name, groups2test=NA, num_cores=2,
+   n.group=Inf, n.other=n.group*5
    
 ) {
    
@@ -110,11 +121,15 @@ contrast_each_group_to_the_rest <- function(
       de_table_list <- parallel::mclapply(groups2test, 
                                           FUN=contrast_the_group_to_the_rest, 
                                           dataset_se=dataset_se, 
-                                          mc.cores=num_cores)
+                                          mc.cores=num_cores,
+                                          n.group=n.group, 
+                                          n.other=n.other)
    } else {
       de_table_list <- base::lapply(groups2test, 
                                     FUN=contrast_the_group_to_the_rest, 
-                                    dataset_se=dataset_se) 
+                                    dataset_se=dataset_se,
+                                    n.group=n.group, 
+                                    n.other=n.other) 
    }
    de_table.allvsrest <- dplyr::bind_rows(de_table_list)
 
@@ -146,6 +161,12 @@ contrast_each_group_to_the_rest <- function(
 #' @param dataset_se Datast summarisedExperiment object.
 #' @param the_group group to test
 #' @param pvalue_threshold Default = 0.01
+#' @param n.group How many cells to keep for each group in groupwise 
+#' comparisons. Default = Inf
+#' @param n.other How many cells to keep from everything not in the group.
+#' Default = \bold{n.group} * 5
+#' 
+#'
 #'
 #' @return A tibble, the within-experiment de_table (differential expression
 #' table), for the group specified.
@@ -155,14 +176,23 @@ contrast_each_group_to_the_rest <- function(
 #' @import SummarizedExperiment
 #' @import MAST
 contrast_the_group_to_the_rest <- function( 
-   dataset_se, the_group, pvalue_threshold=0.01) {
+   dataset_se, the_group, pvalue_threshold=0.01,
+   n.group=Inf, n.other=n.group*5) {
    
    TEST = 'test'
    REST = 'rest'
    # must have pofgenes set.
    stopifnot("pofgenes" %in% colnames(colData(dataset_se)))
    
-
+   # Subset if needed
+   if (n.group != Inf || n.other != Inf) {
+      datset_se <- subset_se_cells_for_group_test(dataset_se, the_group, 
+                                                 n.group=n.group, 
+                                                 n.other=n.other)
+   }
+   
+   
+   
    # Mast expects primerid (when coercing from sce, else it creates it itself)
    row_data_for_MAST <- data.frame(primerid=row.names(rowData(dataset_se)), 
                                    stringsAsFactors =FALSE)
@@ -832,6 +862,144 @@ get_limma_top_table_with_ci <- function(fit2, the_coef, ci=0.95 ){
 
 
 
+
+#' subset_cells_by_group
+#'
+#' Utility function to randomly subset very large datasets (that use too much
+#' memory). Specify a maximum number of cells to keep per group and use the 
+#' subsetted version to analysis. 
+#' 
+#' The resulting 
+#' differential expression table \emph{de_table} will have reduced statistical 
+#' power.
+#' But as long as enough cells are left to reasonably accurately
+#' calculate differnetial expression between groups this should be enough for
+#' celaref to work with.
+#' 
+#' Also, this function will lose proportionality of groups
+#'  (there'll be \emph{n.groups} or less of each). 
+#' Consider using the n.group/n.other parameters in 
+#' \emph{contrast_each_group_to_the_rest} or 
+#' \emph{contrast_the_group_to_the_rest}  - 
+#' which subsets non-group cells independantly for each group. 
+#' That may be more approriate for tissue type samples which would have similar 
+#' compositions of cells. 
+#'  
+#' So this function is intended for use when either; the 
+#' proportionality isn't relevant (e.g. FACs purified cell populations),
+#' or, the data is just too big to work with otherwise. 
+#' 
+#' Cells are randomly sampled, so set the random seed (with \emph{set.seed()})
+#' for consistant results across runs.
+#' 
+#'
+#'
+#' @param dataset_se Summarised experiment object containing count data. Also
+#' requires 'ID' and 'group' to be set within the cell information.
+#' 
+#' @param n.group How many cells to keep for each group. Default = 1000
+#' 
+#' @return \emph{dataset_se} A hopefully more managably subsetted version of
+#' the inputted \bold{dataset_se}. 
+#' 
+#'
+#' @examples
+#'
+#' dataset_se.30pergroup <- subset_cells_by_group(demo_query_se, n.group=30)
+#'
+#' @seealso  \code{\link{contrast_each_group_to_the_rest}} For alternative method 
+#' of subsetting cells proportionally.
+#'
+#'
+#' @export
+subset_cells_by_group <- function(dataset_se, n.group=1000){
+   
+   group_sizes <- table(dataset_se$group)
+   
+   # subsample each group individually.
+   sample_one_group <- function(the_group) {
+      if (group_sizes[the_group] > n.group) {
+         return(sample(x=which(dataset_se$group == the_group), size=n.group))
+      }
+      return(which(dataset_se$group == the_group))
+   }
+   # get all the coords, and at least extract in the same order.
+   subsample_cell_cols <- base::sort(unlist(lapply(FUN=sample_one_group, names(group_sizes))))
+   
+   message("Randomly sub sampling",n.group," cells per group.")
+   
+   return(dataset_se[,subsample_cell_cols] ) 
+}
+
+
+
+
+
+#' subset_se_cells_for_group_test
+#' 
+#' 
+#' This function for use by \code{\link{contrast_each_group_to_the_rest}} 
+#' downsamples cells from a summarizedExperiment 
+#' (\emph{dataset_se}) - keeping \bold{n.group} (or all if fewer) 
+#' cells from the specified group, and \bold{n.other} from the rest. 
+#' This maintains the proportions of cells in the 'other' part of the 
+#' differential expression comparisons.
+#' 
+#' 
+#' Cells are randomly sampled, so set the random seed (with \emph{set.seed()})
+#' for consistant results across runs.
+#' 
+#'
+#' @param dataset_se Summarised experiment object containing count data. Also
+#' requires 'ID' and 'group' to be set within the cell information.
+#' @param the_group The group being subsetted for
+#' @param n.group How many cells to keep for each group. Default = Inf
+#' @param n.other How many cells to keep from everything not in the group.
+#' Default = \bold{n.group} * 5
+#' 
+#' @return \emph{dataset_se} A hopefully more managably subsetted version of
+#' the inputted \bold{dataset_se} 
+#' 
+#'
+#' @seealso Calling function \code{\link{contrast_each_group_to_the_rest}} 
+#'
+#' @seealso  \code{\link{subset_cells_by_group}} Exported function for 
+#' subsetting each group independantly upfront. 
+#' (For when this approach is still unmanageable)
+#'
+subset_se_cells_for_group_test <- function(dataset_se, the_group, 
+                                           n.group=Inf, 
+                                           n.other=n.group*5) {
+   
+   num_in_group     <- sum(dataset_se$group == the_group)
+   num_not_in_group <- dim(dataset_se)[2] - num_in_group
+   
+   # Need to do anything?
+   if (num_in_group <= n.group &  num_not_in_group <= n.other) {
+      return(dataset_se)
+   }
+   message("Randomly sub sampling cells for ",the_group," contrast. ")
+   
+   # Which of the group to keep
+   if (num_in_group > n.group) {
+      keep.test <- base::sample(x=which(dataset_se$group == the_group), 
+                                size=n.group)
+   } else {
+      keep.test <- which(dataset_se$group == the_group)
+   }
+   
+   #Which of the rest to keep (random, so should be proportional)
+   if (num_not_in_group > n.other) {
+      keep.rest <- base::sample(x=which(dataset_se$group != the_group), 
+                                size=n.other)
+   } else {
+      keep.rest <- which(dataset_se$group != the_group)
+   }
+   
+   # get all the coords, and at least extract in the same order.
+   keep <- base::sort(c(keep.test, keep.rest))
+   return(dataset_se[,keep] ) 
+}
 
 
 

@@ -97,3 +97,20 @@ test_that("Rankmetrics", {
    
 })
 
+
+
+
+test_that("Subsetting ses", {
+   
+   dataset_se.30pergroup <- subset_cells_by_group(demo_query_se, n.group=30)
+   expect_equal(sum(dataset_se.30pergroup$group == "Group3"),30) 
+   expect_equal(sum(dataset_se.30pergroup$group == "Group1"),28) 
+   
+   demo_query_se.subset2 <- subset_se_cells_for_group_test(demo_query_se, 
+                             the_group="Group3", 
+                             n.group=20, 
+                             n.other=30)
+   expect_equal(sum(demo_query_se.subset2$group == "Group3"),20) 
+   expect_equal(sum(demo_query_se.subset2$group != "Group3"),30) 
+   
+})

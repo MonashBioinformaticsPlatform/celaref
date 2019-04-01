@@ -5,7 +5,7 @@
 \title{contrast_the_group_to_the_rest}
 \usage{
 contrast_the_group_to_the_rest(dataset_se, the_group,
-  pvalue_threshold = 0.01)
+  pvalue_threshold = 0.01, n.group = Inf, n.other = n.group * 5)
 }
 \arguments{
 \item{dataset_se}{Datast summarisedExperiment object.}
@@ -13,6 +13,12 @@ contrast_the_group_to_the_rest(dataset_se, the_group,
 \item{the_group}{group to test}
 
 \item{pvalue_threshold}{Default = 0.01}
+
+\item{n.group}{How many cells to keep for each group in groupwise 
+comparisons. Default = Inf}
+
+\item{n.other}{How many cells to keep from everything not in the group.
+Default = \bold{n.group} * 5}
 }
 \value{
 A tibble, the within-experiment de_table (differential expression
