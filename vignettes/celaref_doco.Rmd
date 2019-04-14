@@ -496,8 +496,8 @@ will accept data frames instead of filenames. The *load_se_from_files* function
 is just a wrapper for *load_se_from_tables*.
 
 ```{r eval=FALSE}
-dataset_se <- load_se_from_tables(counts_matrix   = "counts_matrix_file.tab", 
-                                  cell_info_table = "cell_info_file.tab", 
+dataset_se <- load_se_from_tables(counts_matrix   = counts_matrix, 
+                                  cell_info_table = cell_info_table, 
                                   group_col_name  = "Cluster")
 ```
 
@@ -531,7 +531,7 @@ For more involved cases, the [cellrangerRkit](https://support.10xgenomics.com/si
 package may be necessary.
 
 
-#### Special case: Directly with SummarizedExperiment objects
+#### Directly with SummarizedExperiment objects
 
 The data loading functions here are just convenient ways of making the SummarizedExperiment 
 objects with the content that celaref functions expect, handling naming and 
@@ -549,8 +549,74 @@ should _not_ be factors.
 The colData (cell information) and rowData (gene information) should exactly 
 match the columns and rows of the counts matrix. 
 
-The counts matrix should be integer counts, and a matrix (sparse matrix not 
-currently supported). 
+The counts matrix should be a matrix of integer counts. If there are multiple
+assays present, the counts should be the first. Sparse matricies are 
+ok, but hdf5-backed delayedArray matricies are not yet supported 
+(as produced by save/loadHDF5SummarizedExperiment functions
+from HDF5Array package). 
+See section [Handling large datasets](#handling-large-datasets) for 
+alternatives.
+
+#### Handling large datasets {#handling-large-datasets}
+
+Many (if not most) single cell datasets are too large to comforatably 
+process using a basic dense matrix. 
+
+Sadly celaref does not yet support ths use of hdf5-backed delayedArray counts 
+(via the save/loadHDF5SummarizedExperiment functions from HDF5Array package).
+Attempting to use these will yeild an error.
+
+So options to process large datasets:
+
+1. Store the counts in a sparse Matrix (via capital M Matrix package)
+
+
+```{r eval=FALSE}
+library(Matrix)
+# e.g. given a (hdf5-backed) summarisedExperiment object someSE:
+sparse_counts_matrix <- Matrix(counts(someSE), nrow=nrow(someSE),  sparse=TRUE)
+```
+
+
+2. Use the n.group and n.others options in *contrast_each_group_to_the_rest*
+   to subset the dataset in each contrast. This will keep
+   all of the 'test' group cells, and subsample the rest individually for each 
+   group's differential expression calculations. Doing this separetly for
+   each comparisons will maitain the relative proportions of cell types, which
+   might be useful in cross-experiment comparisons.
+
+```{r}
+# For consistant subsampling, use set.seed
+set.seed(12)
+de_table.demo_query.subset <- 
+   contrast_each_group_to_the_rest(demo_query_se, "subsetted_example",
+                                   n.group = 100, n.other = 200)
+```
+
+
+3. For very large datasets, it might be better to shrink the dataset upfront
+   (loosing the proportionality of cell types).
+   The *subset_cells_by_group* function will do this - here keeping 100 
+   (or all) cell per group.
+
+```{r}
+set.seed(12)
+demo_query_se.subset <- subset_cells_by_group(demo_query_se, n.group = 100)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #### Reading microarray data {#reading-microarray-data}
