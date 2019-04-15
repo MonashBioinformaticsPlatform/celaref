@@ -41,6 +41,10 @@
 #' @param log10trans  Plot on a log scale? Useful for distinishing multiple 
 #'    similar, yet distinct cell type that bunch at top of plot. Default=FALSE.
 #' 
+#' @param ... Further options to be passed to 
+#'    \code{\link{get_the_up_genes_for_all_possible_groups}}, 
+#'    e.g. rankmetric
+#' 
 #' @return  A ggplot object.
 #'
 #' @examples
@@ -66,8 +70,8 @@
 #' 
 #' @export
 make_ranking_violin_plot <- function(
-   de_table.marked=NA, de_table.test=NA, de_table.ref=NA, log10trans=FALSE
-) {
+   de_table.marked=NA, de_table.test=NA, de_table.ref=NA, log10trans=FALSE , 
+   ... ) {
    
    defined_de_table.marked <- any(! is.na(de_table.marked))
    defined_de_table.test   <- any(! is.na(de_table.test))
@@ -77,7 +81,8 @@ make_ranking_violin_plot <- function(
         & defined_de_table.test 
         & defined_de_table.ref ) {
       de_table.marked <- get_the_up_genes_for_all_possible_groups(de_table.test,
-                                                                  de_table.ref)
+                                                                  de_table.ref,
+                                                                  ... )
       
    } else if (!( defined_de_table.marked 
                  & !defined_de_table.test  

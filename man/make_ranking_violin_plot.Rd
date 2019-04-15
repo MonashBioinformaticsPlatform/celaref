@@ -5,7 +5,7 @@
 \title{make_ranking_violin_plot}
 \usage{
 make_ranking_violin_plot(de_table.marked = NA, de_table.test = NA,
-  de_table.ref = NA, log10trans = FALSE)
+  de_table.ref = NA, log10trans = FALSE, ...)
 }
 \arguments{
 \item{de_table.marked}{The output of 
@@ -22,6 +22,10 @@ as generated from \code{\link{contrast_each_group_to_the_rest}}}
 
 \item{log10trans}{Plot on a log scale? Useful for distinishing multiple 
 similar, yet distinct cell type that bunch at top of plot. Default=FALSE.}
+
+\item{...}{Further options to be passed to 
+\code{\link{ get_the_up_genes_for_all_possible_groups}}, 
+e.g. rankmetric}
 }
 \value{
 A ggplot object.

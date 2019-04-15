@@ -96,7 +96,13 @@
 #' to the reported matches (\emph{similar_non_match} column)).
 #' Too high (or NA) with a large number of reference groups could be slow. 
 #' Default = 5.
-#' @param rankmetric For support of different ranking methods. Unter testing.
+#' @param rankmetric Specifiy ranking method used to pick the
+#' 'top' genes. The default 'TOP100_LOWER_CI_GTE1' picks genes from the top 100
+#' overrepresented genes (ranked by inner 95% confidence interval) - appears to 
+#' work best for distinct cell types (e.g. tissue sample.). 'TOP100_SIG' again 
+#' picks from the top 100 ranked genes, but requires only statistical 
+#' significance, 95% CI threshold - may perform better on more similar cell 
+#' clusters (e.g. PBMCs).
 #' @param n For tweaking maximum returned genes from different ranking methods.
 #' 
 #' 
