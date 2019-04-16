@@ -24,7 +24,7 @@ as generated from \code{\link{contrast_each_group_to_the_rest}}}
 similar, yet distinct cell type that bunch at top of plot. Default=FALSE.}
 
 \item{...}{Further options to be passed to 
-\code{\link{ get_the_up_genes_for_all_possible_groups}}, 
+\code{\link{get_the_up_genes_for_all_possible_groups}}, 
 e.g. rankmetric}
 }
 \value{

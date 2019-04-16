@@ -64,7 +64,7 @@
 #' make_ranking_violin_plot(de_table.marked.query_vs_ref)
 #'
 #'
-#' @seealso  \code{\link{get_the_up_genes_for_all_possible_groups}} To make 
+#' @seealso \code{\link{get_the_up_genes_for_all_possible_groups}} To make 
 #' the input data.
 #'
 #' 
