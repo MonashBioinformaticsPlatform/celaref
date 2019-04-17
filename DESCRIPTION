@@ -21,7 +21,8 @@ Imports:
    BiocGenerics,
    S4Vectors,
    readr,
-   tibble
+   tibble,
+   DelayedArray
 Suggests:
     limma,
     parallel,
