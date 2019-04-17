@@ -1,3 +1,19 @@
+CHANGES IN VERSION 1.1.10
+-----------------------
+
+UPDATES
+
+    o Support for passing hdf5-backed SummarizedExperiment objects 
+      (internal conversion to sparse)
+    o Explicitly handle multiple assay() in the summarizedExperiment. Must have
+      a named 'counts' assay, or,  just the one unnamed assay.
+    
+
+BUG FIXES
+
+    o Subsampling per group should actually be used now.
+    
+
 CHANGES IN VERSION 1.1.8
 -----------------------
 

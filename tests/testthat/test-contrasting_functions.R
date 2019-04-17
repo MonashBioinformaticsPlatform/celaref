@@ -114,3 +114,10 @@ test_that("Subsetting ses", {
    expect_equal(sum(demo_query_se.subset2$group != "Group3"),30) 
    
 })
+
+
+
+#test_that("Finding counts", {
+#   
+#})
+

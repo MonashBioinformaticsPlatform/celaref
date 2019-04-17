@@ -33,7 +33,7 @@
 #' to check. By default (set to NA), all groups will be tested.
 #' @param num_cores Number of cores to use to run MAST jobs in parallel.
 #' Ignored if parallel package not available. Set to 1 to avoid
-#' parallelisation. Default = 2
+#' parallelisation. Default = 1
 #' @param n.group How many cells to keep for each group in groupwise 
 #' comparisons. Default = Inf
 #' @param n.other How many cells to keep from everything not in the group.
@@ -69,15 +69,14 @@
 #' de_table.demo_query  <- contrast_each_group_to_the_rest(
 #'      demo_query_se, "a_demo_query")
 #'      
-#' \dontrun{
 #' de_table.demo_ref    <- contrast_each_group_to_the_rest(
-#'      demo_ref_se, "a_demo_ref", num_cores=4)
-#' }
+#'      demo_ref_se, "a_demo_ref", num_cores=2)
+#' 
 #' 
 #' @import SummarizedExperiment
 #' @export
 contrast_each_group_to_the_rest <- function(
-   dataset_se, dataset_name, groups2test=NA, num_cores=2,
+   dataset_se, dataset_name, groups2test=NA, num_cores=1,
    n.group=Inf, n.other=n.group*5
    
 ) {
@@ -96,9 +95,19 @@ contrast_each_group_to_the_rest <- function(
    ## Add the 'proportion of genes covered in this factor' variable.
    # Not really a proprotion, buts in the model (and is proportional)
    # see MAST doco/paper - its used in the model for reasons.
-   colData(dataset_se)$pofgenes <- 
-      as.numeric(scale(Matrix::colSums(assay(dataset_se) > 0)))
+   # Using Dalayed array method for hanging onto hdf5-backed
+   counts_index <- get_counts_index(n_assays=length(assays(dataset_se)), 
+                                    names(assays(dataset_se)))
    
+   if (is(assay(dataset_se, counts_index) , "DelayedMatrix")) {
+      #DelayedArray method doesn't like sparse Matrix
+      colData(dataset_se)$pofgenes <- 
+         as.numeric(scale(DelayedArray::colSums(assay(dataset_se, counts_index) > 0)))
+   } else { #Matrix method doesn't work on delayed array.
+      colData(dataset_se)$pofgenes <- 
+         as.numeric(scale(Matrix::colSums(assay(dataset_se, counts_index) > 0)))
+   }
+
    ## For each group, test it versus evyerthing else 
    #  (paralallised, with lapply fallback if no parallel, or windows )
    if (num_cores > 1) {
@@ -186,9 +195,21 @@ contrast_the_group_to_the_rest <- function(
    
    # Subset if needed
    if (n.group != Inf || n.other != Inf) {
-      datset_se <- subset_se_cells_for_group_test(dataset_se, the_group, 
+      dataset_se <- subset_se_cells_for_group_test(dataset_se, the_group, 
                                                  n.group=n.group, 
                                                  n.other=n.other)
+   }
+   
+   # Check size. Easy to OOM here if using hdf5 objects.
+   # If the dataset is too big, this will stall. Print warning.
+   # Completely arbitray mem warning (1G iSH, @ 8bytes/num, ignore sparse)
+   # e.g. 11k cells of 12k genes triggers
+   if ((nrow(dataset_se) * ncol(dataset_se) * 8 ) / 10^9  > 1) {
+      message("Converting a possibly large ",
+              nrow(dataset_se),"x",ncol(dataset_se),
+              " object into sparse matrix. ",
+              "This may take a while. ",
+              "If running out of memory, consider subsetting dataset.")
    }
    
    
@@ -198,6 +219,8 @@ contrast_the_group_to_the_rest <- function(
                                    stringsAsFactors =FALSE)
    
    ## Log2 transform the counts
+   counts_index <- get_counts_index(n_assays=length(assays(dataset_se)), 
+                                    assay_names = names(assays(dataset_se)))
    
    # If none of test or rest has any expression for a given gene - no FC will
    # be calcualted for either.
@@ -211,10 +234,24 @@ contrast_the_group_to_the_rest <- function(
       dummyRESTall= rep(1,nrow(dataset_se)) ) ,
       sparse=TRUE
    )
-   logged_counts <- Matrix::Matrix(  
-      cbind(dummy_cols, log2( assay(dataset_se) + TO_ADD)),
-      sparse=TRUE)
    
+   # Now a plain, log2 sparse matrix. (looses hd5 if present.)
+   if (is(assay(dataset_se, counts_index) , "DelayedMatrix")) {
+      # Delayed Array from hd5-backed sces a little different to standard m|Matrix
+      logged_counts <- cbind( dummy_cols,
+                              Matrix::Matrix(log2( assay(dataset_se, counts_index) + TO_ADD), 
+                                             nrow=nrow(dataset_se), sparse=TRUE,
+                                             dimnames = dimnames(dataset_se)))
+      # log2 flattens the matrix, supplied nrow to rebuild it - the order ok
+      # all(rowSums(logged_counts == 0) == 
+      #    DelayedArray::rowSums(assay(dataset_se, counts_index) == 0))
+   } else {
+      logged_counts <- Matrix::Matrix(  
+         cbind(dummy_cols, log2( assay(dataset_se, counts_index) + TO_ADD)),
+         sparse=TRUE)
+   }
+   
+
    
    # Define test vs rest factor for model 
    # (TvsR only applicable for a single contrast.)
@@ -1003,4 +1040,42 @@ subset_se_cells_for_group_test <- function(dataset_se, the_group,
 
 
 
+
+#' get_counts_index
+#'
+#' \code{get_counts_index} is an internal utility function to find out where 
+#' the counts are (if anywhere.). Stops if there's no assay called 'counts',
+#' (unless there is only a single unnamed assay). 
+#' 
+#' @param n_assays How many assays are there? ie: length(assays(dataset_se))
+#'
+#' @param assay_names What are the assays called? ie: names(assays(dataset_se))
+#'
+#' @return The index of an assay in assays called 'counts', or, if there's just
+#'      the one unnamed assay - happily assume that that is counts.
+get_counts_index <- function(n_assays, assay_names) {
+   
+   if (n_assays == 1) {
+      # If there's just one, assume it is counts - unless its called something!
+      if (is.null(assay_names) || assay_names[1] == 'counts') {
+         if (is.null(assay_names)) {
+            message("Found one, unnamed, assay in summarizedExperiment object. ",
+                    "Assuming this is counts data ('counts')")
+         }
+         return(1)
+      }
+   } else {
+      counts_index = match('counts', assay_names)
+      if (! is.na(counts_index)) {
+         return(counts_index)
+      }
+   } 
+   # stop
+   stop("Couldn't find counts assay in summarised experiment object. ",
+        "Expected an assay named 'counts' (lower case) ",
+        "~or~ a single unnamed assay. ",
+        "Instead, found ",n_assays," assays with[out] names: ",
+        paste(assay_names, sep=", "),
+        ". Include counts, or rename one of those assays. ")
+}
 

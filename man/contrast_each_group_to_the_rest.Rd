@@ -5,7 +5,7 @@
 \title{contrast_each_group_to_the_rest}
 \usage{
 contrast_each_group_to_the_rest(dataset_se, dataset_name,
-  groups2test = NA, num_cores = 2, n.group = Inf, n.other = n.group
+  groups2test = NA, num_cores = 1, n.group = Inf, n.other = n.group
   * 5)
 }
 \arguments{
@@ -20,7 +20,7 @@ to check. By default (set to NA), all groups will be tested.}
 
 \item{num_cores}{Number of cores to use to run MAST jobs in parallel.
 Ignored if parallel package not available. Set to 1 to avoid
-parallelisation. Default = 2}
+parallelisation. Default = 1}
 
 \item{n.group}{How many cells to keep for each group in groupwise 
 comparisons. Default = Inf}
@@ -84,9 +84,8 @@ included in the model.
 de_table.demo_query  <- contrast_each_group_to_the_rest(
      demo_query_se, "a_demo_query")
      
-\dontrun{
 de_table.demo_ref    <- contrast_each_group_to_the_rest(
-     demo_ref_se, "a_demo_ref", num_cores=4)
-}
+     demo_ref_se, "a_demo_ref", num_cores=2)
+
 
 }

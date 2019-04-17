@@ -151,9 +151,9 @@ load_se_from_tables <- function(
    dataset_se <- NA
    if (all(is.na(gene_info_table))) {
       dataset_se  <- SummarizedExperiment(
-                           counts_matrix,
+                           assays  = S4Vectors::SimpleList(counts=counts_matrix),
                            colData=base::as.data.frame(cell_info_table))
-      rowData(dataset_se)$ID <- rownames(assay(dataset_se))
+      rowData(dataset_se)$ID <- rownames(assay(dataset_se,'counts'))
    }
    else {
       gene_info_table <- data.frame(gene_info_table, stringsAsFactors = FALSE)
@@ -177,7 +177,7 @@ load_se_from_tables <- function(
       
       # Create a summarised experiment object.
       dataset_se  <- SummarizedExperiment(
-                        counts_matrix,
+                        assays = S4Vectors::SimpleList(counts=counts_matrix),
                         colData=S4Vectors::DataFrame(cell_info_table),
                         rowData=S4Vectors::DataFrame(gene_info_table))
    }
@@ -345,12 +345,14 @@ load_dataset_10Xdata <- function(
    rownames(filtered_matrix) <- genes_table$ID    
    
    # Create a summarised experiment objct.
-   dataset_se  <- SummarizedExperiment(filtered_matrix, 
-                                       colData=clustering_table,
-                                       rowData=genes_table)
+   dataset_se  <- SummarizedExperiment(
+                        assays = S4Vectors::SimpleList(counts=filtered_matrix),
+                        colData=clustering_table,
+                        rowData=genes_table)
    
    # Optionally change id (handles m:1)
-   rowData(dataset_se)$total_count <- Matrix::rowSums(assay(dataset_se))
+   rowData(dataset_se)$total_count <- 
+      Matrix::rowSums(assay(dataset_se,'counts'))
    if (id_to_use != gene_id_cols_10X[1] ) { 
       dataset_se <- convert_se_gene_ids(dataset_se, 
                                         new_id=id_to_use, 
@@ -513,11 +515,22 @@ trim_small_groups_and_low_expression_genes <- function(
    min_reads_in_sample=1, min_detected_by_min_samples=5 
 ) {
    
+   counts_index <- get_counts_index(n_assays=length(assays(dataset_se)), 
+                                    assay_names = names(assays(dataset_se)))
+   
    ## Filter by min lib size, num samples detected in
-   samples_per_gene <- Matrix::rowSums(assay(dataset_se) >= min_reads_in_sample)
-   dataset_se <- dataset_se[,Matrix::colSums(assay(dataset_se))>=min_lib_size ]
+   # Use different rowSums for hdf5-backed SCE.
+   if (is(assay(dataset_se, counts_index) , "DelayedMatrix")) {
+      samples_per_gene <- DelayedArray::rowSums(assay(dataset_se, counts_index) >= min_reads_in_sample)
+      dataset_se <- dataset_se[,DelayedArray::colSums(assay(dataset_se, counts_index))>=min_lib_size ]
+      
+   } else {
+      samples_per_gene <- Matrix::rowSums(assay(dataset_se, counts_index) >= min_reads_in_sample)
+      dataset_se <- dataset_se[,Matrix::colSums(assay(dataset_se, counts_index))>=min_lib_size ]
+   }
    dataset_se <- dataset_se[ samples_per_gene >=  min_detected_by_min_samples, ]
    
+
    ## Less than a certain number of cells in a group, 
    # discard the group, and its cells.
    # NB: also removes 'NA' group entries.
@@ -528,3 +541,7 @@ trim_small_groups_and_low_expression_genes <- function(
    
    return(dataset_se)
 }
+
+
+
+

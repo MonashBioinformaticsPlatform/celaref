@@ -560,23 +560,31 @@ alternatives.
 #### Handling large datasets {#handling-large-datasets}
 
 Many (if not most) single cell datasets are too large to comforatably 
-process using a basic dense matrix. 
+process using a basic dense matrix. (The default if using *load_se_from_files*)
 
-Sadly celaref does not yet support ths use of hdf5-backed delayedArray counts 
-(via the save/loadHDF5SummarizedExperiment functions from HDF5Array package).
-Attempting to use these will yeild an error.
+To process large datasets:
 
-So options to process large datasets:
-
-1. Store the counts in a sparse Matrix (via capital M Matrix package)
+1. Supply a hdf5-backed delayedArray SummarizedExperiment object
+   (via the save/loadHDF5SummarizedExperiment functions from HDF5Array package)
+   Or, store the counts in a sparse Matrix (via capital M Matrix package), and
+   use function *load_se_from_tables*.
 
 
 ```{r eval=FALSE}
-library(Matrix)
-# e.g. given a (hdf5-backed) summarisedExperiment object someSE:
-sparse_counts_matrix <- Matrix(counts(someSE), nrow=nrow(someSE),  sparse=TRUE)
-```
+library(Matrix) 
+#a sparse big M Matrix.
+dataset_se.1 <- load_se_from_tables(counts_matrix = my_sparse_Matrix,
+                                  cell_info_table = cell_info_table, 
+                                  group_col_name  = "Cluster")
 
+# A hdf5-backed SummarisedExperiment from elsewhere
+dataset_se.2 <- loadHDF5SummarizedExperiment("a_SE_dir/")
+
+```
+   Note however that this will evenutally be converted to a sparse matrix 
+   internally in the differential expression calculations - so large dataset 
+   might need subsetting (below...)
+   
 
 2. Use the n.group and n.others options in *contrast_each_group_to_the_rest*
    to subset the dataset in each contrast. This will keep
@@ -595,7 +603,7 @@ de_table.demo_query.subset <-
 
 
 3. For very large datasets, it might be better to shrink the dataset upfront
-   (loosing the proportionality of cell types).
+   (losing the proportionality of cell types).
    The *subset_cells_by_group* function will do this - here keeping 100 
    (or all) cell per group.
 
