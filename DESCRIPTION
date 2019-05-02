@@ -1,6 +1,6 @@
 Package: celaref
 Title: Single-cell RNAseq cell cluster labelling by reference
-Version: 1.1.10
+Version: 1.2.0
 Authors@R: person("Sarah", "Williams", email = "sarah.williams1@monash.edu", role = c("aut", "cre"))
 Description: After the clustering step of a single-cell RNAseq experiment, this
    package aims to suggest labels/cell types for the clusters, on the basis of 
