@@ -1,4 +1,12 @@
-CHANGES IN VERSION 1.1.10
+CHANGES IN VERSION 1.3.x 
+-----------------------
+
+UPDATES
+
+    o Added factors_to_rm option. 
+
+
+CHANGES IN VERSION 1.2.0 
 -----------------------
 
 UPDATES
@@ -7,6 +15,7 @@ UPDATES
       (internal conversion to sparse)
     o Explicitly handle multiple assay() in the summarizedExperiment. Must have
       a named 'counts' assay, or,  just the one unnamed assay.
+    o Same as 1.1.10
     
 
 BUG FIXES

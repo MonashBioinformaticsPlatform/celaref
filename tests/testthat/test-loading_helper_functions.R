@@ -51,7 +51,6 @@ test_that("Load se from files, tables, 10X", {
 
 
 
-
 test_that("Filtering low expression genes and groups", {
    
    demo_ref_se.trim <- trim_small_groups_and_low_expression_genes(

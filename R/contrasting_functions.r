@@ -38,7 +38,9 @@
 #' comparisons. Default = Inf
 #' @param n.other How many cells to keep from everything not in the group.
 #' Default = \bold{n.group} * 5
-#' 
+#' @param factors_to_rm If there are extra confounding factors that should be
+#' removed from MAST's zlm model (e.g individual, run), specify the column name(s)  
+#' from colData in a vector here. Default=c().
 #'
 #' @return A tibble the within-experiment de_table (differential expression 
 #' table). This is a core summary of the individual experiment/dataset, 
@@ -77,7 +79,7 @@
 #' @export
 contrast_each_group_to_the_rest <- function(
    dataset_se, dataset_name, groups2test=NA, num_cores=1,
-   n.group=Inf, n.other=n.group*5
+   n.group=Inf, n.other=n.group*5, factors_to_rm=c()
    
 ) {
    
@@ -132,13 +134,15 @@ contrast_each_group_to_the_rest <- function(
                                           dataset_se=dataset_se, 
                                           mc.cores=num_cores,
                                           n.group=n.group, 
-                                          n.other=n.other)
+                                          n.other=n.other,
+                                          factors_to_rm=factors_to_rm)
    } else {
       de_table_list <- base::lapply(groups2test, 
                                     FUN=contrast_the_group_to_the_rest, 
                                     dataset_se=dataset_se,
                                     n.group=n.group, 
-                                    n.other=n.other) 
+                                    n.other=n.other,
+                                    factors_to_rm=factors_to_rm) 
    }
    de_table.allvsrest <- dplyr::bind_rows(de_table_list)
 
@@ -174,8 +178,9 @@ contrast_each_group_to_the_rest <- function(
 #' comparisons. Default = Inf
 #' @param n.other How many cells to keep from everything not in the group.
 #' Default = \bold{n.group} * 5
-#' 
-#'
+#' @param factors_to_rm If there are extra confounding factors that should be
+#' removed from MAST's zlm model (e.g individual, run), specify the column name(s)  
+#' from colData in a vector here. Default=c().
 #'
 #' @return A tibble, the within-experiment de_table (differential expression
 #' table), for the group specified.
@@ -186,7 +191,7 @@ contrast_each_group_to_the_rest <- function(
 #' @import MAST
 contrast_the_group_to_the_rest <- function( 
    dataset_se, the_group, pvalue_threshold=0.01,
-   n.group=Inf, n.other=n.group*5) {
+   n.group=Inf, n.other=n.group*5, factors_to_rm=c() ) {
    
    TEST = 'test'
    REST = 'rest'
@@ -261,7 +266,16 @@ contrast_the_group_to_the_rest <- function(
          ifelse(colData(dataset_se)$group == the_group, TEST, REST)), 
       levels=c(REST, TEST))
    pofgenes <- c(c(0,0),colData(dataset_se)$pofgenes)
-   col_data_for_MAST <- data.frame(TvsR=TvsR, pofgenes=pofgenes)
+   dummy_factors <- colData(dataset_se)[seq(1,2),factors_to_rm, drop=FALSE]
+   ####dummy_factors[,] <- NA Using NA introduces another level (w no counts)
+   #### So sticking with 'real' groups. Again this hack means slight influence 
+   # per group (2 dummy cells!) - but for celaref's purposes it shouldn't matter
+   extra_factors <- rbind(dummy_factors, 
+                          colData(dataset_se)[,factors_to_rm, drop=FALSE])
+   rownames(extra_factors) <- NULL
+   
+   
+   col_data_for_MAST <- data.frame(TvsR=TvsR, pofgenes=pofgenes, extra_factors )
    
    # MAST uses a scASSAY internally 
    #https://github.com/RGLab/MAST/issues/103
@@ -289,7 +303,12 @@ contrast_the_group_to_the_rest <- function(
    # Would allow this step to run only once per experiment, not per each group.
    # But that is complicated, and the 'summary' method 
    # (what actually does calcs) only supports simple single coeffient test.
-   zlm.TvsR        <- MAST::zlm(~ TvsR + pofgenes, sca)
+   factors_to_rm_str <- ifelse(length(factors_to_rm) > 0, 
+                               paste("+", paste(factors_to_rm, collapse=" + ")), 
+                               "") 
+   formula_str       <- paste("TvsR + pofgenes",factors_to_rm_str)
+   #reformulates to : ~TvsR + pofgenes + whatever
+   zlm.TvsR        <- MAST::zlm(reformulate(formula_str), sca)  
    the_contrast    <- 'TvsRtest'
    summary.TvsR    <- MAST::summary(zlm.TvsR, doLRT = 'TvsRtest')
    summary.TvsR.df <- as.data.frame(summary.TvsR$datatable)
@@ -347,6 +366,7 @@ contrast_the_group_to_the_rest <- function(
    #1902   Eno1 6.245552e-20 2.029549 1.681717 2.377380 4.687634e-17 Epithelial TRUE   TRUE       6755    4  0.0005921540
    #4256    Pkm 4.906642e-17 1.953987 1.579322 2.328652 2.117840e-14 Epithelial TRUE   TRUE       6755    5  0.0007401925
    
+   message("Processed ", the_group)
    
    return(de_table)
 }

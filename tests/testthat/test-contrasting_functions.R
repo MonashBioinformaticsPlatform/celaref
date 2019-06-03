@@ -43,6 +43,35 @@ test_that("MAST contrasts - dense, sparse and empty", {
 
 
 
+test_that("MAST contrasts - hdf5-backed assays and SCE objects", {
+   # Just test that runs - 
+   # these things are succeptible to format / object changes.
+
+   # dense sce 
+   d.sce.den <- as(demo_query_se, "SingleCellExperiment")
+   expect_equal( 10, nrow(
+      contrast_each_group_to_the_rest(d.sce.den[1:10,],'test', 
+      groups2test = "Group2", n.group = 20, num_cores = 1)))
+   
+   # sparse SCE   
+   d.sce.sp        <- d.sce.den 
+   assays(d.sce.sp)[[1]] <- Matrix::Matrix(assays(d.sce.sp)[[1]], sparse=TRUE)
+   expect_equal( 10, nrow(
+      contrast_each_group_to_the_rest(d.sce.sp[1:10,],'test',     
+      groups2test = "Group2", n.group = 20, num_cores = 1)))
+
+
+   # hdf5 SCE
+   d.sce.hdf       <- HDF5Array::saveHDF5SummarizedExperiment( d.sce.sp , replace=TRUE)
+   expect_equal( 10, nrow(
+      contrast_each_group_to_the_rest(d.sce.hdf[1:10,],'test',     
+      groups2test = "Group2", n.group = 20, num_cores = 1)))
+
+})
+
+
+
+
 
 test_that("Microarray reference", {
    

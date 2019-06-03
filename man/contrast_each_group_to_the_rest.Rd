@@ -6,7 +6,7 @@
 \usage{
 contrast_each_group_to_the_rest(dataset_se, dataset_name,
   groups2test = NA, num_cores = 1, n.group = Inf, n.other = n.group
-  * 5)
+  * 5, factors_to_rm = c())
 }
 \arguments{
 \item{dataset_se}{Summarised experiment object containing count data. Also
@@ -27,6 +27,10 @@ comparisons. Default = Inf}
 
 \item{n.other}{How many cells to keep from everything not in the group.
 Default = \bold{n.group} * 5}
+
+\item{factors_to_rm}{If there are extra confounding factors that should be
+removed from MAST's zlm model (e.g individual, run), specify the column name(s)  
+from colData in a vector here. Default=c().}
 }
 \value{
 A tibble the within-experiment de_table (differential expression 
